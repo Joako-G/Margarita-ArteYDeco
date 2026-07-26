@@ -1,0 +1,429 @@
+# ADMIN-SDD.md
+
+# Margarita Arte & Deco
+
+## Administration Software Design Document
+
+Versión: 1.0
+
+---
+
+# Objetivo
+
+Este documento define el comportamiento funcional del Panel Administrativo.
+
+El Panel Administrativo representa el BackOffice del sistema.
+
+Toda funcionalidad administrativa deberá respetar este documento.
+
+---
+
+# Relación con las Reglas de Negocio
+
+El Panel Administrativo deberá permitir únicamente operaciones que respeten las reglas definidas en `BUSINESS-RULES.md`.
+
+El Panel no podrá ofrecer acciones que permitan incumplir dichas reglas.
+
+Toda validación realizada en la interfaz deberá complementarse con la validación correspondiente en el Backend.
+
+---
+
+# Objetivo del Panel
+
+Permitir al administrador gestionar completamente el comercio sin necesidad de modificar la Base de Datos manualmente.
+
+El Panel deberá ser simple.
+
+Claro.
+
+Rápido.
+
+Orientado al uso diario.
+
+---
+
+# Acceso
+
+El Panel únicamente será accesible mediante:
+
+```
+/admin
+
+/admin/login
+```
+
+Todo acceso requerirá autenticación.
+
+Nunca existirán enlaces visibles desde la Landing.
+
+---
+
+# Roles
+
+Versión MVP
+
+Existe un único rol.
+
+Administrador.
+
+El Administrador posee acceso completo.
+
+No existirán permisos parciales.
+
+---
+
+# Layout
+
+Todo el Panel utilizará un único AdminLayout.
+
+El Layout contendrá:
+
+- Sidebar
+- Header
+- Área de contenido
+- Breadcrumb
+- Perfil
+- Logout
+
+La navegación deberá ser consistente en todas las pantallas.
+
+---
+
+# Dashboard
+
+Objetivo
+
+Mostrar un resumen rápido del estado del negocio.
+
+Información mínima
+
+- Productos activos
+- Productos sin stock
+- Productos con stock bajo
+- Categorías
+- Clientes registrados
+- Pedidos pendientes
+- Pedidos completados
+- Ventas recientes
+
+El Dashboard nunca reemplaza a los módulos específicos.
+
+---
+
+# Productos
+
+Objetivo
+
+Administrar el catálogo.
+
+Funcionalidades
+
+- Crear
+- Editar
+- Visualizar
+- Activar
+- Desactivar
+- Consultar stock disponible
+- Establecer stock inicial
+- Ajustar stock con un motivo obligatorio
+- Filtrar productos con stock y sin stock
+- Consultar el historial de movimientos
+- Eliminar lógicamente
+- Buscar
+- Filtrar
+
+Formulario de producto
+
+- Categoría obligatoria
+- Imagen con vista previa
+- Nombre
+- Descripción
+- Precio mayor a cero
+- Stock entero mayor o igual a cero
+- Estado Activo o Inactivo
+- Producto destacado
+
+El slug se generará a partir del nombre y deberá ser único. Las imágenes aceptadas serán JPG, PNG o WebP, con un tamaño máximo de 5 MB. El Backend repetirá todas las validaciones.
+
+No permitir eliminación física.
+
+El estado Activo controla la publicación y no modifica el stock. Un producto activo con stock cero seguirá publicado como "Sin stock". Nunca permitir valores negativos.
+
+---
+
+# Categorías
+
+Objetivo
+
+Administrar las categorías del catálogo.
+
+Funcionalidades
+
+- Crear
+- Editar
+- Reordenar
+- Activar
+- Desactivar
+- Eliminar lógicamente
+
+Formulario de categoría
+
+- Nombre
+- Imagen
+- Descripción
+- Orden de visualización
+- Estado Activo o Inactivo
+
+No eliminar categorías con productos asociados.
+
+---
+
+# Clientes
+
+Objetivo
+
+Consultar y administrar clientes.
+
+Funcionalidades
+
+- Buscar
+- Editar información
+- Ver historial de pedidos
+- Eliminar lógicamente
+
+Los clientes se crean automáticamente cuando realizan una compra.
+
+---
+
+# Pedidos
+
+Objetivo
+
+Administrar el flujo completo de ventas.
+
+Estados
+
+- Pendiente
+- Pendiente de Pago
+- Pagado
+- Preparando
+- Listo
+- Retirado
+- Cancelado
+
+Funcionalidades
+
+- Visualizar
+- Buscar
+- Filtrar
+- Cambiar estado
+- Consultar detalle
+- Consultar método y estado de pago
+- Acceder al teléfono del cliente
+- Confirmar recepción de una transferencia
+- Confirmar recepción de efectivo
+
+El Panel habilitará únicamente las transiciones válidas para el método de pago. Cancelar un pedido pagado requerirá confirmación reforzada y advertirá que el reintegro monetario se gestiona manualmente.
+
+La acción "Marcar como retirado" estará disponible únicamente para pedidos `ready` con pago confirmado. Al ejecutarla se registrará la fecha y hora del retiro.
+
+## Acciones de WhatsApp
+
+El detalle del pedido incluirá:
+
+- "Contactar cliente": disponible para cualquier pedido.
+- "Avisar que está listo": disponible únicamente en estado `ready`.
+- "Recordar transferencia": disponible únicamente para transferencias con pago `pending`.
+
+Cada acción abrirá `https://wa.me/{phone}?text={message}` en WhatsApp Web o la aplicación instalada. El teléfono utilizará código de país y solo dígitos, sin `+`, espacios ni guiones. El mensaje se codificará para URL y podrá editarse antes de enviarlo.
+
+El sistema no enviará mensajes automáticamente, no utilizará WhatsApp Business API y no podrá asegurar si un mensaje fue enviado, entregado o leído. Abrir WhatsApp no modificará el estado del pedido ni del pago.
+
+Nunca eliminar pedidos.
+
+La creación de un pedido descuenta el stock. Al cancelar un pedido, el sistema deberá restaurar sus unidades una sola vez y mostrar el movimiento en el historial del producto.
+
+---
+
+# Configuración
+
+Objetivo
+
+Modificar la información general del comercio.
+
+Configuraciones
+
+- Nombre del negocio
+- WhatsApp
+- Dirección
+- URL de Google Maps
+- Horarios de atención
+- Alias
+- CBU
+- Banco
+- Descuento por transferencia
+- Umbral de stock bajo
+- Redes Sociales
+
+Existirá un único registro.
+
+La URL de Google Maps deberá validarse antes de guardar. El Panel mostrará una vista previa del enlace público de ubicación.
+
+---
+
+# Formularios
+
+Todos los formularios deberán:
+
+- Validar datos antes de enviar.
+- Mostrar errores claros.
+- Mostrar indicadores de carga.
+- Confirmar operaciones importantes.
+
+Nunca cerrar automáticamente un formulario cuando exista un error.
+
+---
+
+# Tablas
+
+Todas las tablas deberán incluir:
+
+- Buscador
+- Ordenamiento
+- Paginación
+- Estado vacío
+- Loading
+- Acciones rápidas
+
+Cuando corresponda:
+
+- Filtros
+- Badges de estado
+- Confirmaciones
+
+---
+
+# Confirmaciones
+
+Toda operación destructiva deberá solicitar confirmación.
+
+Ejemplos
+
+- Eliminar producto
+- Eliminar categoría
+- Eliminar cliente
+
+Nunca ejecutar estas acciones con un solo clic.
+
+---
+
+# Soft Delete
+
+Las siguientes entidades utilizarán eliminación lógica.
+
+- Productos
+- Categorías
+- Clientes
+
+El Panel nunca eliminará registros físicamente.
+
+---
+
+# Estados Visuales
+
+Toda pantalla deberá contemplar:
+
+Loading
+
+Error
+
+Empty
+
+Success
+
+No Data
+
+---
+
+# Experiencia de Usuario
+
+El Panel deberá minimizar la cantidad de clics.
+
+Toda acción frecuente deberá poder realizarse rápidamente.
+
+Las acciones principales deberán estar siempre visibles.
+
+---
+
+# Seguridad
+
+Nunca mostrar información sensible.
+
+Nunca permitir acceder a módulos sin autenticación.
+
+Toda acción administrativa deberá validarse también en el Backend.
+
+---
+
+# Performance
+
+Las tablas deberán utilizar paginación.
+
+Evitar cargar información innecesaria.
+
+Utilizar carga diferida cuando sea posible.
+
+---
+
+# Auditoría
+
+Toda modificación importante deberá quedar registrada.
+
+Ejemplos
+
+- Cambio de configuración
+- Edición de productos
+- Ajustes manuales y automáticos de stock
+- Cambio de estado de pedidos
+
+La implementación podrá realizarse en el Backend.
+
+---
+
+# Definition of Done
+
+Una funcionalidad administrativa estará finalizada cuando:
+
+- Respete este documento.
+- Respete FRONTEND-SDD.
+- Respete BACKEND-SDD.
+- Respete DATABASE-SDD.
+- Sea responsive.
+- Sea accesible.
+- Utilice validaciones.
+- Muestre estados de carga.
+- Muestre estados de error.
+- No permita operaciones inseguras.
+- Sea consistente con el resto del Panel.
+- Respeta todas las reglas definidas en BUSINESS-RULES.md.
+
+# Acciones Masivas
+
+Cuando un módulo administre una cantidad considerable de registros, deberá permitir operaciones masivas cuando aporten valor al usuario.
+
+Ejemplos
+
+Productos
+
+- Activar varios productos.
+- Desactivar varios productos.
+- Eliminar lógicamente varios productos.
+
+Categorías
+
+- Activar varias categorías.
+- Desactivar varias categorías.
+
+Las acciones masivas deberán requerir confirmación antes de ejecutarse.
+
+No implementar acciones masivas que puedan comprometer la integridad del sistema.

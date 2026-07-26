@@ -1,0 +1,145 @@
+.catalog-page {
+  min-height: 100vh;
+  background: var(--color-surface);
+}
+
+.catalog-page__intro {
+  padding-bottom: var(--space-8);
+}
+
+.catalog-page__loading {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.catalog-page__skeleton-title {
+  width: min(560px, 100%);
+  height: 56px;
+}
+
+.catalog-page__skeleton-copy {
+  width: min(720px, 100%);
+  height: 32px;
+}
+
+.catalog-page__skeleton-categories {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  overflow: hidden;
+}
+
+.catalog-page__skeleton-category {
+  width: 140px;
+  height: 140px;
+  flex: 0 0 140px;
+  border-radius: var(--radius-round);
+}
+
+.catalog-page__heading {
+  display: grid;
+  max-width: 720px;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+}
+
+.catalog-page__heading .ui-typography--body {
+  line-height: 1.7;
+}
+
+.catalog-page__results-header {
+  display: grid;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.catalog-page__count {
+  margin: var(--space-1) 0 0;
+  color: var(--color-primary-dark);
+  font-size: var(--font-size-small);
+  font-weight: 600;
+}
+
+.catalog-page__controls {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.catalog-page__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-3);
+  align-items: stretch;
+}
+
+.catalog-page__pagination {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+  text-align: center;
+}
+
+.catalog-page__progress {
+  margin: 0;
+  color: var(--color-primary-dark);
+  font-size: var(--font-size-small);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.catalog-page__pagination .ui-button {
+  min-width: 240px;
+}
+
+.catalog-page__reset {
+  min-height: 44px;
+  padding-inline: var(--space-3);
+  color: var(--color-surface);
+  background: var(--color-primary);
+  border: 0;
+  border-radius: var(--radius-button);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast),
+    transform var(--duration-fast);
+}
+
+.catalog-page__reset:hover {
+  background: var(--color-primary-dark);
+  transform: scale(1.02);
+}
+
+@media (min-width: 768px) {
+  .catalog-page__controls {
+    grid-template-columns: minmax(280px, 1.4fr) minmax(224px, 1fr);
+  }
+
+  .catalog-page__results-header {
+    grid-template-columns: minmax(0, 1fr) minmax(480px, 0.8fr);
+    align-items: end;
+  }
+}
+
+@media (max-width: 480px) {
+  .catalog-page__intro {
+    padding-bottom: var(--space-6);
+  }
+
+  .catalog-page__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (hover: none) {
+  .catalog-page__reset:hover {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .catalog-page__reset {
+    transition: none;
+  }
+}

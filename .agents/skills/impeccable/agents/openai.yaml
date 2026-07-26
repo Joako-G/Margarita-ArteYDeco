@@ -1,0 +1,4 @@
+interface:
+  display_name: "Impeccable — Margarita"
+  short_description: "Diseña y pule la interfaz de Margarita"
+  default_prompt: "Usa $impeccable para diseñar, auditar o pulir esta interfaz respetando AGENTS.md y docs/."

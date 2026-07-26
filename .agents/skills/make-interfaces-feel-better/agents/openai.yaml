@@ -1,0 +1,4 @@
+interface:
+  display_name: "Detalles de interfaz — Margarita"
+  short_description: "Pule detalles visuales y microinteracciones"
+  default_prompt: "Usa $make-interfaces-feel-better para pulir esta interfaz respetando el Design System de Margarita."

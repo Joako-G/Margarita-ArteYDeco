@@ -1,0 +1,4 @@
+interface:
+  display_name: "Auditoría web — Margarita"
+  short_description: "Audita UI, UX y accesibilidad del proyecto"
+  default_prompt: "Usa $web-design-guidelines para auditar esta interfaz según AGENTS.md, docs/ y las guías web vigentes."
