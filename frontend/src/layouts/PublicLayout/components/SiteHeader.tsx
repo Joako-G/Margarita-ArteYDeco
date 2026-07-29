@@ -3,6 +3,7 @@ import { Menu } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 
 import logoHeaderImage from '@/assets/images/logo-header.png'
+import { CartButton } from '@/features/cart'
 import { Drawer, IconButton } from '@/shared/components'
 
 const NAVIGATION_ITEMS = [
@@ -151,9 +152,7 @@ export function SiteHeader() {
             <Link
               aria-current={isNavigationItemActive(item.href, true) ? 'location' : undefined}
               className={
-                isNavigationItemActive(item.href, true)
-                  ? 'landing-header__link--active'
-                  : undefined
+                isNavigationItemActive(item.href, true) ? 'landing-header__link--active' : undefined
               }
               key={item.href}
               to={item.href}
@@ -163,14 +162,17 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        <IconButton
-          aria-label="Abrir menú"
-          className="landing-header__menu-button"
-          onClick={() => setIsMenuOpen(true)}
-          variant="ghost"
-        >
-          <Menu aria-hidden="true" size={24} strokeWidth={2} />
-        </IconButton>
+        <div className="landing-header__actions">
+          <CartButton />
+          <IconButton
+            aria-label="Abrir menú"
+            className="landing-header__menu-button"
+            onClick={() => setIsMenuOpen(true)}
+            variant="ghost"
+          >
+            <Menu aria-hidden="true" size={24} strokeWidth={2} />
+          </IconButton>
+        </div>
       </div>
 
       <Drawer

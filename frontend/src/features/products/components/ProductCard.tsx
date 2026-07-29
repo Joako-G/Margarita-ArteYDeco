@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Minus, Plus } from 'lucide-react'
 
 import { Badge, Button, Card, IconButton, Typography } from '@/shared/components'
+import { useCartStore } from '@/features/cart'
 import type { IProduct } from '@/shared/types/catalog'
 import { formatPrice } from '@/shared/utils/format-price'
 import './ProductCard.css'
@@ -16,6 +17,7 @@ const NEW_PRODUCT_REFERENCE_DATE = Date.now()
 
 export function ProductCard({ headingLevel = 'h2', product }: IProductCardProps) {
   const [quantity, setQuantity] = useState(1)
+  const addItem = useCartStore((state) => state.addItem)
   const isOutOfStock = product.stockQuantity === 0
   const isLowStock = product.stockQuantity > 0 && product.stockQuantity <= 3
   const isNew =
@@ -35,6 +37,10 @@ export function ProductCard({ headingLevel = 'h2', product }: IProductCardProps)
     setQuantity((currentQuantity) => Math.min(product.stockQuantity, currentQuantity + 1))
   }
 
+  function addProductToCart() {
+    addItem(product, quantity)
+  }
+
   return (
     <Card className="product-card">
       <div className="product-card__media">
@@ -48,7 +54,7 @@ export function ProductCard({ headingLevel = 'h2', product }: IProductCardProps)
             Destacado
           </Badge>
         ) : isNew ? (
-          <Badge className="product-card__badge" variant="success">
+          <Badge className="product-card__badge product-card__badge--new" variant="success">
             Nuevo
           </Badge>
         ) : null}
@@ -94,9 +100,9 @@ export function ProductCard({ headingLevel = 'h2', product }: IProductCardProps)
           </IconButton>
         </div>
         <Button
-          aria-label={`Agregar ${product.name} al carrito. Disponible en la próxima fase`}
-          disabled
-          title="El carrito estará disponible en la próxima fase"
+          aria-label={`Agregar ${product.name} al carrito`}
+          disabled={isOutOfStock}
+          onClick={addProductToCart}
         >
           Agregar al carrito
         </Button>

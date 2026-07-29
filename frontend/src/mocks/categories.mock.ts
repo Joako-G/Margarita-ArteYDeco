@@ -1,10 +1,10 @@
 import accesoriosImage from '@/assets/images/accesorios.webp'
 import categoryDecoImage from '@/assets/images/category-deco.webp'
+import categoryLaminasTermotransferiblesImage from '@/assets/images/category-laminas-termotransferibles.webp'
 import categoryLaminasUvImage from '@/assets/images/category-laminas-uv.webp'
+import categoryMoldesSiliconaImage from '@/assets/images/category-moldes-silicona.webp'
 import categorySellosBajoRelieveImage from '@/assets/images/category-sellos-bajo-relieve.webp'
 import fibroFacilImage from '@/assets/images/fibro-facil.webp'
-import laminasImage from '@/assets/images/laminas.webp'
-import moldesSiliconaImage from '@/assets/images/moldes-silicona.webp'
 import pincelesImage from '@/assets/images/pinceles.webp'
 import sellosImage from '@/assets/images/sellos.webp'
 import type { ICategory } from '@/shared/types/catalog'
@@ -14,7 +14,7 @@ export const categoriesMock: ICategory[] = [
     id: 'category-moldes-silicona',
     name: 'Moldes de Silicona',
     slug: 'moldes-de-silicona',
-    image: moldesSiliconaImage,
+    image: categoryMoldesSiliconaImage,
     description: 'Moldes para crear piezas únicas con terminaciones cuidadas.',
     displayOrder: 1,
     isActive: true,
@@ -59,7 +59,7 @@ export const categoriesMock: ICategory[] = [
     id: 'category-laminas-termotransferibles',
     name: 'Láminas Termotransferibles',
     slug: 'laminas-termotransferibles',
-    image: laminasImage,
+    image: categoryLaminasTermotransferiblesImage,
     description: 'Motivos listos para transferir y renovar objetos con facilidad.',
     displayOrder: 6,
     isActive: true,

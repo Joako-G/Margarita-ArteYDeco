@@ -3,6 +3,7 @@ import { ChevronDown, PackageOpen, Search } from 'lucide-react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 
 import { CategoryFilter } from '@/features/categories'
+import { useSyncCartProducts } from '@/features/cart'
 import { ProductCard } from '@/features/products'
 import {
   Button,
@@ -74,6 +75,8 @@ export function CatalogPage() {
   const categories = data?.categories ?? EMPTY_CATEGORIES
   const products = data?.products ?? EMPTY_PRODUCTS
 
+  useSyncCartProducts(data?.products)
+
   const activeCategories = useMemo(
     () =>
       categories
@@ -117,7 +120,6 @@ export function CatalogPage() {
     pagination.key === paginationKey ? Math.max(pagination.count, productsPerPage) : productsPerPage
   const visibleProducts = displayedProducts.slice(0, visibleProductCount)
   const remainingProductCount = displayedProducts.length - visibleProducts.length
-  const nextProductCount = Math.min(productsPerPage, remainingProductCount)
   const hasMoreProducts = remainingProductCount > 0
 
   function selectCategory(categorySlug: string) {
@@ -254,8 +256,13 @@ export function CatalogPage() {
                     onClick={showMoreProducts}
                     variant="secondary"
                   >
-                    Ver {nextProductCount} {nextProductCount === 1 ? 'producto' : 'productos'} más
-                    <ChevronDown aria-hidden="true" size={18} strokeWidth={2} />
+                    Ver más productos
+                    <ChevronDown
+                      aria-hidden="true"
+                      className="catalog-page__more-icon"
+                      size={18}
+                      strokeWidth={2}
+                    />
                   </Button>
                 ) : null}
               </div>

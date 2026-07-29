@@ -1,0 +1,18 @@
+.cart-toast {
+  position: fixed;
+  top: calc(var(--space-3) + env(safe-area-inset-top));
+  right: max(var(--space-3), env(safe-area-inset-right));
+  display: flex;
+  max-width: min(360px, calc(100vw - var(--space-4)));
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  color: var(--color-surface);
+  background: var(--color-success);
+  border-radius: var(--radius-input);
+  box-shadow: var(--shadow-default);
+  font-size: var(--font-size-small);
+  font-weight: 600;
+  text-wrap: pretty;
+  z-index: var(--z-toast);
+}

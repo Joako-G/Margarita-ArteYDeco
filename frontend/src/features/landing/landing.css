@@ -53,6 +53,12 @@ html {
   display: none;
 }
 
+.landing-header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
 .landing-header__desktop-nav a,
 .landing-mobile-menu__nav a {
   color: inherit;

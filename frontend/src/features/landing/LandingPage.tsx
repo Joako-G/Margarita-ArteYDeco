@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { useCatalog } from '@/features/catalog'
+import { useSyncCartProducts } from '@/features/cart'
 import { faqMock, galleryMock, testimonialsMock } from '@/mocks'
 import type { ICategory, IProduct } from '@/shared/types/catalog'
 
@@ -25,6 +26,8 @@ export function LandingPage() {
   const { data } = useCatalog()
   const categories = data?.categories ?? EMPTY_CATEGORIES
   const products = data?.products ?? EMPTY_PRODUCTS
+
+  useSyncCartProducts(data?.products)
 
   const activeCategories = useMemo(
     () =>

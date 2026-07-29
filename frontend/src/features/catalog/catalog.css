@@ -92,6 +92,10 @@
   min-width: 240px;
 }
 
+.catalog-page__more-icon {
+  transform: translateY(calc(var(--space-1) / 8));
+}
+
 .catalog-page__reset {
   min-height: 44px;
   padding-inline: var(--space-3);
