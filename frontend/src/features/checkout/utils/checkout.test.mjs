@@ -43,7 +43,7 @@ test('valida y normaliza los datos obligatorios del checkout', () => {
     lastName: ' Pérez ',
     notes: '  Preparar para regalo. ',
     paymentMethod: 'transfer',
-    phone: '+54 9 11 2345-6789',
+    phone: '5491123456789',
   })
 
   assert.equal(result.success, true)
@@ -60,6 +60,17 @@ test('valida y normaliza los datos obligatorios del checkout', () => {
       notes: '',
       paymentMethod: 'cash',
       phone: '123',
+    }).success,
+    false,
+  )
+
+  assert.equal(
+    checkoutSchema.safeParse({
+      firstName: 'Ana',
+      lastName: 'Pérez',
+      notes: '',
+      paymentMethod: 'cash',
+      phone: '11abc23456789',
     }).success,
     false,
   )

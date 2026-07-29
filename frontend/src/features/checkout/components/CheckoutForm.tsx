@@ -5,6 +5,7 @@ import { Input, Radio, TextArea, Typography } from '@/shared/components'
 import type { ISettings } from '@/shared/types/commerce'
 
 import type { ICheckoutFormValues } from '../types/checkout'
+import { normalizePhone } from '../utils/checkout-links'
 
 interface ICheckoutFormProps {
   errors: FieldErrors<ICheckoutFormValues>
@@ -41,9 +42,15 @@ export function CheckoutForm({ errors, register, settings }: ICheckoutFormProps)
         <Input
           autoComplete="tel"
           error={errors.phone?.message}
-          helpText="Incluí el código de área. Por ejemplo: 11 2345 6789."
-          inputMode="tel"
+          helpText="Ingresá solo números, con código de área. Por ejemplo: 1123456789."
+          inputMode="numeric"
           label="Celular"
+          maxLength={15}
+          onInput={(event) => {
+            event.currentTarget.value = normalizePhone(event.currentTarget.value)
+          }}
+          pattern="[0-9]*"
+          type="tel"
           {...register('phone')}
         />
         <TextArea

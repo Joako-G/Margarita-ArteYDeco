@@ -21,6 +21,7 @@ export const checkoutSchema = z.object({
     .string()
     .trim()
     .min(1, 'Ingresá un celular para que podamos contactarte.')
+    .regex(/^\d+$/, 'El celular solo puede incluir números.')
     .refine((value) => {
       const normalizedPhone = normalizePhone(value)
 

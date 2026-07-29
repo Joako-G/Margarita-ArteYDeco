@@ -122,6 +122,16 @@
 
 .ui-field__control[aria-invalid='true'] {
   border-color: var(--color-error);
+  background: var(--color-error-soft);
+}
+
+.ui-field__control[aria-invalid='true']:focus-visible {
+  border-color: var(--color-error);
+  outline-color: var(--color-error);
+}
+
+.ui-field:has(.ui-field__control[aria-invalid='true']) .ui-field__label {
+  color: var(--color-error);
 }
 
 .ui-field__textarea {
@@ -140,7 +150,16 @@
 }
 
 .ui-field__error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-1);
   color: var(--color-error);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.ui-field__error-icon {
+  flex: 0 0 auto;
 }
 
 .ui-selection-control,

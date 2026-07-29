@@ -1,6 +1,7 @@
 import { useId } from 'react'
 import type { InputHTMLAttributes } from 'react'
 
+import { FieldMessage } from '@/shared/components/FieldMessage'
 import { mergeClassNames } from '@/shared/utils/class-names'
 
 interface IInputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -27,15 +28,9 @@ export function Input({ className, error, helpText, id, label, ...props }: IInpu
         id={inputId}
         {...props}
       />
-      {hasDescription && (
-        <p
-          aria-live={error ? 'polite' : undefined}
-          className={error ? 'ui-field__error' : 'ui-field__help'}
-          id={descriptionId}
-        >
-          {error ?? helpText}
-        </p>
-      )}
+      {hasDescription ? (
+        <FieldMessage error={error} helpText={helpText} id={descriptionId} />
+      ) : null}
     </div>
   )
 }

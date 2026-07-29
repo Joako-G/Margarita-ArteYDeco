@@ -26,6 +26,11 @@ export function CartDrawer() {
     navigate(routes.checkout)
   }
 
+  function handleViewProducts() {
+    closeCart()
+    navigate(routes.products)
+  }
+
   return (
     <Drawer className="shopping-cart" isOpen={isCartOpen} onClose={closeCart} title="Tu carrito">
       {availabilityMessage ? (
@@ -42,7 +47,7 @@ export function CartDrawer() {
 
       {items.length === 0 ? (
         <EmptyState
-          action={<Button onClick={closeCart}>Ver productos</Button>}
+          action={<Button onClick={handleViewProducts}>Ver productos</Button>}
           description="Elegí materiales para comenzar a preparar tu próximo proyecto."
           icon={<PackageOpen size={32} strokeWidth={2} />}
           title="Tu carrito está vacío"

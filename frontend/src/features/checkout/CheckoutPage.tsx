@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ArrowLeft, ShoppingBag } from 'lucide-react'
+import { ArrowLeft, CircleAlert, ShoppingBag } from 'lucide-react'
 import { useForm, useWatch } from 'react-hook-form'
 import { Link } from 'react-router-dom'
 
@@ -45,10 +45,8 @@ export function CheckoutPage() {
     name: 'paymentMethod',
   })
   const totals = calculateCheckoutTotals(items, paymentMethod, settingsMock.transferDiscount)
-
-  useEffect(() => {
-    window.scrollTo({ top: 0 })
-  }, [])
+  const validationErrorCount = Object.keys(form.formState.errors).length
+  const shouldShowValidationSummary = form.formState.submitCount > 0 && validationErrorCount > 0
 
   useEffect(() => {
     document.title = order
@@ -136,6 +134,19 @@ export function CheckoutPage() {
             onSubmit={form.handleSubmit(handleCreateOrder)}
           >
             <Card className="checkout__form-card">
+              {shouldShowValidationSummary ? (
+                <div className="checkout__validation-summary" role="alert">
+                  <CircleAlert aria-hidden="true" size={22} strokeWidth={2} />
+                  <div>
+                    <strong>Revisá los datos marcados.</strong>
+                    <p>
+                      {validationErrorCount === 1
+                        ? 'Hay un campo que necesita tu atención.'
+                        : `Hay ${validationErrorCount} campos que necesitan tu atención.`}
+                    </p>
+                  </div>
+                </div>
+              ) : null}
               {orderError ? (
                 <div className="checkout__error" role="alert">
                   <strong>No pudimos confirmar el pedido.</strong>
