@@ -108,6 +108,7 @@ Las reglas aquí definidas tienen prioridad sobre cualquier decisión técnica.
 - Los clientes no deberán registrarse ni iniciar sesión.
 - El sistema creará automáticamente un cliente cuando realice su primera compra.
 - Si ya existe un cliente con el mismo teléfono normalizado, se reutilizará el registro existente.
+- Una sesión anónima de compra no constituirá una cuenta de cliente ni concederá acceso administrativo.
 
 ## Datos
 
@@ -210,6 +211,25 @@ La dirección, ubicación y horarios configurados corresponderán al local y deb
 - Al crear el pedido, el Backend deberá comprobar nuevamente que todos los productos continúan activos y poseen stock suficiente.
 - La creación del pedido y el descuento de stock deberán completarse como una única operación atómica.
 
+## Consulta y recuperación de pedidos
+
+- Después de crear un pedido, el Backend deberá asociarlo a una sesión anónima de compra.
+- La sesión anónima permitirá consultar únicamente los pedidos asociados a ese navegador y nunca concederá permisos para modificarlos.
+- La sesión se identificará mediante una credencial aleatoria, opaca e imposible de inferir a partir del número de pedido, almacenada en una cookie segura.
+- La credencial tendrá una vigencia máxima de 30 días. Una recuperación válida podrá emitir una nueva sesión con la misma vigencia.
+- El Backend será siempre la fuente oficial del pedido. El Frontend no utilizará `localStorage` como autoridad para estados, importes, pagos ni datos bancarios.
+- El Frontend podrá guardar únicamente el número del último pedido como pista no sensible para facilitar la navegación.
+- El cliente podrá abrir "Ver mi último pedido" sin completar un formulario mientras conserve una sesión anónima válida.
+- Si la sesión no existe o expiró, el cliente podrá recuperar un pedido específico ingresando el número de pedido y el mismo celular utilizado en la compra.
+- Una recuperación correcta vinculará el pedido a la sesión vigente y rotará su credencial; si no existe una sesión válida, creará una nueva.
+- La recuperación nunca indicará si falló el número de pedido o el celular por separado.
+- Los intentos de recuperación deberán limitarse por IP y por identificadores normalizados, con bloqueo temporal ante abuso y CAPTCHA únicamente cuando se detecte comportamiento sospechoso.
+- Un número de pedido por sí solo nunca será suficiente para consultar información.
+- La consulta pública expondrá únicamente la confirmación necesaria para el cliente: número, fecha, estado, productos, importes, método de pago, retiro y, cuando corresponda, datos de transferencia.
+- Una confirmación recuperada deberá mostrar la misma información operativa que la confirmación original mientras la sesión sea válida.
+- La consulta pública nunca expondrá IDs internos, auditoría, notas administrativas ni datos de otros clientes.
+- El cliente podrá eliminar la asociación local mediante una acción "Olvidar pedidos de este dispositivo". Esta acción no eliminará pedidos ni historial comercial.
+
 ## Retiro
 
 - Todos los pedidos del MVP se retirarán exclusivamente en el local.
@@ -246,6 +266,11 @@ Los registros podrán restaurarse posteriormente.
 - Toda acción administrativa requerirá autenticación.
 - El Backend validará todas las operaciones críticas.
 - Nunca se confiará en los datos enviados por el Frontend.
+- Las sesiones anónimas utilizarán cookies `HttpOnly`, `Secure` y `SameSite=Lax` cuando Frontend y API sean same-site.
+- Si el despliegue exige contexto cross-site, cualquier excepción a `SameSite=Lax` deberá documentarse y acompañarse de protección CSRF y una política CORS con orígenes explícitos.
+- El token original de una sesión anónima nunca se almacenará en la base de datos; se persistirá únicamente un hash seguro.
+- Los tokens anónimos no se incluirán en URLs, logs, mensajes de error ni analítica.
+- Las credenciales anónimas serán de solo lectura y estarán limitadas a los pedidos asociados a su sesión.
 
 ---
 

@@ -6,6 +6,10 @@
 
 ## 3. Routing
 
+- `/pedido/:orderNumber` mostrará una confirmación recuperada desde la API y protegida por la sesión anónima del navegador.
+- `/recuperar-pedido` mostrará el formulario alternativo de número de pedido y celular.
+- El número de pedido será un identificador de navegación, no una credencial. Nunca se incluirán tokens en rutas ni query strings.
+
 ## 4. Layouts
 
 ## 5. Aplicación Pública
@@ -89,7 +93,9 @@ Flujo:
 3. Elegir Efectivo o Transferencia.
 4. Mostrar descuento y total actualizado.
 5. Confirmar el pedido.
-6. Mostrar número de pedido y próximos pasos.
+6. Asociar el pedido a la sesión anónima devuelta por el Backend.
+7. Navegar a `/pedido/:orderNumber`.
+8. Mostrar número de pedido y próximos pasos.
 
 - Mantener visible el resumen antes de confirmar.
 - Validar los datos con React Hook Form y Zod.
@@ -104,6 +110,32 @@ Flujo:
 - Abrir el mapa en una pestaña nueva con `rel="noopener noreferrer"`.
 - Para efectivo, informar que el pago se realiza al retirar.
 - No solicitar dirección al cliente.
+- La confirmación no dependerá del estado local de `CheckoutPage`; se consultará mediante TanStack Query desde la ruta del pedido.
+- Limpiar el carrito únicamente después de que el Backend confirme la creación correcta.
+- El Frontend nunca leerá, almacenará ni enviará manualmente el token de la sesión anónima.
+
+### Consulta y recuperación pública de pedidos
+
+- Utilizar la cookie `HttpOnly` administrada por el Backend mediante requests Axios con credenciales.
+- Mostrar "Ver mi último pedido" cuando una consulta válida confirme que existe un pedido reciente asociado al navegador.
+- Permitir "Recuperar otro pedido" aunque exista una sesión vigente.
+- Si no existe una sesión válida, mostrar `/recuperar-pedido` con número de pedido y celular.
+- El formulario utilizará React Hook Form y Zod.
+- Normalizar visualmente el número de pedido y aceptar únicamente dígitos en el celular.
+- Enviar la recuperación exclusivamente mediante el servicio Axios centralizado.
+- Después de una recuperación correcta, invalidar las queries públicas de pedidos y navegar a `/pedido/:orderNumber`.
+- Mostrar siempre un error genérico cuando los datos no coincidan; nunca identificar qué campo fue incorrecto.
+- Ante HTTP `429`, mostrar el tiempo de espera indicado por el Backend sin reintentos automáticos.
+- Mostrar el CAPTCHA únicamente cuando el Backend indique que es necesario.
+- No realizar reintentos automáticos de recuperación, porque podrían consumir el límite de seguridad.
+- Si la sesión expiró mientras se consulta una ruta de pedido, conservar el número visible como referencia y ofrecer "Recuperar pedido".
+- Incluir "Olvidar pedidos de este dispositivo"; después de confirmar la acción, revocar la sesión, limpiar la pista local y eliminar las queries públicas del cache.
+- `localStorage` podrá guardar únicamente `lastOrderNumber` como pista de navegación. No guardará tokens, datos personales, estados, importes, CBU, alias ni respuestas completas.
+- El Backend seguirá siendo la fuente oficial de estado, pago, totales y datos bancarios.
+- No mostrar pedidos de una sesión distinta aunque se conozca su número.
+- No incluir número de pedido, celular, CBU, alias ni respuestas de recuperación en analítica, logs del navegador o herramientas de monitoreo.
+- La consulta pública mostrará número, fecha, estado, productos, cantidades, importes, método de pago, retiro y datos de transferencia cuando correspondan.
+- WhatsApp continuará siendo una acción manual para enviar el comprobante, no un mecanismo de recuperación.
 
 ## 6. Panel Administrativo
 
@@ -147,9 +179,22 @@ Flujo:
 
 ## 8. Gestión de Estado
 
+- Zustand Persist continuará reservado al carrito y a pistas locales no sensibles.
+- Los pedidos públicos serán estado remoto administrado por TanStack Query.
+- No persistir el DTO de confirmación completo en stores ni `localStorage`.
+
 ## 9. Consumo de API
 
+- Axios se configurará con `withCredentials: true` para los endpoints públicos que utilizan la cookie anónima.
+- Las queries de pedidos tendrán tiempo de frescura corto y no se persistirán fuera de memoria.
+- No reintentar automáticamente respuestas `401`, `403`, `404` ni `429` de consulta o recuperación pública.
+- Al revocar la sesión, cancelar e invalidar todas las queries públicas de pedidos.
+
 ## 10. Formularios
+
+- El formulario de recuperación validará número de pedido y celular con React Hook Form y Zod.
+- El celular será numérico, se normalizará antes de enviarse y nunca se utilizará como único factor de recuperación.
+- Los errores del formulario no revelarán si existe el pedido ni si el celular coincide.
 
 ## 11. Estados Globales
 
@@ -161,6 +206,14 @@ Empty
 
 Success
 
+La consulta pública contemplará además:
+
+- SessionExpired
+- RecoveryRequired
+- RateLimited
+- CaptchaRequired
+- SessionRevoked
+
 ## 12. Responsive
 
 ## 13. Accesibilidad
@@ -169,4 +222,16 @@ Success
 
 ## 15. Flujo de Navegación
 
+- Después de crear un pedido: `/checkout` → `/pedido/:orderNumber`.
+- Desde "Ver mi último pedido": cualquier ruta pública → último `/pedido/:orderNumber` autorizado.
+- Sin sesión: `/pedido/:orderNumber` → estado de recuperación → `/recuperar-pedido`.
+- Recuperación correcta: `/recuperar-pedido` → `/pedido/:orderNumber`.
+- "Olvidar pedidos de este dispositivo": confirmación → revocación → catálogo.
+
 ## 16. Definition of Done
+
+- Cambiar de ruta, recargar o reabrir el navegador no deberá perder una confirmación mientras la sesión anónima siga vigente.
+- Un navegador no podrá consultar pedidos asociados exclusivamente a otra sesión.
+- La recuperación deberá funcionar con coincidencia completa y responder de forma indistinguible ante datos inválidos.
+- La interfaz deberá manejar expiración, revocación, CAPTCHA y rate limiting sin filtrar información.
+- Ninguna credencial ni dato personal se persistirá en `localStorage`.

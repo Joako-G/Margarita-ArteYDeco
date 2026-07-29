@@ -647,3 +647,35 @@ Permite operar sin costos, credenciales ni automatizaciones externas y evita que
 ### Consecuencias
 
 El envío será manual. El sistema no conocerá el estado de entrega o lectura del mensaje y abrir WhatsApp no modificará pedidos ni pagos. WhatsApp Business API permanece como mejora futura.
+
+---
+
+# ADR-034
+
+## Consulta de pedidos sin cuenta mediante sesión anónima
+
+### Contexto
+
+El cliente completa pedidos sin registrarse. La confirmación contiene información necesaria para pagar por transferencia y retirar el pedido, pero el estado local de React se pierde al recargar o cambiar de ruta. Depender de WhatsApp para volver a obtener alias, CBU, total o número de pedido contradice ADR-033 y las reglas de pago.
+
+### Decisión
+
+El Backend asociará cada pedido público a una sesión anónima de compra identificada mediante un token opaco de alta entropía. El navegador recibirá la credencial en una cookie host-only con prefijo `__Host-`, `HttpOnly`, `Secure`, `Path=/` y `SameSite=Lax`; la base de datos almacenará únicamente su hash y fecha de expiración.
+
+La sesión tendrá una vigencia máxima de 30 días, será de solo lectura y permitirá consultar exclusivamente los pedidos vinculados. No utilizará Supabase Auth, no representará una cuenta y no concederá ningún permiso administrativo.
+
+El Frontend utilizará una ruta `/pedido/:orderNumber` y recuperará la confirmación desde la API. Podrá conservar en `localStorage` únicamente el número del último pedido como pista no sensible; estados, importes, datos bancarios y credenciales procederán siempre del Backend.
+
+Cuando la cookie no exista o haya expirado, el cliente podrá recuperar un pedido específico mediante número de pedido y celular. El Backend normalizará el celular, validará ambos datos, aplicará rate limiting y respuestas indistinguibles, y emitirá una nueva sesión únicamente después de una coincidencia completa. Si ya existe una sesión válida, vinculará el pedido y rotará su credencial. Un CAPTCHA se habilitará solo ante intentos sospechosos.
+
+Los tokens no se incluirán en URLs. El cliente podrá ejecutar "Olvidar pedidos de este dispositivo" para invalidar su sesión local sin eliminar pedidos ni historial.
+
+### Justificación
+
+Permite recuperar la confirmación sin crear cuentas, evita exponer credenciales a JavaScript y mantiene al Backend como fuente oficial. También conserva WhatsApp como canal manual complementario y no como mecanismo obligatorio de recuperación.
+
+### Consecuencias
+
+La Fase 6 deberá incorporar sesiones anónimas y su relación con pedidos. La Fase 7 implementará cookies, hashing, expiración, endpoints públicos, rate limiting, recuperación e invalidación. La Fase 8 incorporará la ruta de pedido, "Ver mi último pedido", el formulario de recuperación y los estados de sesión expirada o bloqueada.
+
+La infraestructura de sesión anónima será independiente de la autenticación administrativa de la Fase 8.5. El acceso desde otro dispositivo o después de borrar cookies requerirá recuperar el pedido con número y celular.

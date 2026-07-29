@@ -69,6 +69,7 @@ El sistema estará compuesto por los siguientes dominios.
 ## Seguridad
 
 - Profiles
+- Guest Sessions
 
 ---
 
@@ -90,6 +91,7 @@ El sistema estará compuesto por los siguientes dominios.
 
 - Orders
 - Order Items
+- Guest Session Orders
 
 ---
 
@@ -123,6 +125,8 @@ Category
 
 Cada Product tendrá muchos Inventory Movements. Un movimiento podrá relacionarse con un Order cuando se origine por una compra o cancelación.
 
+Cada Guest Session podrá consultar muchos Orders mediante Guest Session Orders. Un Order podrá vincularse a más de una Guest Session cuando el cliente lo recupere desde otro navegador, sin transferir ni eliminar accesos válidos anteriores.
+
 ---
 
 # Entidades
@@ -144,6 +148,34 @@ Campos mínimos
 - is_active
 - created_at
 - updated_at
+
+---
+
+## Guest Sessions
+
+Responsabilidad
+
+Representar una sesión anónima y de solo lectura para consultar pedidos sin crear una cuenta.
+
+Campos mínimos
+
+- id
+- token_hash
+- expires_at
+- revoked_at, nullable
+- last_accessed_at, nullable
+- created_at
+- updated_at
+
+Relaciones
+
+Posee muchas relaciones Guest Session Orders.
+
+`token_hash` deberá ser único. El token original nunca se almacenará. `expires_at` deberá ser posterior a `created_at`.
+
+Una sesión estará vigente únicamente cuando `revoked_at IS NULL` y `expires_at > NOW()`.
+
+Las sesiones anónimas no estarán relacionadas con Profiles, Supabase Auth ni roles administrativos.
 
 ---
 
@@ -278,6 +310,7 @@ Campos mínimos
 - customer_first_name
 - customer_last_name
 - customer_phone
+- customer_phone_normalized
 - order_number
 - status
 - subtotal
@@ -295,6 +328,34 @@ Relaciones
 Pertenece a un Cliente.
 
 Posee muchos Order Items.
+
+Posee muchas relaciones Guest Session Orders.
+
+---
+
+## Guest Session Orders
+
+Responsabilidad
+
+Relacionar de forma explícita las sesiones anónimas con los pedidos que pueden consultar.
+
+Campos mínimos
+
+- id
+- guest_session_id
+- order_id
+- created_at
+- updated_at
+
+Relaciones
+
+Pertenece a una Guest Session.
+
+Pertenece a un Order.
+
+La combinación `guest_session_id + order_id` deberá ser única.
+
+La eliminación autorizada de una Guest Session eliminará sus relaciones mediante `ON DELETE CASCADE`, pero nunca eliminará el Order. La relación hacia Orders utilizará `ON DELETE RESTRICT`.
 
 ---
 
@@ -320,7 +381,7 @@ Pertenece a un Pedido.
 
 Pertenece a un Producto.
 
-Los campos `customer_first_name`, `customer_last_name`, `customer_phone` y `product_name` son snapshots históricos. No deberán cambiar cuando posteriormente se editen el cliente o el producto.
+Los campos `customer_first_name`, `customer_last_name`, `customer_phone`, `customer_phone_normalized` y `product_name` son snapshots históricos. No deberán cambiar cuando posteriormente se editen el cliente o el producto.
 
 ---
 
@@ -443,6 +504,10 @@ Los Productos con historial de ventas tampoco deberán eliminarse físicamente.
 
 Los Clientes con historial de compras deberán conservarse para mantener la integridad histórica del sistema.
 
+Una Guest Session nunca otorgará acceso a un Order sin una relación Guest Session Orders vigente y explícita.
+
+Revocar o purgar una Guest Session no modificará ni eliminará los pedidos asociados.
+
 ---
 
 # Eliminación Lógica (Soft Delete)
@@ -473,10 +538,14 @@ Cuando `deleted_at` contenga una fecha, el registro se considerará eliminado.
 - Order Items
 - Settings
 - Profiles
+- Guest Sessions
+- Guest Session Orders
 
 Los pedidos representan el historial comercial del negocio y nunca deberán eliminarse.
 
 La configuración del sistema tampoco deberá eliminarse.
+
+Guest Sessions y Guest Session Orders podrán eliminarse físicamente mediante una tarea de mantenimiento autorizada después de su expiración o revocación. Esta limpieza nunca se propagará a Orders.
 
 ---
 
@@ -548,10 +617,12 @@ Los cambios de stock utilizarán obligatoriamente Inventory Movements como regis
 
 La creación y cancelación de pedidos con cambios de stock deberán implementarse mediante funciones PostgreSQL invocadas por el Backend a través de Supabase RPC.
 
-- `create_order_with_stock`: valida disponibilidad, crea el pedido y sus detalles, descuenta stock y registra movimientos.
+- `create_order_with_stock`: valida disponibilidad, crea el pedido y sus detalles, descuenta stock, registra movimientos y vincula el pedido con la Guest Session recibida.
 - `cancel_order_with_stock`: cambia el pedido a Cancelled, restaura unidades una sola vez y registra movimientos.
 
 Ambas funciones deberán ser atómicas. Cualquier error deberá revertir la operación completa.
+
+La recuperación de acceso a un pedido deberá validar en el Backend el número de pedido y el snapshot `customer_phone_normalized` antes de insertar una nueva relación Guest Session Orders. La inserción deberá ser idempotente y nunca trasladará el pedido de una sesión a otra.
 
 ---
 
@@ -583,6 +654,12 @@ Crear índices para:
 - order_id
 - product_id
 - phone_normalized
+- customer_phone_normalized
+- order_number, único
+- token_hash, único
+- expires_at
+- guest_session_id + order_id, único
+- guest_session_id
 - slug
 - created_at
 
@@ -597,10 +674,16 @@ Paginar consultas administrativas.
 Nunca almacenar:
 
 - Contraseñas
-- Tokens
+- Tokens de sesión en texto plano
 - Información sensible de Mercado Pago
 
 Toda autenticación será delegada a Supabase Auth.
+
+Las sesiones anónimas no constituyen autenticación de usuario. Solo se almacenará el hash de un token aleatorio de alta entropía.
+
+Las tablas Guest Sessions y Guest Session Orders no serán accesibles directamente desde el Frontend. RLS deberá denegar acceso a roles públicos y autenticados ordinarios; únicamente el Backend autorizado podrá operar sobre ellas.
+
+Las comparaciones de credenciales se realizarán en el Backend a partir del hash y nunca mediante búsquedas por el token original.
 
 ---
 

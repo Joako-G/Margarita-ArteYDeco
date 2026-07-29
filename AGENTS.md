@@ -47,6 +47,8 @@ El MVP administra stock por unidades. Un producto activo se muestra; solo puede 
 
 Las categorías públicas funcionan como filtros circulares con imagen de fondo. La selección debe ser visible, accesible y mantenerse en la URL. Cada ProductCard permite elegir una cantidad entre 1 y el stock disponible antes de agregarla al carrito. El checkout solicita nombre, apellido y celular, admite efectivo o transferencia y muestra siempre el resumen y total final antes de confirmar.
 
+Los clientes compran sin cuenta. En producción, cada pedido deberá asociarse a una sesión anónima de solo lectura mediante una cookie segura `HttpOnly`; el Frontend recuperará la confirmación desde el Backend y nunca persistirá tokens, datos personales ni el pedido completo en `localStorage`. Sin una sesión vigente, la recuperación requerirá número de pedido y el mismo celular de la compra, con respuestas indistinguibles, rate limiting, bloqueo temporal y CAPTCHA adaptativo. Esta sesión pública es independiente de Supabase Auth y de la autenticación administrativa.
+
 ## Calidad, accesibilidad y entrega
 
 Toda imagen informativa requiere `alt`; los botones deben tener un nombre accesible y el contraste mínimo es AA. Aplique lazy loading y code splitting cuando aporte valor; use memoización solo con una razón concreta. Las animaciones con Framer Motion deben mejorar, no distraer.

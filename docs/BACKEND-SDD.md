@@ -117,6 +117,9 @@ Responsables de:
 - validación
 - manejo de errores
 - logging
+- lectura segura de cookies
+- validación de origen y protección CSRF
+- rate limiting
 
 Nunca acceder directamente a la Base de Datos.
 
@@ -146,6 +149,8 @@ Ejemplos
 - validar y actualizar stock
 - aplicar descuentos
 - actualizar estados
+- crear, validar, rotar y revocar sesiones anónimas
+- recuperar acceso público a pedidos
 
 Los Services podrán utilizar múltiples Repositories.
 
@@ -183,9 +188,10 @@ OrderService
 - Crear el pedido.
 - Crear los detalles del pedido.
 - Descontar el stock y registrar los movimientos de inventario.
+- Asociar el pedido a una sesión anónima vigente.
 - Registrar la operación.
 
-La creación del pedido, sus detalles, el descuento de stock y los movimientos de inventario deberán ejecutarse en una única transacción. Si una operación falla, ninguna modificación deberá persistirse.
+La creación del pedido, sus detalles, el descuento de stock, los movimientos de inventario y la relación Guest Session Orders deberán ejecutarse en una única transacción. Si una operación falla, ninguna modificación deberá persistirse.
 
 El Backend deberá obtener precios, stock, actividad y descuento desde sus fuentes persistidas. Nunca aceptará totales, precios ni descuentos calculados por el cliente.
 
@@ -219,6 +225,29 @@ Los Services rechazarán saltos inválidos. Cancelar un pedido pagado requerirá
 El Backend no aceptará métodos de entrega en el MVP. Dirección, horarios y URL de Google Maps se obtendrán desde Settings y se incluirán en la respuesta pública de configuración y en la confirmación del pedido.
 
 Para transferencias, la respuesta de confirmación incluirá número de pedido, total final, alias, CBU y banco. Los datos bancarios no se devolverán antes de crear correctamente el pedido.
+
+GuestSessionService
+
+- Reutilizar una sesión anónima vigente cuando exista.
+- Generar tokens con un CSPRNG y al menos 256 bits de entropía.
+- Persistir únicamente el hash del token.
+- Comparar hashes en tiempo constante.
+- Establecer una expiración máxima de 30 días.
+- Rotar la credencial después de una recuperación correcta y cuando exista riesgo de fijación de sesión.
+- Revocar la sesión mediante "Olvidar pedidos de este dispositivo".
+- Eliminar de forma segura las sesiones expiradas mediante una tarea de mantenimiento.
+
+PublicOrderService
+
+- Consultar únicamente pedidos relacionados con la Guest Session vigente.
+- Devolver el último pedido asociado cuando se solicite la consulta reciente.
+- Recuperar un pedido mediante coincidencia completa de `order_number` y `customer_phone_normalized`.
+- Vincular de forma idempotente el pedido recuperado a la sesión vigente o a una nueva sesión.
+- No modificar estados, pagos, productos, stock ni información del cliente.
+- Aplicar el mismo resultado público y un tiempo de respuesta comparable cuando el pedido no exista o el celular no coincida.
+- Devolver exclusivamente el DTO público de confirmación.
+
+Una recuperación válida nunca dependerá únicamente del número de pedido.
 
 SettingsService validará `maps_url` como URL HTTPS y no permitirá publicar una configuración sin dirección ni horarios de retiro.
 
@@ -363,6 +392,7 @@ El Backend estará dividido en los siguientes dominios.
 - Orders
 - Inventory
 - Settings
+- Guest Sessions
 
 Cada módulo deberá seguir la misma estructura.
 
@@ -420,6 +450,70 @@ Supabase
 Response
 ```
 
+Consultar Pedido Público
+
+```
+GET /api/public/orders/:orderNumber
+
+↓
+
+Cookie Middleware
+
+↓
+
+PublicOrderController
+
+↓
+
+GuestSessionService valida hash, vigencia y revocación
+
+↓
+
+PublicOrderService valida relación Guest Session Orders
+
+↓
+
+OrderRepository selecciona únicamente el DTO público
+
+↓
+
+Response con Cache-Control: no-store
+```
+
+Recuperar Pedido
+
+```
+POST /api/public/orders/recover
+
+↓
+
+Origin/CSRF Middleware
+
+↓
+
+Rate Limit y CAPTCHA adaptativo
+
+↓
+
+Schema Zod normaliza número y celular
+
+↓
+
+PublicOrderService valida coincidencia completa
+
+↓
+
+GuestSessionService crea o rota sesión y vincula el pedido
+
+↓
+
+Controller establece cookie segura
+
+↓
+
+Response pública genérica
+```
+
 ---
 
 # Validaciones
@@ -474,6 +568,22 @@ Formato con error
 
 Mantener un formato consistente en toda la API.
 
+Las respuestas públicas de confirmación utilizarán `Cache-Control: no-store` y no podrán almacenarse en caches compartidas.
+
+El DTO público de pedido incluirá únicamente:
+
+- `orderNumber`
+- `createdAt`
+- `status`
+- `paymentMethod`
+- snapshots públicos de productos, cantidades e importes
+- subtotal, descuento y total
+- dirección, horarios y URL de Google Maps
+- banco, alias y CBU únicamente cuando corresponda a transferencia
+- URL preparada para enviar manualmente el comprobante
+
+No incluirá IDs internos, teléfono completo, observaciones privadas, auditoría, movimientos de inventario, notas administrativas ni datos de otros pedidos.
+
 ---
 
 # Seguridad
@@ -488,6 +598,38 @@ Nunca exponer credenciales.
 
 Nunca exponer información sensible.
 
+Las sesiones anónimas serán credenciales de capacidad, de solo lectura y con alcance limitado a pedidos relacionados explícitamente.
+
+El token anónimo:
+
+- se generará mediante un CSPRNG con al menos 256 bits de entropía
+- se enviará únicamente en una cookie `HttpOnly`, `Secure` y `SameSite=Lax`
+- no se devolverá en JSON
+- no se incluirá en parámetros de ruta, query strings, URLs de WhatsApp ni redirecciones
+- se almacenará en la Base de Datos únicamente como hash
+- expirará como máximo a los 30 días
+
+La cookie utilizará el prefijo `__Host-`, un nombre sin información personal, `Path=/`, no definirá `Domain` y tendrá una vida igual o menor a la sesión persistida. El Backend deberá limpiarla cuando la sesión expire o sea revocada.
+
+Las rutas que crean, recuperan, rotan o revocan una sesión validarán `Origin` y, cuando corresponda, un token CSRF. CORS aceptará únicamente orígenes explícitos y credenciales; nunca combinará credenciales con `Access-Control-Allow-Origin: *`.
+
+Si Frontend y API no son same-site y se requiere `SameSite=None`, la excepción deberá documentarse antes del despliegue y será obligatorio utilizar `Secure`, protección CSRF y validación estricta de origen.
+
+Las respuestas usarán `Referrer-Policy: no-referrer` en superficies de consulta de pedidos.
+
+La recuperación aplicará por defecto:
+
+- CAPTCHA adaptativo después de 3 intentos fallidos o señales equivalentes de abuso
+- máximo de 5 intentos fallidos cada 15 minutos por IP
+- máximo de 5 intentos fallidos cada 15 minutos por huella combinada de pedido y celular
+- bloqueo temporal mínimo de 30 minutos al superar el límite
+
+Los umbrales podrán configurarse sin desplegar código, pero nunca deshabilitarse en producción. Las huellas para rate limiting se derivarán mediante HMAC y no almacenarán el celular ni el número de pedido en texto plano.
+
+El proveedor de CAPTCHA deberá aprobarse antes de agregar una dependencia. Su token se verificará siempre en el Backend, tendrá uso único y no sustituirá el rate limiting.
+
+El mensaje de recuperación fallida será siempre genérico y no revelará si existe el pedido, si el celular coincide o si una sesión previa estuvo asociada.
+
 ---
 
 # Autorización
@@ -500,6 +642,20 @@ El sistema contará con dos tipos de acceso.
 - Productos
 - Categorías
 - Checkout
+- Creación de pedidos
+- Consulta de pedidos asociados a una sesión anónima
+- Recuperación de un pedido mediante número y celular
+- Revocación de la sesión anónima del dispositivo
+
+Las rutas públicas de pedidos serán:
+
+- `POST /api/orders`
+- `GET /api/public/orders/recent`
+- `GET /api/public/orders/:orderNumber`
+- `POST /api/public/orders/recover`
+- `DELETE /api/public/guest-session`
+
+`GET /api/public/orders/recent` y `GET /api/public/orders/:orderNumber` requerirán una Guest Session vigente. La recuperación y revocación serán idempotentes cuando corresponda.
 
 ## Administrador
 
@@ -561,6 +717,11 @@ Nunca registrar:
 - contraseñas
 - tokens
 - información sensible
+- cookies
+- cuerpos completos de recuperación
+- celulares, CBU o alias en texto plano
+
+Los eventos de seguridad registrarán únicamente identificadores internos, resultado, timestamp y huellas no reversibles necesarias para detectar abuso.
 
 ---
 
@@ -575,6 +736,10 @@ Evitar consultas duplicadas.
 Evitar lógica repetida.
 
 Las actualizaciones de stock deberán ser atómicas para impedir sobreventas producidas por pedidos concurrentes.
+
+Las consultas públicas de pedidos seleccionarán únicamente las columnas del DTO permitido y validarán primero la relación Guest Session Orders.
+
+Las sesiones expiradas o revocadas y sus relaciones se purgarán mediante una tarea periódica. La limpieza nunca eliminará Orders.
 
 ---
 
@@ -635,7 +800,7 @@ Toda nueva funcionalidad deberá seguir el siguiente orden.
 5. Crear Controller.
 6. Crear Routes.
 7. Integrar.
-8. Probar.
+8. Probar casos funcionales, autorización, enumeración, rate limiting, expiración, rotación y revocación.
 
 ---
 
@@ -651,5 +816,7 @@ Una funcionalidad del Backend solo estará finalizada cuando:
 - No existan accesos directos a Supabase fuera de Repositories.
 - Utilice Soft Delete cuando corresponda.
 - Mantenga un formato consistente de respuestas.
+- No exponga pedidos sin validar la sesión anónima o una recuperación completa.
+- Incluya pruebas de aislamiento entre sesiones, expiración, revocación, CSRF, CORS y rate limiting.
 - Esté documentada.
 - Cumple todas las reglas definidas en BUSINESS-RULES.md.

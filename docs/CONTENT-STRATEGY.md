@@ -318,6 +318,50 @@ Mensaje predefinido del cliente:
 
 ---
 
+# Consulta y Recuperación de Pedidos
+
+La consulta debe transmitir continuidad y seguridad sin sugerir que el cliente creó una cuenta.
+
+Acceso con sesión anónima vigente:
+
+- "Ver mi último pedido"
+- "Ver detalle del pedido"
+- "Olvidar pedidos de este dispositivo"
+
+Recuperación alternativa:
+
+- Título: "Recuperá tu pedido"
+- Descripción: "Ingresá el número de pedido y el celular que usaste en la compra."
+- Campo: "Número de pedido"
+- Campo: "Celular utilizado en la compra"
+- Acción principal: "Buscar pedido"
+- Acción secundaria: "Volver a productos"
+
+Éxito:
+
+- "Encontramos tu pedido."
+- "Ya podés volver a consultarlo desde este dispositivo."
+
+Error público:
+
+- "No pudimos encontrar un pedido con esos datos."
+- "Revisá la información e intentá nuevamente."
+
+Nunca comunicar cuál de los dos datos fue incorrecto. Ante un bloqueo temporal:
+
+- "Realizaste varios intentos. Esperá unos minutos antes de volver a probar."
+
+La pantalla recuperada mostrará número, estado, fecha, productos, total, método de pago, información de retiro y, para transferencias, banco, alias, CBU y envío manual de comprobante por WhatsApp.
+
+Nunca utilizar:
+
+- "Iniciá sesión"
+- "Tu cuenta"
+- "Contraseña"
+- Mensajes que confirmen que un número de pedido existe antes de validar también el celular.
+
+---
+
 # Estado Vacío
 
 No decir:

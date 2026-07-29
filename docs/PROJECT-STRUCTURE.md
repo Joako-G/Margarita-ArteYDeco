@@ -284,6 +284,8 @@ cart/
 
 checkout/
 
+public-orders/
+
 gallery/
 
 faq/
@@ -636,6 +638,10 @@ patterns/
 
 /checkout
 
+/pedido/:orderNumber
+
+/recuperar-pedido
+
 /nosotros
 
 /contacto
@@ -743,6 +749,14 @@ error
 validation
 
 logger
+
+guest-session
+
+origin
+
+csrf
+
+rate-limit
 ```
 
 ---

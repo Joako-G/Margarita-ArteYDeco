@@ -265,6 +265,8 @@ Validación final y descuento atómico de stock
 
 Flujo completo utilizando datos simulados.
 
+La confirmación simulada valida la experiencia visual, pero no implementa persistencia de producción. La sesión anónima, la ruta recuperable y el formulario seguro se implementarán entre las Fases 6, 7 y 8.
+
 ---
 
 # FASE 6 — Base de Datos
@@ -285,6 +287,8 @@ Diseñar toda la base de datos antes del Backend.
 - Storage
 - Auditoría
 - Movimientos de inventario
+- Sesiones anónimas de compra
+- Relación Guest Session Orders
 
 ## Definir
 
@@ -295,6 +299,11 @@ Diseñar toda la base de datos antes del Backend.
 - RLS
 - Buckets
 - Seeds
+- Hash único de credenciales anónimas
+- Expiración y revocación de sesiones
+- Índices para `token_hash`, `expires_at`, `order_number` y relaciones de sesión
+- Snapshot normalizado del celular utilizado en la compra
+- Política de purga de sesiones sin eliminar pedidos
 
 ## Resultado esperado
 
@@ -319,6 +328,9 @@ Construir toda la API REST.
 - Pagos y estados iniciales
 - Configuración
 - Storage
+- Sesiones anónimas
+- Consulta pública de pedidos
+- Recuperación pública de pedidos
 
 ## Arquitectura
 
@@ -328,6 +340,25 @@ Construir toda la API REST.
 - DTO
 - Validators
 - Middlewares
+
+## Sesión anónima y seguridad pública
+
+- Crear o reutilizar una sesión anónima al confirmar un pedido.
+- Generar tokens mediante CSPRNG con al menos 256 bits de entropía.
+- Persistir únicamente el hash del token.
+- Entregar la credencial en cookie host-only con prefijo `__Host-`, `HttpOnly`, `Secure`, `Path=/` y `SameSite=Lax`.
+- Asociar pedidos y sesiones dentro del flujo transaccional.
+- Implementar expiración máxima de 30 días, rotación, revocación y limpieza.
+- Implementar `GET /api/public/orders/recent`.
+- Implementar `GET /api/public/orders/:orderNumber`.
+- Implementar `POST /api/public/orders/recover`.
+- Implementar `DELETE /api/public/guest-session`.
+- Recuperar únicamente mediante coincidencia completa de número de pedido y celular normalizado.
+- Aplicar respuestas indistinguibles, comparación segura, `Cache-Control: no-store` y DTO público mínimo.
+- Configurar CORS con orígenes explícitos, requests con credenciales, validación de `Origin` y protección CSRF.
+- Implementar rate limiting por IP y huella HMAC de pedido/celular.
+- Solicitar CAPTCHA de forma adaptativa después de intentos sospechosos.
+- Probar aislamiento entre sesiones, enumeración, expiración, rotación, revocación y fuerza bruta.
 
 ## Resultado esperado
 
@@ -350,6 +381,15 @@ Reemplazar Mock Data por la API.
 - Configuración
 - Clientes
 - Pedidos
+- Ruta `/pedido/:orderNumber`
+- Ruta `/recuperar-pedido`
+- Acción "Ver mi último pedido"
+- Acción "Recuperar otro pedido"
+- Acción "Olvidar pedidos de este dispositivo"
+- Formulario React Hook Form + Zod con número de pedido y celular numérico
+- Consultas TanStack Query con Axios y `withCredentials`
+- Estados de sesión expirada, recuperación requerida, rate limiting y CAPTCHA
+- `localStorage` limitado a `lastOrderNumber`, sin tokens ni datos personales
 
 ## Resultado esperado
 
@@ -362,6 +402,8 @@ La aplicación pública utiliza exclusivamente la API.
 ## Objetivo
 
 Implementar toda la infraestructura de autenticación y autorización antes de desarrollar el Panel Administrativo.
+
+Esta fase corresponde exclusivamente a la sesión autenticada del administrador. La sesión anónima y de solo lectura del comprador deberá quedar implementada en las Fases 6, 7 y 8 y no utilizará Supabase Auth.
 
 ## Funcionalidades
 
@@ -402,6 +444,8 @@ Usuario Público
 - Catálogo
 - Carrito
 - Checkout
+- Confirmaciones de pedidos asociados a su sesión anónima
+- Recuperación segura mediante número de pedido y celular
 
 ## Seguridad
 
@@ -491,6 +535,12 @@ Validar todo el sistema.
 - Checkout
 - Panel Administrativo
 - Gestión de pedidos
+- Persistencia de confirmación al cambiar de ruta, recargar y reabrir el navegador
+- Aislamiento de pedidos entre sesiones anónimas
+- Recuperación con datos válidos e inválidos indistinguibles
+- Expiración, rotación y revocación
+- Rate limiting, bloqueo temporal y CAPTCHA adaptativo
+- CSRF, CORS, cookies seguras y ausencia de tokens en URLs o logs
 
 ## Resultado esperado
 
@@ -521,6 +571,20 @@ Base de Datos
 Storage
 
 - Supabase Storage
+
+Seguridad de sesión anónima
+
+- HTTPS obligatorio en Frontend y Backend
+- Cookies `Secure`, `HttpOnly` y configuración SameSite validada en el entorno real
+- CORS limitado a los dominios definitivos
+- Protección CSRF y validación de `Origin`
+- Headers `Cache-Control: no-store` y `Referrer-Policy: no-referrer` en consultas de pedidos
+- Rate limiting persistente o distribuido, compatible con múltiples instancias
+- Tarea programada para purgar sesiones expiradas o revocadas
+- Verificación de que logs, analítica y observabilidad redacten tokens, cookies, celulares y datos bancarios
+- Dominios personalizados same-site para Frontend y API siempre que sea posible, por ejemplo `www.dominio.com` y `api.dominio.com`
+- Si se conservan dominios cross-site de Vercel y Railway, documentar y probar `SameSite=None`, CSRF, CORS y credenciales en el entorno definitivo
+- Proveedor de CAPTCHA aprobado y validación del token exclusivamente en el Backend
 
 ## Resultado esperado
 
