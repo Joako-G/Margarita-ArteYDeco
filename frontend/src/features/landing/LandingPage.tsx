@@ -76,7 +76,7 @@ export function LandingPage() {
 
   return (
     <main id="main-content">
-      <HeroSection />
+      <HeroSection featuredProduct={featuredProductsByArea.decoration[0]} />
       <CategoriesSection
         categories={activeCategories}
         onSelect={selectCategory}

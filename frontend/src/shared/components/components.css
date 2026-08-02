@@ -37,6 +37,10 @@
   background: var(--color-primary);
 }
 
+.ui-button--primary {
+  background: var(--color-primary-dark);
+}
+
 .ui-button--primary:hover:not(:disabled),
 .ui-icon-button--primary:hover:not(:disabled),
 .ui-floating-button:hover:not(:disabled) {
