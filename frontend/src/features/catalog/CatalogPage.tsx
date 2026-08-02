@@ -1,10 +1,9 @@
 import { useMemo, useState } from 'react'
 import { ChevronDown, PackageOpen, Search } from 'lucide-react'
-import { Navigate, useNavigate, useParams } from 'react-router-dom'
+import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
 import { CategoryFilter } from '@/features/categories'
 import { useSyncCartProducts } from '@/features/cart'
-import { ProductCard } from '@/features/products'
 import {
   Button,
   Container,
@@ -12,13 +11,21 @@ import {
   Input,
   Section,
   Select,
-  Skeleton,
   Typography,
 } from '@/shared/components'
 import type { ICategory, IProduct } from '@/shared/types/catalog'
 
+import { CatalogHero } from './components/CatalogHero'
+import { ProductGrid } from './components/ProductGrid'
+import { ProductGridSkeleton } from './components/ProductGridSkeleton'
 import { useCatalog } from './hooks/useCatalog'
 import { useCatalogPageSize } from './hooks/useCatalogPageSize'
+import {
+  filterCategoriesByArea,
+  getCatalogAreaQuery,
+  parseCatalogArea,
+  type CatalogAreaFilterType,
+} from './utils/catalog-area'
 import './catalog.css'
 
 type CatalogSortType = 'name' | 'newest' | 'price-asc' | 'price-desc'
@@ -31,7 +38,6 @@ const SORT_OPTIONS: { label: string; value: CatalogSortType }[] = [
 ]
 const EMPTY_CATEGORIES: ICategory[] = []
 const EMPTY_PRODUCTS: IProduct[] = []
-
 interface ICatalogPaginationState {
   count: number
   key: string
@@ -64,6 +70,7 @@ function sortProducts(products: IProduct[], sort: CatalogSortType) {
 export function CatalogPage() {
   const navigate = useNavigate()
   const { slug } = useParams()
+  const [searchParams] = useSearchParams()
   const { data, isError, isPending, refetch } = useCatalog()
   const productsPerPage = useCatalogPageSize()
   const [searchTerm, setSearchTerm] = useState('')
@@ -84,6 +91,20 @@ export function CatalogPage() {
         .sort((first, second) => first.displayOrder - second.displayOrder),
     [categories],
   )
+  const categoryById = useMemo(
+    () => new Map(activeCategories.map((category) => [category.id, category])),
+    [activeCategories],
+  )
+  const hasValidCategory = !slug || activeCategories.some((category) => category.slug === slug)
+  const selectedSlug = slug && hasValidCategory ? slug : 'all'
+  const selectedCategory = activeCategories.find((category) => category.slug === selectedSlug)
+  const requestedArea = parseCatalogArea(searchParams.get('area'))
+  const selectedArea: CatalogAreaFilterType =
+    selectedCategory?.catalogArea ?? requestedArea ?? 'all'
+  const visibleCategories = useMemo(
+    () => filterCategoriesByArea(activeCategories, selectedArea),
+    [activeCategories, selectedArea],
+  )
   const publicProducts = useMemo(
     () =>
       products.filter(
@@ -93,20 +114,26 @@ export function CatalogPage() {
       ),
     [activeCategories, products],
   )
+  const areaProducts = useMemo(
+    () =>
+      selectedArea === 'all'
+        ? publicProducts
+        : publicProducts.filter(
+            (product) => categoryById.get(product.categoryId)?.catalogArea === selectedArea,
+          ),
+    [categoryById, publicProducts, selectedArea],
+  )
   const productCountByCategory = useMemo(
     () =>
-      publicProducts.reduce<Record<string, number>>((counts, product) => {
+      areaProducts.reduce<Record<string, number>>((counts, product) => {
         counts[product.categoryId] = (counts[product.categoryId] ?? 0) + 1
         return counts
       }, {}),
-    [publicProducts],
+    [areaProducts],
   )
-  const hasValidCategory = !slug || activeCategories.some((category) => category.slug === slug)
-  const selectedSlug = slug && hasValidCategory ? slug : 'all'
-  const selectedCategory = activeCategories.find((category) => category.slug === selectedSlug)
   const normalizedSearchTerm = normalizeSearchTerm(searchTerm)
   const displayedProducts = useMemo(() => {
-    const matchingProducts = publicProducts.filter((product) => {
+    const matchingProducts = areaProducts.filter((product) => {
       const matchesCategory = selectedSlug === 'all' || product.categoryId === selectedCategory?.id
       const searchableText = normalizeSearchTerm(`${product.name} ${product.description}`)
 
@@ -114,8 +141,9 @@ export function CatalogPage() {
     })
 
     return sortProducts(matchingProducts, sort)
-  }, [normalizedSearchTerm, publicProducts, selectedCategory?.id, selectedSlug, sort])
-  const paginationKey = createPaginationKey(selectedSlug, searchTerm, sort)
+  }, [areaProducts, normalizedSearchTerm, selectedCategory?.id, selectedSlug, sort])
+  const selectedFilterKey = `${selectedArea}:${selectedSlug}`
+  const paginationKey = createPaginationKey(selectedFilterKey, searchTerm, sort)
   const visibleProductCount =
     pagination.key === paginationKey ? Math.max(pagination.count, productsPerPage) : productsPerPage
   const visibleProducts = displayedProducts.slice(0, visibleProductCount)
@@ -123,18 +151,37 @@ export function CatalogPage() {
   const hasMoreProducts = remainingProductCount > 0
 
   function selectCategory(categorySlug: string) {
+    const nextFilterKey = `${selectedArea}:${categorySlug}`
     setPagination({
       count: productsPerPage,
-      key: createPaginationKey(categorySlug, searchTerm, sort),
+      key: createPaginationKey(nextFilterKey, searchTerm, sort),
     })
-    navigate(categorySlug === 'all' ? '/productos' : `/categoria/${categorySlug}`)
+
+    if (categorySlug !== 'all') {
+      navigate(`/categoria/${categorySlug}`)
+      return
+    }
+
+    navigate(
+      selectedArea === 'all'
+        ? '/productos'
+        : `/productos?area=${getCatalogAreaQuery(selectedArea)}`,
+    )
+  }
+
+  function selectArea(area: CatalogAreaFilterType) {
+    setPagination({
+      count: productsPerPage,
+      key: createPaginationKey(`${area}:all`, searchTerm, sort),
+    })
+    navigate(area === 'all' ? '/productos' : `/productos?area=${getCatalogAreaQuery(area)}`)
   }
 
   function changeSearchTerm(nextSearchTerm: string) {
     setSearchTerm(nextSearchTerm)
     setPagination({
       count: productsPerPage,
-      key: createPaginationKey(selectedSlug, nextSearchTerm, sort),
+      key: createPaginationKey(selectedFilterKey, nextSearchTerm, sort),
     })
   }
 
@@ -142,7 +189,7 @@ export function CatalogPage() {
     setSort(nextSort)
     setPagination({
       count: productsPerPage,
-      key: createPaginationKey(selectedSlug, searchTerm, nextSort),
+      key: createPaginationKey(selectedFilterKey, searchTerm, nextSort),
     })
   }
 
@@ -153,49 +200,66 @@ export function CatalogPage() {
     })
   }
 
+  function showAllProducts() {
+    setSearchTerm('')
+    setPagination({
+      count: productsPerPage,
+      key: createPaginationKey('all:all', '', sort),
+    })
+    navigate('/productos')
+  }
+
   const selectionLabel = selectedCategory
     ? `Estás viendo: ${selectedCategory.name}`
-    : 'Todos los productos'
+    : selectedArea === 'art'
+      ? 'Todos los productos de Arte'
+      : selectedArea === 'decoration'
+        ? 'Todas las Decoraciones'
+        : 'Todos los productos'
+  const isControlsDisabled = isPending || isError
 
-  if (!isPending && !hasValidCategory) {
+  if (!isPending && !isError && !hasValidCategory) {
     return <Navigate replace to="/productos" />
-  }
-
-  if (isPending) {
-    return <CatalogLoadingState />
-  }
-
-  if (isError) {
-    return (
-      <main id="main-content">
-        <Section>
-          <Container>
-            <EmptyState
-              action={<Button onClick={() => refetch()}>Intentar nuevamente</Button>}
-              description="No pudimos cargar el catálogo. Intentá nuevamente en unos minutos."
-              icon={<PackageOpen />}
-              title="Ocurrió un problema inesperado."
-            />
-          </Container>
-        </Section>
-      </main>
-    )
   }
 
   return (
     <main className="catalog-page" id="main-content">
-      <Section aria-labelledby="catalog-title" className="catalog-page__intro" background="muted">
+      <CatalogHero />
+
+      <Section
+        aria-label="Filtros de productos"
+        className="catalog-page__filters"
+        background="muted"
+      >
         <Container>
-          <div className="catalog-page__heading">
-            <Typography as="h1" id="catalog-title" variant="h1">
-              Encontrá materiales para tu próxima idea
-            </Typography>
-            <Typography>
-              Explorá el catálogo, elegí lo que necesitás y empezá a imaginar tu próximo proyecto.
-            </Typography>
+          <div aria-label="Filtrar por área del catálogo" className="catalog-page__area-filter">
+            {(
+              [
+                { label: 'Todos', value: 'all' },
+                { label: 'Arte', value: 'art' },
+                { label: 'Decoraciones', value: 'decoration' },
+              ] as const
+            ).map((option) => (
+              <button
+                aria-pressed={selectedArea === option.value}
+                className={
+                  selectedArea === option.value
+                    ? 'catalog-page__area-button catalog-page__area-button--selected'
+                    : 'catalog-page__area-button'
+                }
+                disabled={isControlsDisabled}
+                key={option.value}
+                onClick={() => selectArea(option.value)}
+                type="button"
+              >
+                {option.label}
+              </button>
+            ))}
           </div>
           <CategoryFilter
-            categories={activeCategories}
+            allLabel={selectedArea === 'decoration' ? 'Todas' : 'Todos'}
+            categories={visibleCategories}
+            isDisabled={isControlsDisabled}
             onSelect={selectCategory}
             productCountByCategory={productCountByCategory}
             selectedSlug={selectedSlug}
@@ -210,14 +274,19 @@ export function CatalogPage() {
               <Typography as="h2" id="catalog-results-title" variant="h2">
                 {selectionLabel}
               </Typography>
-              <p aria-live="polite" className="catalog-page__count">
-                {displayedProducts.length}{' '}
-                {displayedProducts.length === 1 ? 'producto encontrado' : 'productos encontrados'}
-              </p>
+              {isPending ? (
+                <span aria-hidden="true" className="catalog-page__count-placeholder" />
+              ) : isError ? null : (
+                <p aria-live="polite" className="catalog-page__count">
+                  {displayedProducts.length}{' '}
+                  {displayedProducts.length === 1 ? 'producto encontrado' : 'productos encontrados'}
+                </p>
+              )}
             </div>
             <div className="catalog-page__controls">
               <Input
                 className="catalog-page__search"
+                disabled={isControlsDisabled}
                 label="Buscar"
                 onChange={(event) => changeSearchTerm(event.target.value)}
                 placeholder="Buscá por nombre o material"
@@ -225,6 +294,7 @@ export function CatalogPage() {
                 value={searchTerm}
               />
               <Select
+                disabled={isControlsDisabled}
                 label="Ordenar por"
                 onChange={(event) => changeSort(event.target.value as CatalogSortType)}
                 value={sort}
@@ -238,13 +308,18 @@ export function CatalogPage() {
             </div>
           </div>
 
-          {displayedProducts.length > 0 ? (
+          {isPending ? (
+            <ProductGridSkeleton />
+          ) : isError ? (
+            <EmptyState
+              action={<Button onClick={() => refetch()}>Reintentar</Button>}
+              description="Intentá nuevamente en unos minutos."
+              icon={<PackageOpen />}
+              title="Ocurrió un problema al cargar los productos."
+            />
+          ) : displayedProducts.length > 0 ? (
             <>
-              <div className="catalog-page__grid" id="catalog-product-grid">
-                {visibleProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
+              <ProductGrid categoryById={categoryById} products={visibleProducts} />
               <div className="catalog-page__pagination">
                 <p aria-live="polite" className="catalog-page__progress">
                   Mostrando {visibleProducts.length} de {displayedProducts.length}{' '}
@@ -269,42 +344,12 @@ export function CatalogPage() {
             </>
           ) : (
             <EmptyState
-              action={
-                <button
-                  className="catalog-page__reset"
-                  onClick={() => setSearchTerm('')}
-                  type="button"
-                >
-                  Limpiar búsqueda
-                </button>
-              }
-              description="Probá explorando otra sección o cambiando las palabras de tu búsqueda."
+              action={<Button onClick={showAllProducts}>Ver todos los productos</Button>}
+              description="Probá otra categoría o limpiá los filtros."
               icon={<Search />}
-              title="Todavía no encontramos productos para esta categoría."
+              title="No encontramos productos para esta búsqueda."
             />
           )}
-        </Container>
-      </Section>
-    </main>
-  )
-}
-
-function CatalogLoadingState() {
-  return (
-    <main className="catalog-page" id="main-content">
-      <Section aria-label="Cargando catálogo" background="muted">
-        <Container className="catalog-page__loading">
-          <Skeleton className="catalog-page__skeleton-title" label="Cargando título del catálogo" />
-          <Skeleton className="catalog-page__skeleton-copy" label="Cargando descripción" />
-          <div className="catalog-page__skeleton-categories">
-            {Array.from({ length: 5 }, (_, index) => (
-              <Skeleton
-                className="catalog-page__skeleton-category"
-                key={index}
-                label="Cargando categoría"
-              />
-            ))}
-          </div>
         </Container>
       </Section>
     </main>

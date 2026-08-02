@@ -1,4 +1,7 @@
+export type CatalogAreaType = 'art' | 'decoration'
+
 export interface ICategory {
+  catalogArea: CatalogAreaType
   description: string
   displayOrder: number
   id: string
@@ -14,7 +17,7 @@ export interface IProduct {
   createdAt: string
   description: string
   id: string
-  image: string
+  image: string | null
   isActive: boolean
   isFeatured: boolean
   name: string

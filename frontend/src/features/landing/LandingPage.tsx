@@ -1,20 +1,17 @@
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { useCatalog } from '@/features/catalog'
 import { useSyncCartProducts } from '@/features/cart'
-import { faqMock, galleryMock, testimonialsMock } from '@/mocks'
-import type { ICategory, IProduct } from '@/shared/types/catalog'
+import { useCatalog } from '@/features/catalog'
+import { faqMock, testimonialsMock } from '@/mocks'
+import type { CatalogAreaType, ICategory, IProduct } from '@/shared/types/catalog'
 
-import { AboutSection } from './components/AboutSection'
 import { BenefitsSection } from './components/BenefitsSection'
 import { CategoriesSection } from './components/CategoriesSection'
 import { FaqSection } from './components/FaqSection'
 import { FeaturedProductsSection } from './components/FeaturedProductsSection'
 import { FinalCtaSection } from './components/FinalCtaSection'
-import { GallerySection } from './components/GallerySection'
 import { HeroSection } from './components/HeroSection'
-import { InspirationSection } from './components/InspirationSection'
 import { TestimonialsSection } from './components/TestimonialsSection'
 import './landing.css'
 
@@ -36,10 +33,26 @@ export function LandingPage() {
         .sort((first, second) => first.displayOrder - second.displayOrder),
     [categories],
   )
+  const categoryById = useMemo(
+    () => new Map(activeCategories.map((category) => [category.id, category])),
+    [activeCategories],
+  )
+  const featuredProductsByArea = useMemo(() => {
+    const featuredProducts: Record<CatalogAreaType, IProduct[]> = {
+      art: [],
+      decoration: [],
+    }
 
-  const featuredProducts = useMemo(() => {
-    return products.filter((product) => product.isActive && product.isFeatured)
-  }, [products])
+    products.forEach((product) => {
+      const category = categoryById.get(product.categoryId)
+
+      if (product.isActive && product.isFeatured && category) {
+        featuredProducts[category.catalogArea].push(product)
+      }
+    })
+
+    return featuredProducts
+  }, [categoryById, products])
   const productCountByCategory = useMemo(
     () =>
       products
@@ -51,24 +64,42 @@ export function LandingPage() {
     [products],
   )
 
-  function selectCategory(slug: string) {
-    navigate(slug === 'all' ? '/productos' : `/categoria/${slug}`)
+  function selectCategory(area: CatalogAreaType, slug: string) {
+    if (slug === 'all') {
+      const areaQuery = area === 'art' ? 'arte' : 'decoraciones'
+      navigate(`/productos?area=${areaQuery}`)
+      return
+    }
+
+    navigate(`/categoria/${slug}`)
   }
 
   return (
     <main id="main-content">
       <HeroSection />
-      <BenefitsSection />
       <CategoriesSection
         categories={activeCategories}
         onSelect={selectCategory}
         productCountByCategory={productCountByCategory}
-        selectedSlug="all"
       />
-      <FeaturedProductsSection products={featuredProducts} />
-      <InspirationSection />
-      <GallerySection items={galleryMock} />
-      <AboutSection />
+      <FeaturedProductsSection
+        area="art"
+        catalogHref="/productos?area=arte"
+        description="Materiales y objetos sin terminar elegidos para acompañar tu próximo proyecto."
+        id="arte-destacado"
+        products={featuredProductsByArea.art}
+        title="Destacados de Arte"
+      />
+      <FeaturedProductsSection
+        area="decoration"
+        background="muted"
+        catalogHref="/productos?area=decoraciones"
+        description="Piezas terminadas por la artista, listas para decorar o hacer un regalo especial."
+        id="decoraciones-destacadas"
+        products={featuredProductsByArea.decoration}
+        title="Decoraciones destacadas"
+      />
+      <BenefitsSection />
       <TestimonialsSection testimonials={testimonialsMock} />
       <FaqSection items={faqMock} />
       <FinalCtaSection />

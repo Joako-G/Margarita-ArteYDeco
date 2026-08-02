@@ -1,7 +1,8 @@
 import { LockKeyhole } from 'lucide-react'
 
+import productPlaceholderImage from '@/assets/images/product-placeholder.webp'
 import { useCartStore } from '@/features/cart'
-import { Button, Divider, Typography } from '@/shared/components'
+import { Button, DeferredImage, Divider, Typography } from '@/shared/components'
 import { formatPrice } from '@/shared/utils/format-price'
 
 import type { CheckoutCartItemType, ICheckoutTotals, PaymentMethodType } from '../types/checkout'
@@ -25,7 +26,14 @@ export function OrderSummary({ isSubmitting, items, paymentMethod, totals }: IOr
       <ul aria-label="Productos a confirmar" className="checkout-summary__items">
         {items.map((item) => (
           <li className="checkout-summary__item" key={item.id}>
-            <img alt="" height="80" loading="lazy" src={item.image} width="80" />
+            <DeferredImage
+              alt=""
+              fallbackAlt=""
+              fallbackSrc={productPlaceholderImage}
+              height="80"
+              src={item.image}
+              width="80"
+            />
             <div>
               <h3>{item.name}</h3>
               <p>

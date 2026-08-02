@@ -4,14 +4,6 @@ export interface IFaqItem {
   question: string
 }
 
-export interface IGalleryItem {
-  alt: string
-  id: string
-  image: string
-  size: 'large' | 'medium' | 'small'
-  title: string
-}
-
 export interface ITestimonial {
   author: string
   id: string

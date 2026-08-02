@@ -1,29 +1,40 @@
+import type { SyntheticEvent } from 'react'
 import { Clock3, MapPin } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import logoImage from '@/assets/images/logo-header.png'
-import { Container } from '@/shared/components'
+import { settingsMock } from '@/mocks'
+import { Container, DeferredImage } from '@/shared/components'
 
 const FOOTER_LINKS = [
-  { href: '/#inicio', label: 'Inicio' },
+  { href: '/#categorias', label: 'Categorías' },
   { href: '/productos', label: 'Productos' },
-  { href: '/#nosotros', label: 'Nosotros' },
+  { href: '/productos?area=arte', label: 'Arte' },
+  { href: '/productos?area=decoraciones', label: 'Decoraciones' },
   { href: '/#preguntas', label: 'Preguntas frecuentes' },
 ]
 
+function handleLogoError(event: SyntheticEvent<HTMLImageElement>) {
+  if (event.currentTarget.src !== logoImage) {
+    event.currentTarget.src = logoImage
+  }
+}
+
 export function SiteFooter() {
+  const logoSource = settingsMock.logoUrl ?? logoImage
+
   return (
     <footer className="landing-footer" id="contacto">
       <Container className="landing-footer__grid">
         <div className="landing-footer__brand">
-          <img
+          <DeferredImage
             alt="Margaritas Arte & Deco"
             height="544"
-            loading="lazy"
-            src={logoImage}
+            onError={handleLogoError}
+            src={logoSource}
             width="1097"
           />
-          <p>Materiales para crear, decorar y disfrutar cada proyecto.</p>
+          <p>Materiales para crear y decoraciones terminadas a mano.</p>
         </div>
 
         <nav aria-label="Navegación del pie" className="landing-footer__links">

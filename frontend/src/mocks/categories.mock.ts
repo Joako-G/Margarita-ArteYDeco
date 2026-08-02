@@ -1,8 +1,11 @@
 import accesoriosImage from '@/assets/images/accesorios.webp'
-import categoryDecoImage from '@/assets/images/category-deco.webp'
+import categoryCajasDecoradasImage from '@/assets/images/category-cajas-decoradas.webp'
+import categoryDecoracionHogarImage from '@/assets/images/category-decoracion-hogar.webp'
+import categoryFechasEspecialesImage from '@/assets/images/category-fechas-especiales.webp'
 import categoryLaminasTermotransferiblesImage from '@/assets/images/category-laminas-termotransferibles.webp'
 import categoryLaminasUvImage from '@/assets/images/category-laminas-uv.webp'
 import categoryMoldesSiliconaImage from '@/assets/images/category-moldes-silicona.webp'
+import categoryRegalosPersonalizadosImage from '@/assets/images/category-regalos-personalizados.webp'
 import categorySellosBajoRelieveImage from '@/assets/images/category-sellos-bajo-relieve.webp'
 import fibroFacilImage from '@/assets/images/fibro-facil.webp'
 import pincelesImage from '@/assets/images/pinceles.webp'
@@ -11,6 +14,7 @@ import type { ICategory } from '@/shared/types/catalog'
 
 export const categoriesMock: ICategory[] = [
   {
+    catalogArea: 'art',
     id: 'category-moldes-silicona',
     name: 'Moldes de Silicona',
     slug: 'moldes-de-silicona',
@@ -20,6 +24,7 @@ export const categoriesMock: ICategory[] = [
     isActive: true,
   },
   {
+    catalogArea: 'art',
     id: 'category-fibro-facil',
     name: 'Fibro Fácil',
     slug: 'fibro-facil',
@@ -29,6 +34,7 @@ export const categoriesMock: ICategory[] = [
     isActive: true,
   },
   {
+    catalogArea: 'art',
     id: 'category-pinceles',
     name: 'Pinceles',
     slug: 'pinceles',
@@ -38,6 +44,7 @@ export const categoriesMock: ICategory[] = [
     isActive: true,
   },
   {
+    catalogArea: 'art',
     id: 'category-sellos-bajo-relieve',
     name: 'Sellos Bajo Relieve',
     slug: 'sellos-bajo-relieve',
@@ -47,6 +54,7 @@ export const categoriesMock: ICategory[] = [
     isActive: true,
   },
   {
+    catalogArea: 'art',
     id: 'category-sellos',
     name: 'Sellos',
     slug: 'sellos',
@@ -56,6 +64,7 @@ export const categoriesMock: ICategory[] = [
     isActive: true,
   },
   {
+    catalogArea: 'art',
     id: 'category-laminas-termotransferibles',
     name: 'Láminas Termotransferibles',
     slug: 'laminas-termotransferibles',
@@ -65,6 +74,7 @@ export const categoriesMock: ICategory[] = [
     isActive: true,
   },
   {
+    catalogArea: 'art',
     id: 'category-laminas-uv',
     name: 'Láminas UV',
     slug: 'laminas-uv',
@@ -74,6 +84,7 @@ export const categoriesMock: ICategory[] = [
     isActive: true,
   },
   {
+    catalogArea: 'art',
     id: 'category-accesorios',
     name: 'Accesorios',
     slug: 'accesorios',
@@ -83,12 +94,43 @@ export const categoriesMock: ICategory[] = [
     isActive: true,
   },
   {
-    id: 'category-deco',
-    name: 'Deco',
-    slug: 'deco',
-    image: categoryDecoImage,
-    description: 'Pequeños detalles para darle personalidad a cada espacio.',
-    displayOrder: 9,
+    catalogArea: 'decoration',
+    id: 'category-cajas-decoradas',
+    name: 'Cajas decoradas',
+    slug: 'cajas-decoradas',
+    image: categoryCajasDecoradasImage,
+    description: 'Cajas pintadas a mano y listas para usar o regalar.',
+    displayOrder: 1,
+    isActive: true,
+  },
+  {
+    catalogArea: 'decoration',
+    id: 'category-decoracion-hogar',
+    name: 'Decoración para el hogar',
+    slug: 'decoracion-para-el-hogar',
+    image: categoryDecoracionHogarImage,
+    description: 'Piezas terminadas para sumar calidez y personalidad a cada espacio.',
+    displayOrder: 2,
+    isActive: true,
+  },
+  {
+    catalogArea: 'decoration',
+    id: 'category-fechas-especiales',
+    name: 'Fechas especiales',
+    slug: 'fechas-especiales',
+    image: categoryFechasEspecialesImage,
+    description: 'Adornos preparados para celebraciones y momentos especiales.',
+    displayOrder: 3,
+    isActive: true,
+  },
+  {
+    catalogArea: 'decoration',
+    id: 'category-regalos-personalizados',
+    name: 'Regalos personalizados',
+    slug: 'regalos-personalizados',
+    image: categoryRegalosPersonalizadosImage,
+    description: 'Regalos artesanales terminados con una presentación cuidada.',
+    displayOrder: 4,
     isActive: true,
   },
 ]

@@ -1,13 +1,15 @@
 import { useState } from 'react'
 import { Minus, Plus } from 'lucide-react'
 
-import { Badge, Button, Card, IconButton, Typography } from '@/shared/components'
+import productPlaceholderImage from '@/assets/images/product-placeholder.webp'
+import { Badge, Button, Card, DeferredImage, IconButton, Typography } from '@/shared/components'
 import { useCartStore } from '@/features/cart'
-import type { IProduct } from '@/shared/types/catalog'
+import type { CatalogAreaType, IProduct } from '@/shared/types/catalog'
 import { formatPrice } from '@/shared/utils/format-price'
 import './ProductCard.css'
 
 interface IProductCardProps {
+  catalogArea: CatalogAreaType
   headingLevel?: 'h2' | 'h3'
   product: IProduct
 }
@@ -15,7 +17,7 @@ interface IProductCardProps {
 const NEW_PRODUCT_WINDOW = 30 * 24 * 60 * 60 * 1000
 const NEW_PRODUCT_REFERENCE_DATE = Date.now()
 
-export function ProductCard({ headingLevel = 'h2', product }: IProductCardProps) {
+export function ProductCard({ catalogArea, headingLevel = 'h2', product }: IProductCardProps) {
   const [quantity, setQuantity] = useState(1)
   const addItem = useCartStore((state) => state.addItem)
   const isOutOfStock = product.stockQuantity === 0
@@ -44,7 +46,21 @@ export function ProductCard({ headingLevel = 'h2', product }: IProductCardProps)
   return (
     <Card className="product-card">
       <div className="product-card__media">
-        <img alt={product.name} height="720" loading="lazy" src={product.image} width="720" />
+        <DeferredImage
+          alt={product.name}
+          fallbackAlt={`Imagen no disponible para ${product.name}`}
+          fallbackSrc={productPlaceholderImage}
+          height="720"
+          src={product.image}
+          width="720"
+        />
+        <Badge
+          className="product-card__area-badge"
+          hidden={catalogArea === 'decoration' || catalogArea === 'art'}
+          variant="neutral"
+        >
+          {catalogArea === 'art' ? 'Para crear' : 'Terminado a mano'}
+        </Badge>
         {isOutOfStock ? (
           <Badge className="product-card__badge" variant="error">
             Sin stock

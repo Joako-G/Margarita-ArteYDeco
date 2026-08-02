@@ -1,8 +1,9 @@
 import { Minus, PackageOpen, Plus, Trash2, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
+import productPlaceholderImage from '@/assets/images/product-placeholder.webp'
 import { routes } from '@/config/routes'
-import { Button, Divider, Drawer, EmptyState, IconButton } from '@/shared/components'
+import { Button, DeferredImage, Divider, Drawer, EmptyState, IconButton } from '@/shared/components'
 import { formatPrice } from '@/shared/utils/format-price'
 
 import { useCart } from '../hooks/useCart'
@@ -57,7 +58,14 @@ export function CartDrawer() {
           <ul aria-label="Productos en el carrito" className="shopping-cart__items">
             {items.map((item) => (
               <li className="shopping-cart__item" key={item.id}>
-                <img alt={item.name} height="128" src={item.image} width="128" />
+                <DeferredImage
+                  alt={item.name}
+                  fallbackAlt={`Imagen no disponible para ${item.name}`}
+                  fallbackSrc={productPlaceholderImage}
+                  height="128"
+                  src={item.image}
+                  width="128"
+                />
                 <div className="shopping-cart__item-details">
                   <div className="shopping-cart__item-header">
                     <h3>{item.name}</h3>

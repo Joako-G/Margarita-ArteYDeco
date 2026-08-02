@@ -55,6 +55,16 @@
   box-shadow: var(--shadow-default);
 }
 
+.category-filter__item:disabled {
+  cursor: wait;
+  opacity: 0.64;
+}
+
+.category-filter__item:disabled:hover {
+  background: transparent;
+  box-shadow: none;
+}
+
 .category-filter__item--selected {
   background: var(--color-surface);
   box-shadow: var(--shadow-default);
@@ -83,6 +93,10 @@
 
 .category-filter__item:hover .category-filter__visual {
   transform: translateY(-4px);
+}
+
+.category-filter__item:disabled:hover .category-filter__visual {
+  transform: none;
 }
 
 .category-filter__item--selected .category-filter__visual {
@@ -137,14 +151,22 @@
 
 @media (max-width: 480px) {
   .category-filter__item {
-    width: 144px;
-    min-height: 196px;
-    flex-basis: 144px;
+    width: 176px;
+    min-height: 232px;
+    flex-basis: 176px;
   }
 
   .category-filter__visual {
-    width: 128px;
-    height: 128px;
+    width: 160px;
+    height: 160px;
+  }
+
+  .category-filter__name {
+    font-size: var(--font-size-body);
+  }
+
+  .category-filter__count {
+    font-size: var(--font-size-small);
   }
 }
 

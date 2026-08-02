@@ -3,15 +3,22 @@ import type { HTMLAttributes } from 'react'
 import { mergeClassNames } from '@/shared/utils/class-names'
 
 interface ISkeletonProps extends HTMLAttributes<HTMLSpanElement> {
+  isDecorative?: boolean
   label?: string
 }
 
-export function Skeleton({ className, label = 'Cargando contenido', ...props }: ISkeletonProps) {
+export function Skeleton({
+  className,
+  isDecorative = false,
+  label = 'Cargando contenido',
+  ...props
+}: ISkeletonProps) {
   return (
     <span
-      aria-label={label}
+      aria-hidden={isDecorative || undefined}
+      aria-label={isDecorative ? undefined : label}
       className={mergeClassNames('ui-skeleton', className)}
-      role="status"
+      role={isDecorative ? undefined : 'status'}
       {...props}
     />
   )

@@ -27,6 +27,7 @@ export interface ISettings {
   id: string
   instagram: string
   lowStockThreshold: number
+  logoUrl: string | null
   mapsUrl: string
   transferAlias: string
   transferCbu: string

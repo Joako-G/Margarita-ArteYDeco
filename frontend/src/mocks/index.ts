@@ -1,7 +1,6 @@
 export { categoriesMock } from './categories.mock'
 export { customersMock } from './customers.mock'
 export { faqMock } from './faq.mock'
-export { galleryMock } from './gallery.mock'
 export { ordersMock } from './orders.mock'
 export { productsMock } from './products.mock'
 export { settingsMock } from './settings.mock'

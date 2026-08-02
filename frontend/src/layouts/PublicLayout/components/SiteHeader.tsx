@@ -1,25 +1,32 @@
 import { useEffect, useState } from 'react'
+import type { SyntheticEvent } from 'react'
 import { Menu } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 
 import logoHeaderImage from '@/assets/images/logo-header.png'
 import { CartButton } from '@/features/cart'
+import { settingsMock } from '@/mocks'
 import { Drawer, IconButton } from '@/shared/components'
 
 const NAVIGATION_ITEMS = [
-  { href: '/#inicio', label: 'Inicio' },
+  { href: '/#categorias', label: 'Categorías' },
   { href: '/productos', label: 'Productos' },
-  { href: '/#inspiracion', label: 'Inspiración' },
-  { href: '/#nosotros', label: 'Nosotros' },
   { href: '/#contacto', label: 'Contacto' },
 ]
 
-const LANDING_SECTION_IDS = ['inicio', 'inspiracion', 'nosotros', 'contacto']
-const DESKTOP_NAVIGATION_MEDIA_QUERY = '(min-width: 1024px)'
+function scrollToSection(hash: string) {
+  document.getElementById(hash.slice(1))?.scrollIntoView({ block: 'start' })
+}
+
+function handleLogoError(event: SyntheticEvent<HTMLImageElement>) {
+  if (event.currentTarget.src !== logoHeaderImage) {
+    event.currentTarget.src = logoHeaderImage
+  }
+}
 
 export function SiteHeader() {
   const location = useLocation()
-  const [activeLandingSection, setActiveLandingSection] = useState<string | null>(null)
+  const logoSource = settingsMock.logoUrl ?? logoHeaderImage
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
 
@@ -46,89 +53,39 @@ export function SiteHeader() {
     if (location.pathname !== '/' || !location.hash) return
 
     const animationFrame = window.requestAnimationFrame(() => {
-      document.querySelector(location.hash)?.scrollIntoView()
+      scrollToSection(location.hash)
     })
 
     return () => window.cancelAnimationFrame(animationFrame)
   }, [location.hash, location.pathname])
 
-  useEffect(() => {
-    if (location.pathname !== '/') {
-      return
-    }
-
-    const desktopNavigationMediaQuery = window.matchMedia(DESKTOP_NAVIGATION_MEDIA_QUERY)
-    let animationFrameId = 0
-
-    function updateActiveLandingSection() {
-      if (!desktopNavigationMediaQuery.matches) {
-        setActiveLandingSection(null)
-        return
-      }
-
-      const isAtPageEnd =
-        Math.ceil(window.scrollY + window.innerHeight) >= document.documentElement.scrollHeight - 2
-
-      if (isAtPageEnd) {
-        setActiveLandingSection('contacto')
-        return
-      }
-
-      const headerHeight =
-        document.querySelector<HTMLElement>('.landing-header')?.getBoundingClientRect().height ?? 0
-      const activationLine = headerHeight + window.innerHeight / 3
-      let nextActiveSection = LANDING_SECTION_IDS[0]
-
-      LANDING_SECTION_IDS.forEach((sectionId) => {
-        const section = document.getElementById(sectionId)
-
-        if (section && section.getBoundingClientRect().top <= activationLine) {
-          nextActiveSection = sectionId
-        }
-      })
-
-      setActiveLandingSection((currentSection) =>
-        currentSection === nextActiveSection ? currentSection : nextActiveSection,
-      )
-    }
-
-    function scheduleActiveSectionUpdate() {
-      window.cancelAnimationFrame(animationFrameId)
-      animationFrameId = window.requestAnimationFrame(updateActiveLandingSection)
-    }
-
-    scheduleActiveSectionUpdate()
-    const pageResizeObserver = new ResizeObserver(scheduleActiveSectionUpdate)
-
-    pageResizeObserver.observe(document.documentElement)
-    desktopNavigationMediaQuery.addEventListener('change', scheduleActiveSectionUpdate)
-    window.addEventListener('resize', scheduleActiveSectionUpdate)
-    window.addEventListener('scroll', scheduleActiveSectionUpdate, { passive: true })
-
-    return () => {
-      window.cancelAnimationFrame(animationFrameId)
-      pageResizeObserver.disconnect()
-      desktopNavigationMediaQuery.removeEventListener('change', scheduleActiveSectionUpdate)
-      window.removeEventListener('resize', scheduleActiveSectionUpdate)
-      window.removeEventListener('scroll', scheduleActiveSectionUpdate)
-    }
-  }, [location.pathname])
-
-  function handleNavigate() {
+  function handleBrandNavigation() {
     setIsMenuOpen(false)
+
+    if (location.pathname !== '/') return
+
+    window.requestAnimationFrame(() => {
+      window.scrollTo({ left: 0, top: 0 })
+    })
   }
 
-  function isNavigationItemActive(href: string, shouldUseScrollPosition = false) {
+  function handleSectionNavigation(href: string) {
+    setIsMenuOpen(false)
+
+    if (location.pathname !== '/' || !href.startsWith('/#')) return
+
+    window.requestAnimationFrame(() => {
+      scrollToSection(href.slice(1))
+    })
+  }
+
+  function isNavigationItemActive(href: string) {
+    if (href === '/#categorias') {
+      return location.pathname === '/' && (!location.hash || location.hash === '#categorias')
+    }
+
     if (href === '/productos') {
-      return location.pathname === '/productos' || location.pathname.startsWith('/categoria/')
-    }
-
-    if (shouldUseScrollPosition && location.pathname === '/' && activeLandingSection) {
-      return href === `/#${activeLandingSection}`
-    }
-
-    if (href === '/#inicio') {
-      return location.pathname === '/' && (!location.hash || location.hash === '#inicio')
+      return location.pathname === '/productos'
     }
 
     return location.pathname === '/' && `${location.pathname}${location.hash}` === href
@@ -137,12 +94,18 @@ export function SiteHeader() {
   return (
     <header className={`landing-header${isScrolled ? ' landing-header--scrolled' : ''}`}>
       <div className="landing-header__inner">
-        <Link aria-label="Ir al inicio" className="landing-header__brand" to="/#inicio">
+        <Link
+          aria-label="Ir al inicio"
+          className="landing-header__brand"
+          onClick={handleBrandNavigation}
+          to="/"
+        >
           <img
             alt="Margaritas Arte & Deco"
             className="landing-header__logo"
             height="544"
-            src={logoHeaderImage}
+            onError={handleLogoError}
+            src={logoSource}
             width="1097"
           />
         </Link>
@@ -150,11 +113,12 @@ export function SiteHeader() {
         <nav aria-label="Navegación principal" className="landing-header__desktop-nav">
           {NAVIGATION_ITEMS.map((item) => (
             <Link
-              aria-current={isNavigationItemActive(item.href, true) ? 'location' : undefined}
+              aria-current={isNavigationItemActive(item.href) ? 'page' : undefined}
               className={
-                isNavigationItemActive(item.href, true) ? 'landing-header__link--active' : undefined
+                isNavigationItemActive(item.href) ? 'landing-header__link--active' : undefined
               }
               key={item.href}
+              onClick={() => handleSectionNavigation(item.href)}
               to={item.href}
             >
               {item.label}
@@ -184,9 +148,9 @@ export function SiteHeader() {
         <nav aria-label="Navegación móvil" className="landing-mobile-menu__nav">
           {NAVIGATION_ITEMS.map((item) => (
             <Link
-              aria-current={isNavigationItemActive(item.href) ? 'location' : undefined}
+              aria-current={isNavigationItemActive(item.href) ? 'page' : undefined}
               key={item.href}
-              onClick={handleNavigate}
+              onClick={() => handleSectionNavigation(item.href)}
               to={item.href}
             >
               {item.label}

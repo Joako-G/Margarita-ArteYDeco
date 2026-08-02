@@ -14,4 +14,5 @@ export const settingsMock: ISettings = {
   lowStockThreshold: 5,
   instagram: 'https://www.instagram.com',
   facebook: 'https://www.facebook.com',
+  logoUrl: null,
 }

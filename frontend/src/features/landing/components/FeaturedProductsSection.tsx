@@ -2,42 +2,61 @@ import { PackageOpen } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import { ProductCard } from '@/features/products'
-import type { IProduct } from '@/shared/types/catalog'
 import { Container, EmptyState, Section, Typography } from '@/shared/components'
+import type { CatalogAreaType, IProduct } from '@/shared/types/catalog'
 
 interface IFeaturedProductsSectionProps {
+  area: CatalogAreaType
+  background?: 'default' | 'muted'
+  catalogHref: string
+  description: string
+  id: string
   products: IProduct[]
+  title: string
 }
 
-export function FeaturedProductsSection({ products }: IFeaturedProductsSectionProps) {
+export function FeaturedProductsSection({
+  area,
+  background = 'default',
+  catalogHref,
+  description,
+  id,
+  products,
+  title,
+}: IFeaturedProductsSectionProps) {
+  const titleId = `${id}-title`
+
   return (
-    <Section aria-labelledby="featured-title" className="landing-products" id="productos">
+    <Section aria-labelledby={titleId} background={background} className="landing-products" id={id}>
       <Container>
         <div className="landing-section-heading landing-section-heading--split">
           <div>
-            <Typography id="featured-title" variant="h2">
-              Elegidos para inspirarte
+            <Typography id={titleId} variant="h2">
+              {title}
             </Typography>
-            <Typography>
-              Una pequeña selección para empezar a imaginar todo lo que podés crear.
-            </Typography>
+            <Typography>{description}</Typography>
           </div>
-          <Link className="landing-products__catalog-link" to="/productos">
-            Ver catálogo completo
+          <Link className="landing-products__catalog-link" to={catalogHref}>
+            Ver todos
           </Link>
         </div>
 
         {products.length > 0 ? (
           <div className="landing-products__grid">
             {products.slice(0, 3).map((product) => (
-              <ProductCard headingLevel="h3" key={product.id} product={product} />
+              <ProductCard
+                catalogArea={area}
+                headingLevel="h3"
+                key={product.id}
+                product={product}
+              />
             ))}
           </div>
         ) : (
           <EmptyState
-            description="Probá explorando otra sección."
+            description="Volvé a visitarnos pronto para descubrir nuevas opciones."
             icon={<PackageOpen />}
-            title="Todavía no encontramos productos para esta categoría."
+            title="Estamos preparando nuevos productos para esta sección."
           />
         )}
       </Container>

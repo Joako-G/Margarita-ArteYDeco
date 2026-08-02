@@ -33,6 +33,20 @@
   font-weight: 700;
 }
 
+.product-card__area-badge {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  color: var(--color-primary-dark);
+  background: var(--color-surface);
+  font-weight: 700;
+}
+
+/* El badge de Decoraciones se conserva para poder reactivarlo más adelante. */
+.product-card__area-badge[hidden] {
+  display: none;
+}
+
 .product-card__badge.product-card__badge--new {
   color: var(--color-text);
   background: var(--color-gold);
