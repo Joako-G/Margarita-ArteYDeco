@@ -9,6 +9,7 @@ const IMAGE_EXTENSIONS = {
 } as const
 
 export type ProductImageMimeType = keyof typeof IMAGE_EXTENSIONS
+export type CategoryImageMimeType = ProductImageMimeType
 
 function hasPngSignature(file: Buffer): boolean {
   return file.length >= 8 && file.subarray(0, 8).equals(
@@ -26,23 +27,24 @@ function hasWebpSignature(file: Buffer): boolean {
     file.subarray(8, 12).toString('ascii') === 'WEBP'
 }
 
-export function validateProductImage(
+function validateImage(
   file: unknown,
   contentType: string | undefined,
+  entity: 'CATEGORY' | 'PRODUCT',
 ): { extension: string; file: Buffer; mimeType: ProductImageMimeType } {
   if (!Buffer.isBuffer(file) || file.length === 0) {
-    throw new AppError(400, 'Seleccioná una imagen válida', 'PRODUCT_IMAGE_REQUIRED')
+    throw new AppError(400, 'Seleccioná una imagen válida', `${entity}_IMAGE_REQUIRED`)
   }
 
   if (file.length > PRODUCT_IMAGE_MAX_BYTES) {
-    throw new AppError(413, 'La imagen no puede superar los 5 MB', 'PRODUCT_IMAGE_TOO_LARGE')
+    throw new AppError(413, 'La imagen no puede superar los 5 MB', `${entity}_IMAGE_TOO_LARGE`)
   }
 
   if (contentType === undefined || !(contentType in IMAGE_EXTENSIONS)) {
     throw new AppError(
       415,
       'La imagen debe ser JPG, PNG o WebP',
-      'PRODUCT_IMAGE_TYPE_UNSUPPORTED',
+      `${entity}_IMAGE_TYPE_UNSUPPORTED`,
     )
   }
 
@@ -57,9 +59,23 @@ export function validateProductImage(
     throw new AppError(
       400,
       'El contenido del archivo no coincide con una imagen válida',
-      'PRODUCT_IMAGE_INVALID',
+      `${entity}_IMAGE_INVALID`,
     )
   }
 
   return { extension: IMAGE_EXTENSIONS[mimeType], file, mimeType }
+}
+
+export function validateProductImage(
+  file: unknown,
+  contentType: string | undefined,
+): { extension: string; file: Buffer; mimeType: ProductImageMimeType } {
+  return validateImage(file, contentType, 'PRODUCT')
+}
+
+export function validateCategoryImage(
+  file: unknown,
+  contentType: string | undefined,
+): { extension: string; file: Buffer; mimeType: CategoryImageMimeType } {
+  return validateImage(file, contentType, 'CATEGORY')
 }

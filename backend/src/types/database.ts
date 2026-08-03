@@ -173,6 +173,16 @@ export interface IDatabase {
       recovery_limit_scope: 'ip' | 'order_phone'
     }
     Functions: {
+      cancel_order_with_stock: {
+        Args: {
+          p_actor_profile_id: string
+          p_confirm_manual_refund: boolean
+          p_expected_updated_at: string
+          p_order_id: string
+          p_reason: string
+        }
+        Returns: boolean
+      }
       adjust_product_stock: {
         Args: {
           p_actor_profile_id: string
@@ -251,6 +261,16 @@ export interface IDatabase {
       }
       touch_guest_session: {
         Args: { p_guest_session_id: string }
+        Returns: boolean
+      }
+      transition_order_status: {
+        Args: {
+          p_actor_profile_id: string
+          p_expected_updated_at: string
+          p_order_id: string
+          p_payment_status: 'paid' | 'pending' | 'rejected'
+          p_status: 'cancelled' | 'paid' | 'payment_pending' | 'pending' | 'picked_up' | 'preparing' | 'ready'
+        }
         Returns: boolean
       }
     }

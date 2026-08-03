@@ -1,7 +1,9 @@
 import { CategoryController } from '../controllers/categories.controller.js'
+import { AdminCategoryController } from '../controllers/admin-categories.controller.js'
 import { AdminAuthController } from '../controllers/admin-auth.controller.js'
 import { AdminDashboardController } from '../controllers/admin-dashboard.controller.js'
 import { AdminInventoryController } from '../controllers/admin-inventory.controller.js'
+import { AdminOrderController } from '../controllers/admin-orders.controller.js'
 import { AdminProductController } from '../controllers/admin-products.controller.js'
 import { CsrfController } from '../controllers/csrf.controller.js'
 import { OrderController } from '../controllers/orders.controller.js'
@@ -11,9 +13,11 @@ import { SettingsController } from '../controllers/settings.controller.js'
 import type { IApplicationDependencies } from '../config/dependencies.js'
 import type { IEnv } from '../config/env.js'
 import type { ICategoryService } from '../services/categories.service.js'
+import type { IAdminCategoryService } from '../services/admin-categories.service.js'
 import type { IAdminAuthService } from '../services/admin-auth.service.js'
 import type { IAdminDashboardService } from '../services/admin-dashboard.service.js'
 import type { IAdminInventoryService } from '../services/admin-inventory.service.js'
+import type { IAdminOrderService } from '../services/admin-orders.service.js'
 import type { IAdminProductService } from '../services/admin-products.service.js'
 import type { IProductService } from '../services/products.service.js'
 import type { IPublicOrderService } from '../services/public-orders.service.js'
@@ -122,14 +126,53 @@ export function createTestDependencies(
       throw new Error('Admin inventory service mock was not configured')
     },
   },
+  adminCategoryService: IAdminCategoryService = {
+    create: async () => {
+      throw new Error('Admin category service mock was not configured')
+    },
+    getById: async () => {
+      throw new Error('Admin category service mock was not configured')
+    },
+    list: async () => {
+      throw new Error('Admin category service mock was not configured')
+    },
+    replaceImage: async () => {
+      throw new Error('Admin category service mock was not configured')
+    },
+    setPublication: async () => {
+      throw new Error('Admin category service mock was not configured')
+    },
+    softDelete: async () => {
+      throw new Error('Admin category service mock was not configured')
+    },
+    update: async () => {
+      throw new Error('Admin category service mock was not configured')
+    },
+  },
+  adminOrderService: IAdminOrderService = {
+    cancel: async () => {
+      throw new Error('Admin order service mock was not configured')
+    },
+    executeAction: async () => {
+      throw new Error('Admin order service mock was not configured')
+    },
+    getById: async () => {
+      throw new Error('Admin order service mock was not configured')
+    },
+    list: async () => {
+      throw new Error('Admin order service mock was not configured')
+    },
+  },
 ): IApplicationDependencies {
   const csrfService = new CsrfService(TEST_ENV.securityHmacSecret)
 
   return {
     adminAuthController: new AdminAuthController(adminAuthService, TEST_ENV.adminSessionMaxAgeMs),
     adminAuthService,
+    adminCategoryController: new AdminCategoryController(adminCategoryService),
     adminDashboardController: new AdminDashboardController(adminDashboardService),
     adminInventoryController: new AdminInventoryController(adminInventoryService),
+    adminOrderController: new AdminOrderController(adminOrderService),
     adminProductController: new AdminProductController(adminProductService),
     categoryController: new CategoryController(categoryService, 60),
     csrfController: new CsrfController(csrfService),

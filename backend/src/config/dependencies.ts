@@ -1,9 +1,11 @@
 import type { Logger } from 'pino'
 
 import { CategoryController } from '../controllers/categories.controller.js'
+import { AdminCategoryController } from '../controllers/admin-categories.controller.js'
 import { AdminAuthController } from '../controllers/admin-auth.controller.js'
 import { AdminDashboardController } from '../controllers/admin-dashboard.controller.js'
 import { AdminInventoryController } from '../controllers/admin-inventory.controller.js'
+import { AdminOrderController } from '../controllers/admin-orders.controller.js'
 import { AdminProductController } from '../controllers/admin-products.controller.js'
 import { CsrfController } from '../controllers/csrf.controller.js'
 import { OrderController } from '../controllers/orders.controller.js'
@@ -11,9 +13,11 @@ import { ProductController } from '../controllers/products.controller.js'
 import { PublicOrderController } from '../controllers/public-orders.controller.js'
 import { SettingsController } from '../controllers/settings.controller.js'
 import { CategoryRepository } from '../repositories/categories.repository.js'
+import { AdminCategoryRepository } from '../repositories/admin-categories.repository.js'
 import { AdminProfileRepository } from '../repositories/admin-profiles.repository.js'
 import { AdminDashboardRepository } from '../repositories/admin-dashboard.repository.js'
 import { AdminInventoryRepository } from '../repositories/admin-inventory.repository.js'
+import { AdminOrderRepository } from '../repositories/admin-orders.repository.js'
 import { AdminProductRepository } from '../repositories/admin-products.repository.js'
 import { GuestSessionRepository } from '../repositories/guest-sessions.repository.js'
 import { OrderRepository } from '../repositories/orders.repository.js'
@@ -22,10 +26,12 @@ import { RecoveryRepository } from '../repositories/recovery.repository.js'
 import { SettingsRepository } from '../repositories/settings.repository.js'
 import { StorageRepository } from '../repositories/storage.repository.js'
 import { CategoryService } from '../services/categories.service.js'
+import { AdminCategoryService } from '../services/admin-categories.service.js'
 import { SupabaseAdminAuthProvider } from '../services/admin-auth.provider.js'
 import { AdminAuthService, type IAdminAuthService } from '../services/admin-auth.service.js'
 import { AdminDashboardService } from '../services/admin-dashboard.service.js'
 import { AdminInventoryService } from '../services/admin-inventory.service.js'
+import { AdminOrderService } from '../services/admin-orders.service.js'
 import { AdminProductService } from '../services/admin-products.service.js'
 import { CsrfService, type ICsrfService } from '../services/csrf.service.js'
 import { GuestSessionService } from '../services/guest-sessions.service.js'
@@ -43,8 +49,10 @@ import { createSupabaseClient } from './supabase.js'
 export interface IApplicationDependencies {
   adminAuthController: AdminAuthController
   adminAuthService: IAdminAuthService
+  adminCategoryController: AdminCategoryController
   adminDashboardController: AdminDashboardController
   adminInventoryController: AdminInventoryController
+  adminOrderController: AdminOrderController
   adminProductController: AdminProductController
   categoryController: CategoryController
   csrfController: CsrfController
@@ -84,7 +92,18 @@ export function createApplicationDependencies(
     storageService,
     logger,
   )
-  const settingsService = new SettingsService(new SettingsRepository(supabase), storageService)
+  const adminCategoryService = new AdminCategoryService(
+    new AdminCategoryRepository(supabase),
+    storageService,
+    logger,
+  )
+  const settingsRepository = new SettingsRepository(supabase)
+  const adminOrderService = new AdminOrderService(
+    new AdminOrderRepository(supabase),
+    settingsRepository,
+    logger,
+  )
+  const settingsService = new SettingsService(settingsRepository, storageService)
   const csrfService = new CsrfService(env.securityHmacSecret)
   const guestSessionService = new GuestSessionService(new GuestSessionRepository(supabase))
   const orderRepository = new OrderRepository(supabase)
@@ -117,8 +136,10 @@ export function createApplicationDependencies(
   return {
     adminAuthController: new AdminAuthController(adminAuthService, env.adminSessionMaxAgeMs),
     adminAuthService,
+    adminCategoryController: new AdminCategoryController(adminCategoryService),
     adminDashboardController: new AdminDashboardController(adminDashboardService),
     adminInventoryController: new AdminInventoryController(adminInventoryService),
+    adminOrderController: new AdminOrderController(adminOrderService),
     adminProductController: new AdminProductController(adminProductService),
     categoryController: new CategoryController(categoryService, env.publicCacheMaxAgeSeconds),
     csrfController: new CsrfController(csrfService),

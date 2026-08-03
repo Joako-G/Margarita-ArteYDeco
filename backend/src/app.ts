@@ -8,7 +8,9 @@ import { createRequestLoggerMiddleware } from './middlewares/request-logger.midd
 import { createCorsMiddleware, createHelmetMiddleware } from './middlewares/security.middleware.js'
 import { createHealthRouter } from './routes/health.routes.js'
 import { createAdminAuthRouter } from './routes/admin-auth.routes.js'
+import { createAdminCategoryRouter } from './routes/admin-categories.routes.js'
 import { createAdminDashboardRouter } from './routes/admin-dashboard.routes.js'
+import { createAdminOrderRouter } from './routes/admin-orders.routes.js'
 import { createAdminProductRouter } from './routes/admin-products.routes.js'
 import { createOrderRouter } from './routes/orders.routes.js'
 import { createPublicRouter } from './routes/public.routes.js'
@@ -28,7 +30,9 @@ export function createApp(
   app.use(express.json({ limit: '32kb', strict: true }))
   app.use('/api', createHealthRouter())
   app.use('/api/admin/auth', createAdminAuthRouter(dependencies, env))
+  app.use('/api/admin/categories', createAdminCategoryRouter(dependencies, env))
   app.use('/api/admin/dashboard', createAdminDashboardRouter(dependencies, env))
+  app.use('/api/admin/orders', createAdminOrderRouter(dependencies, env))
   app.use('/api/admin/products', createAdminProductRouter(dependencies, env))
   app.use('/api/orders', createOrderRouter(dependencies, env))
   app.use('/api/public', createPublicRouter(dependencies, env))
