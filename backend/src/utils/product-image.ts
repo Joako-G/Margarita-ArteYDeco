@@ -10,6 +10,7 @@ const IMAGE_EXTENSIONS = {
 
 export type ProductImageMimeType = keyof typeof IMAGE_EXTENSIONS
 export type CategoryImageMimeType = ProductImageMimeType
+export type SettingsLogoMimeType = ProductImageMimeType
 
 function hasPngSignature(file: Buffer): boolean {
   return file.length >= 8 && file.subarray(0, 8).equals(
@@ -30,7 +31,7 @@ function hasWebpSignature(file: Buffer): boolean {
 function validateImage(
   file: unknown,
   contentType: string | undefined,
-  entity: 'CATEGORY' | 'PRODUCT',
+  entity: 'CATEGORY' | 'PRODUCT' | 'SETTINGS_LOGO',
 ): { extension: string; file: Buffer; mimeType: ProductImageMimeType } {
   if (!Buffer.isBuffer(file) || file.length === 0) {
     throw new AppError(400, 'Seleccioná una imagen válida', `${entity}_IMAGE_REQUIRED`)
@@ -78,4 +79,11 @@ export function validateCategoryImage(
   contentType: string | undefined,
 ): { extension: string; file: Buffer; mimeType: CategoryImageMimeType } {
   return validateImage(file, contentType, 'CATEGORY')
+}
+
+export function validateSettingsLogo(
+  file: unknown,
+  contentType: string | undefined,
+): { extension: string; file: Buffer; mimeType: SettingsLogoMimeType } {
+  return validateImage(file, contentType, 'SETTINGS_LOGO')
 }

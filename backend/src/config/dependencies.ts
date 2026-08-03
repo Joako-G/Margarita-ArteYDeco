@@ -8,6 +8,7 @@ import { AdminDashboardController } from '../controllers/admin-dashboard.control
 import { AdminInventoryController } from '../controllers/admin-inventory.controller.js'
 import { AdminOrderController } from '../controllers/admin-orders.controller.js'
 import { AdminProductController } from '../controllers/admin-products.controller.js'
+import { AdminSettingsController } from '../controllers/admin-settings.controller.js'
 import { CsrfController } from '../controllers/csrf.controller.js'
 import { OrderController } from '../controllers/orders.controller.js'
 import { ProductController } from '../controllers/products.controller.js'
@@ -21,6 +22,7 @@ import { AdminDashboardRepository } from '../repositories/admin-dashboard.reposi
 import { AdminInventoryRepository } from '../repositories/admin-inventory.repository.js'
 import { AdminOrderRepository } from '../repositories/admin-orders.repository.js'
 import { AdminProductRepository } from '../repositories/admin-products.repository.js'
+import { AdminSettingsRepository } from '../repositories/admin-settings.repository.js'
 import { GuestSessionRepository } from '../repositories/guest-sessions.repository.js'
 import { OrderRepository } from '../repositories/orders.repository.js'
 import { ProductRepository } from '../repositories/products.repository.js'
@@ -36,6 +38,7 @@ import { AdminDashboardService } from '../services/admin-dashboard.service.js'
 import { AdminInventoryService } from '../services/admin-inventory.service.js'
 import { AdminOrderService } from '../services/admin-orders.service.js'
 import { AdminProductService } from '../services/admin-products.service.js'
+import { AdminSettingsService } from '../services/admin-settings.service.js'
 import { CsrfService, type ICsrfService } from '../services/csrf.service.js'
 import { GuestSessionService } from '../services/guest-sessions.service.js'
 import { OrderService } from '../services/orders.service.js'
@@ -58,6 +61,7 @@ export interface IApplicationDependencies {
   adminInventoryController: AdminInventoryController
   adminOrderController: AdminOrderController
   adminProductController: AdminProductController
+  adminSettingsController: AdminSettingsController
   categoryController: CategoryController
   csrfController: CsrfController
   csrfService: ICsrfService
@@ -106,6 +110,11 @@ export function createApplicationDependencies(
     logger,
   )
   const settingsRepository = new SettingsRepository(supabase)
+  const adminSettingsService = new AdminSettingsService(
+    new AdminSettingsRepository(supabase),
+    storageService,
+    logger,
+  )
   const adminOrderService = new AdminOrderService(
     new AdminOrderRepository(supabase),
     settingsRepository,
@@ -150,6 +159,7 @@ export function createApplicationDependencies(
     adminInventoryController: new AdminInventoryController(adminInventoryService),
     adminOrderController: new AdminOrderController(adminOrderService),
     adminProductController: new AdminProductController(adminProductService),
+    adminSettingsController: new AdminSettingsController(adminSettingsService),
     categoryController: new CategoryController(categoryService, env.publicCacheMaxAgeSeconds),
     csrfController: new CsrfController(csrfService),
     csrfService,

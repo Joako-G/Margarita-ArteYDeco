@@ -6,6 +6,7 @@ import { AdminDashboardController } from '../controllers/admin-dashboard.control
 import { AdminInventoryController } from '../controllers/admin-inventory.controller.js'
 import { AdminOrderController } from '../controllers/admin-orders.controller.js'
 import { AdminProductController } from '../controllers/admin-products.controller.js'
+import { AdminSettingsController } from '../controllers/admin-settings.controller.js'
 import { CsrfController } from '../controllers/csrf.controller.js'
 import { OrderController } from '../controllers/orders.controller.js'
 import { ProductController } from '../controllers/products.controller.js'
@@ -21,6 +22,7 @@ import type { IAdminDashboardService } from '../services/admin-dashboard.service
 import type { IAdminInventoryService } from '../services/admin-inventory.service.js'
 import type { IAdminOrderService } from '../services/admin-orders.service.js'
 import type { IAdminProductService } from '../services/admin-products.service.js'
+import type { IAdminSettingsService } from '../services/admin-settings.service.js'
 import type { IProductService } from '../services/products.service.js'
 import type { IPublicOrderService } from '../services/public-orders.service.js'
 import { CsrfService } from '../services/csrf.service.js'
@@ -179,6 +181,20 @@ export function createTestDependencies(
       throw new Error('Admin customer service mock was not configured')
     },
   },
+  adminSettingsService: IAdminSettingsService = {
+    get: async () => {
+      throw new Error('Admin settings service mock was not configured')
+    },
+    removeLogo: async () => {
+      throw new Error('Admin settings service mock was not configured')
+    },
+    replaceLogo: async () => {
+      throw new Error('Admin settings service mock was not configured')
+    },
+    update: async () => {
+      throw new Error('Admin settings service mock was not configured')
+    },
+  },
 ): IApplicationDependencies {
   const csrfService = new CsrfService(TEST_ENV.securityHmacSecret)
 
@@ -191,6 +207,7 @@ export function createTestDependencies(
     adminInventoryController: new AdminInventoryController(adminInventoryService),
     adminOrderController: new AdminOrderController(adminOrderService),
     adminProductController: new AdminProductController(adminProductService),
+    adminSettingsController: new AdminSettingsController(adminSettingsService),
     categoryController: new CategoryController(categoryService, 60),
     csrfController: new CsrfController(csrfService),
     csrfService,
