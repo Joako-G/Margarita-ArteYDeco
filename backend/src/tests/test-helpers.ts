@@ -1,5 +1,6 @@
 import { CategoryController } from '../controllers/categories.controller.js'
 import { AdminCategoryController } from '../controllers/admin-categories.controller.js'
+import { AdminCustomerController } from '../controllers/admin-customers.controller.js'
 import { AdminAuthController } from '../controllers/admin-auth.controller.js'
 import { AdminDashboardController } from '../controllers/admin-dashboard.controller.js'
 import { AdminInventoryController } from '../controllers/admin-inventory.controller.js'
@@ -14,6 +15,7 @@ import type { IApplicationDependencies } from '../config/dependencies.js'
 import type { IEnv } from '../config/env.js'
 import type { ICategoryService } from '../services/categories.service.js'
 import type { IAdminCategoryService } from '../services/admin-categories.service.js'
+import type { IAdminCustomerService } from '../services/admin-customers.service.js'
 import type { IAdminAuthService } from '../services/admin-auth.service.js'
 import type { IAdminDashboardService } from '../services/admin-dashboard.service.js'
 import type { IAdminInventoryService } from '../services/admin-inventory.service.js'
@@ -163,6 +165,20 @@ export function createTestDependencies(
       throw new Error('Admin order service mock was not configured')
     },
   },
+  adminCustomerService: IAdminCustomerService = {
+    getById: async () => {
+      throw new Error('Admin customer service mock was not configured')
+    },
+    list: async () => {
+      throw new Error('Admin customer service mock was not configured')
+    },
+    softDelete: async () => {
+      throw new Error('Admin customer service mock was not configured')
+    },
+    update: async () => {
+      throw new Error('Admin customer service mock was not configured')
+    },
+  },
 ): IApplicationDependencies {
   const csrfService = new CsrfService(TEST_ENV.securityHmacSecret)
 
@@ -170,6 +186,7 @@ export function createTestDependencies(
     adminAuthController: new AdminAuthController(adminAuthService, TEST_ENV.adminSessionMaxAgeMs),
     adminAuthService,
     adminCategoryController: new AdminCategoryController(adminCategoryService),
+    adminCustomerController: new AdminCustomerController(adminCustomerService),
     adminDashboardController: new AdminDashboardController(adminDashboardService),
     adminInventoryController: new AdminInventoryController(adminInventoryService),
     adminOrderController: new AdminOrderController(adminOrderService),

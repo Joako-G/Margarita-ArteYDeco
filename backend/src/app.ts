@@ -9,6 +9,7 @@ import { createCorsMiddleware, createHelmetMiddleware } from './middlewares/secu
 import { createHealthRouter } from './routes/health.routes.js'
 import { createAdminAuthRouter } from './routes/admin-auth.routes.js'
 import { createAdminCategoryRouter } from './routes/admin-categories.routes.js'
+import { createAdminCustomerRouter } from './routes/admin-customers.routes.js'
 import { createAdminDashboardRouter } from './routes/admin-dashboard.routes.js'
 import { createAdminOrderRouter } from './routes/admin-orders.routes.js'
 import { createAdminProductRouter } from './routes/admin-products.routes.js'
@@ -31,6 +32,7 @@ export function createApp(
   app.use('/api', createHealthRouter())
   app.use('/api/admin/auth', createAdminAuthRouter(dependencies, env))
   app.use('/api/admin/categories', createAdminCategoryRouter(dependencies, env))
+  app.use('/api/admin/customers', createAdminCustomerRouter(dependencies, env))
   app.use('/api/admin/dashboard', createAdminDashboardRouter(dependencies, env))
   app.use('/api/admin/orders', createAdminOrderRouter(dependencies, env))
   app.use('/api/admin/products', createAdminProductRouter(dependencies, env))

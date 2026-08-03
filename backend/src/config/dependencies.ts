@@ -2,6 +2,7 @@ import type { Logger } from 'pino'
 
 import { CategoryController } from '../controllers/categories.controller.js'
 import { AdminCategoryController } from '../controllers/admin-categories.controller.js'
+import { AdminCustomerController } from '../controllers/admin-customers.controller.js'
 import { AdminAuthController } from '../controllers/admin-auth.controller.js'
 import { AdminDashboardController } from '../controllers/admin-dashboard.controller.js'
 import { AdminInventoryController } from '../controllers/admin-inventory.controller.js'
@@ -14,6 +15,7 @@ import { PublicOrderController } from '../controllers/public-orders.controller.j
 import { SettingsController } from '../controllers/settings.controller.js'
 import { CategoryRepository } from '../repositories/categories.repository.js'
 import { AdminCategoryRepository } from '../repositories/admin-categories.repository.js'
+import { AdminCustomerRepository } from '../repositories/admin-customers.repository.js'
 import { AdminProfileRepository } from '../repositories/admin-profiles.repository.js'
 import { AdminDashboardRepository } from '../repositories/admin-dashboard.repository.js'
 import { AdminInventoryRepository } from '../repositories/admin-inventory.repository.js'
@@ -27,6 +29,7 @@ import { SettingsRepository } from '../repositories/settings.repository.js'
 import { StorageRepository } from '../repositories/storage.repository.js'
 import { CategoryService } from '../services/categories.service.js'
 import { AdminCategoryService } from '../services/admin-categories.service.js'
+import { AdminCustomerService } from '../services/admin-customers.service.js'
 import { SupabaseAdminAuthProvider } from '../services/admin-auth.provider.js'
 import { AdminAuthService, type IAdminAuthService } from '../services/admin-auth.service.js'
 import { AdminDashboardService } from '../services/admin-dashboard.service.js'
@@ -50,6 +53,7 @@ export interface IApplicationDependencies {
   adminAuthController: AdminAuthController
   adminAuthService: IAdminAuthService
   adminCategoryController: AdminCategoryController
+  adminCustomerController: AdminCustomerController
   adminDashboardController: AdminDashboardController
   adminInventoryController: AdminInventoryController
   adminOrderController: AdminOrderController
@@ -97,6 +101,10 @@ export function createApplicationDependencies(
     storageService,
     logger,
   )
+  const adminCustomerService = new AdminCustomerService(
+    new AdminCustomerRepository(supabase),
+    logger,
+  )
   const settingsRepository = new SettingsRepository(supabase)
   const adminOrderService = new AdminOrderService(
     new AdminOrderRepository(supabase),
@@ -137,6 +145,7 @@ export function createApplicationDependencies(
     adminAuthController: new AdminAuthController(adminAuthService, env.adminSessionMaxAgeMs),
     adminAuthService,
     adminCategoryController: new AdminCategoryController(adminCategoryService),
+    adminCustomerController: new AdminCustomerController(adminCustomerService),
     adminDashboardController: new AdminDashboardController(adminDashboardService),
     adminInventoryController: new AdminInventoryController(adminInventoryService),
     adminOrderController: new AdminOrderController(adminOrderService),
