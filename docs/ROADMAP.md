@@ -275,6 +275,16 @@ La confirmación simulada valida la experiencia visual, pero no implementa persi
 
 Diseñar toda la base de datos antes del Backend.
 
+## Estado
+
+Completada el 29 de julio de 2026.
+
+El modelo fue materializado en cuatro migraciones versionadas y seeds idempotentes.
+Se validaron sobre PostgreSQL las relaciones, constraints, índices, RLS,
+privilegios mínimos, Storage privado, auditoría, sesiones anónimas, transacciones
+de pedidos, contención de stock, cancelación idempotente y purga sin eliminación
+del historial.
+
 ## Diseñar
 
 - Usuarios
@@ -311,26 +321,101 @@ Modelo de datos completamente validado.
 
 ---
 
-# FASE 7 — Backend API
+# FASE 6.1 — Áreas del catálogo
 
 ## Objetivo
 
-Construir toda la API REST.
+Extender el modelo validado para distinguir Arte de Decoraciones antes de desplegarlo en Supabase.
 
-## Módulos
+## Implementar
 
-- Autenticación
-- Productos
-- Stock e inventario
-- Categorías
-- Clientes
-- Pedidos
-- Pagos y estados iniciales
-- Configuración
-- Storage
+- `catalog_area` obligatorio en Categories.
+- Clasificación y orden independiente de categorías por área.
+- Seeds idempotentes con categorías de Decoraciones específicas.
+- Contratos de Backend y administración preparados para filtrar por área.
+- Landing sin Hero, Inspiración, Galería ni Nosotros.
+- Categorías de Arte y Decoraciones como primer contenido.
+- Experiencia móvil ampliada y accesible.
+
+## Estado
+
+Completada el 31 de julio de 2026.
+
+Se validaron 8 categorías de Arte, 4 de Decoraciones y 29 productos mediante
+PostgreSQL embebido. El seed permaneció idempotente, el constraint rechazó áreas
+inválidas y el trigger bloqueó la reclasificación de categorías con productos.
+La Landing y el catálogo se verificaron con lint, build, pruebas automatizadas y
+navegación responsive. El despliegue sobre Supabase remoto continúa siendo una
+operación de infraestructura independiente.
+
+---
+
+# FASE 7 — Backend API Pública
+
+## Objetivo
+
+Construir la API REST necesaria para la aplicación pública, sin crear ni montar
+rutas administrativas.
+
+## Estado
+
+Completada el 2 de agosto de 2026.
+
+El primer incremento implementa la base ejecutable y segura del Backend y los
+módulos públicos de solo lectura para Health, Categories, Products y Settings.
+Incluye validación Zod, capas Controller/Service/Repository, consultas sin N+1,
+URLs privadas firmadas por lote con caché, CORS explícito, headers de seguridad,
+rate limiting, logging con redacción y respuestas de error centralizadas.
+
+El 2 de agosto de 2026 se validó este incremento contra el proyecto Supabase
+remoto: 12 categorías públicas con sus imágenes, 14 productos activos, Settings
+y el logo de marca respondieron correctamente. Ocho imágenes de producto se
+resolvieron desde Storage y seis productos sin objeto disponible devolvieron
+`imageUrl: null` según el contrato de respaldo.
+
+El incremento 7.2 se implementó localmente el 2 de agosto de 2026. Incluye la
+creación transaccional de pedidos mediante `create_order_with_stock`, Guest
+Session anónima de 30 días con credencial opaca de 256 bits y hash persistido,
+cookie `__Host-` segura, bootstrap y validación CSRF con HMAC, validación estricta
+de `Origin`, rate limiting de escritura, normalización de celular y DTO público
+mínimo con `Cache-Control: no-store`. La suite cubre emisión y reutilización de
+sesión, credenciales no expuestas, CSRF, Origin, validación del body, fallo de la
+RPC y fallo posterior a la confirmación de la transacción.
+
+No se ejecutó automáticamente una creación contra Supabase remoto porque esa
+prueba genera historial comercial y descuenta stock real. El procedimiento
+manual y explícito está documentado en `backend/README.md`.
+
+El incremento 7.3 se implementó el 2 de agosto de 2026. Incorpora consultas
+aisladas por Guest Session, recuperación genérica por pedido y celular,
+rotación y revocación atómicas, huellas HMAC persistentes, bloqueo antiabuso,
+señal CAPTCHA adaptativa y purga diaria mediante Supabase Cron. La migración fue
+aplicada y sus privilegios, RLS, RPC y tarea programada se verificaron en el
+proyecto remoto; las pruebas transaccionales terminaron en rollback.
+
+Cloudflare Turnstile fue aprobado e integrado en el Backend como proveedor
+adaptativo. Siteverify valida acción y hostname y falla de forma cerrada sin
+contabilizar caídas del proveedor como intentos del comprador. El widget visual
+se incorporará al formulario durante la Fase 8.
+
+La Fase 7 no incluye Supabase Auth, validación de JWT, autorización administrativa
+ni endpoints `/api/admin`. La infraestructura de acceso administrativo pertenece
+a la Fase 8.5 y los casos de uso, endpoints y pantallas de administración se
+implementarán juntos en la Fase 9, siempre detrás de esa protección.
+
+## Módulos públicos
+
+- Health
+- Consulta pública de productos
+- Consulta pública de categorías
+- Configuración pública del negocio
+- Resolución segura de imágenes desde Storage
+- Creación de pedidos y validación transaccional de stock
+- Métodos de pago y estados iniciales del pedido
 - Sesiones anónimas
 - Consulta pública de pedidos
 - Recuperación pública de pedidos
+- CSRF, CORS, rate limiting y Turnstile adaptativo
 
 ## Arquitectura
 
@@ -362,7 +447,7 @@ Construir toda la API REST.
 
 ## Resultado esperado
 
-API completamente funcional.
+API pública completamente funcional, sin rutas administrativas expuestas.
 
 ---
 
@@ -372,6 +457,153 @@ API completamente funcional.
 
 Reemplazar Mock Data por la API.
 
+## Punto de continuación — 2 de agosto de 2026
+
+La Fase 7 está completada y la API pública ya fue validada contra Supabase. El
+Frontend todavía utiliza Mock Data para catálogo, checkout y configuración,
+aunque ya dispone de Axios, TanStack Query, `VITE_API_URL` y la estructura visual
+necesaria.
+
+El siguiente trabajo debe comenzar con el **incremento 8.1: integración pública
+de solo lectura**:
+
+1. Configurar el cliente Axios compartido con `withCredentials: true` y conservar
+   el recorrido obligatorio Frontend → Backend; el Frontend no accederá a
+   Supabase.
+2. Integrar `GET /api/public/categories`, `GET /api/public/products` y
+   `GET /api/public/settings` mediante servicios y consultas TanStack Query.
+3. Adaptar los DTO del Backend a los tipos de dominio del Frontend y reemplazar
+   los mocks de productos, categorías y Settings en Landing, catálogo, header y
+   footer.
+4. Conservar el fallback local de producto cuando `imageUrl` sea `null` o la
+   imagen remota falle, e implementar estados de carga, vacío y error sin romper
+   el layout.
+5. Validar la integración con ambos servidores locales, pruebas, lint y build.
+
+### Incremento 8.1 completado — 2 de agosto de 2026
+
+La integración pública de solo lectura quedó implementada y validada. El cliente
+Axios compartido utiliza `withCredentials: true`; catálogo y Settings consumen
+exclusivamente `GET /api/public/categories`, `GET /api/public/products` y
+`GET /api/public/settings` mediante TanStack Query. Los adaptadores mantienen los
+DTO del Backend fuera de los componentes y conservan los tipos de dominio del
+Frontend.
+
+Landing, catálogo, Header y Footer ya utilizan datos reales. La interfaz incluye
+estados de carga, vacío y error; el logo conserva el respaldo local oficial; y
+productos o categorías con una URL ausente o fallida mantienen el layout mediante
+el recurso local de respaldo. El carrito recibe las existencias devueltas por la
+API a través de la sincronización ya existente, sin convertirlo todavía en una
+reserva de stock.
+
+La validación local se realizó con Backend y Vite activos: 12 categorías, 14
+productos y Settings se renderizaron desde Supabase a través de la API. Se
+comprobaron la Landing y el catálogo en desktop y móvil, la permanencia del filtro
+en la URL, productos sin stock, fallbacks de imagen y ausencia de errores de
+consola. Frontend: 15 pruebas, lint y build correctos. Backend: 52 pruebas, lint y
+build correctos.
+
+### Incremento 8.2 completado — 2 de agosto de 2026
+
+La sincronización del carrito y el stock quedó centralizada en el `PublicLayout`,
+por lo que se ejecuta al iniciar la aplicación, al refrescar el catálogo y al
+entrar directamente a cualquier ruta pública, incluido `/checkout`. La
+reconciliación actualiza los datos persistidos de cada producto, corrige cantidades
+fuera del rango válido y elimina productos inactivos, ausentes o sin stock.
+
+Cada ajuste se conserva como un cambio de disponibilidad independiente y se
+comunica dentro del Drawer. El cliente debe confirmar esos cambios antes de
+continuar. Mientras la API todavía se consulta, falla o existen cambios sin
+confirmar, tanto la acción "Continuar compra" como la ruta de checkout permanecen
+bloqueadas. Reintentar la consulta no descarta el carrito y agregar productos
+continúa sin reservar unidades.
+
+La lógica de reconciliación cubre productos vigentes, reducción de stock,
+agotados, productos no disponibles y cantidades persistidas inválidas. La suite
+del Frontend finalizó con 19 pruebas, lint y build correctos. La validación con la
+API real confirmó el flujo Catálogo → Carrito → Checkout, entrada directa y
+recarga de `/checkout`, Drawer responsive sin desbordamiento y ausencia de errores
+de consola.
+
+El próximo punto de continuación es el **incremento 8.3: checkout y creación real
+de pedidos con CSRF**. Debe reemplazar el inventario y la transacción mock del
+checkout por `POST /api/orders`, obtener el token desde
+`GET /api/public/csrf-token`, enviar cookies y encabezado CSRF, consumir Settings
+reales antes de confirmar y tratar de forma diferenciada cambios de stock,
+validación, CSRF y fallos temporales. El carrito se limpiará únicamente después de
+la confirmación exitosa del Backend.
+
+### Incremento 8.3 completado — 2 de agosto de 2026
+
+El checkout dejó de crear pedidos, números e inventario en memoria. Antes de cada
+escritura obtiene un token nuevo mediante `GET /api/public/csrf-token` y crea el
+pedido exclusivamente con `POST /api/orders`, usando el cliente Axios compartido
+con cookies y el encabezado `X-CSRF-Token`. Un rechazo CSRF previo a la creación
+se reintenta una sola vez con un token renovado; ningún token ni DTO de pedido se
+persiste en el Frontend.
+
+Dirección, horarios y descuento se cargan desde Settings antes de habilitar la
+confirmación. El Backend continúa siendo la autoridad para actividad, stock,
+precios, descuento y totales. La interfaz diferencia cambios de disponibilidad,
+validación, CSRF, rate limiting, fallos temporales y el caso posterior al commit
+en el que la confirmación no puede recuperarse. Este último bloquea el reenvío
+para evitar pedidos duplicados. El carrito solo se limpia al recibir la
+confirmación exitosa y el catálogo se invalida para reconciliar el stock.
+
+La confirmación renderiza los productos e importes devueltos por la API, datos
+bancarios únicamente para transferencia, enlace de comprobante, dirección,
+horarios y mapa sin depender de mocks. La validación local comprobó el checkout
+con Settings y catálogo reales, el descuento vigente y los errores accesibles del
+formulario sin crear un pedido comercial. Frontend: 18 pruebas, lint y build
+correctos. Backend: 52 pruebas, lint y build correctos.
+
+El próximo punto de continuación es el **incremento 8.4: consulta y recuperación
+pública de pedidos**. Debe incorporar `/pedido/:orderNumber`, recuperación del
+último pedido mediante la Guest Session, `/recuperar-pedido`, cierre de sesión
+anónima y Turnstile adaptativo, sin persistir credenciales ni datos personales.
+
+### Incremento 8.4 completado — 2 de agosto de 2026
+
+La confirmación dejó de depender del estado local de `CheckoutPage`. Después de
+crear un pedido, el Frontend conserva únicamente `lastOrderNumber` como pista no
+sensible, limpia el carrito, invalida catálogo y pedidos públicos, y navega a
+`/pedido/:orderNumber`. La ruta consulta nuevamente el DTO oficial mediante
+TanStack Query y Axios con credenciales; recargar o reabrir la URL conserva el
+acceso mientras la Guest Session del Backend continúe vigente.
+
+Se incorporaron `GET /api/public/orders/recent`,
+`GET /api/public/orders/:orderNumber`, `POST /api/public/orders/recover` y
+`DELETE /api/public/guest-session`. “Ver mi último pedido” aparece únicamente
+cuando la API confirma un pedido reciente asociado al navegador. La vista de
+detalle muestra estado, fecha, productos, importes, pago, retiro y datos
+bancarios condicionales, y permite recuperar otro pedido u olvidar el acceso del
+dispositivo sin eliminar historial comercial.
+
+`/recuperar-pedido` utiliza React Hook Form y Zod, normaliza el número y el
+celular, mantiene indistinguibles los datos incorrectos, no reintenta mutaciones
+automáticamente, comunica `Retry-After` y muestra Cloudflare Turnstile solo ante
+la señal adaptativa `captchaRequired`. Recuperación y revocación obtienen CSRF
+sin leer ni persistir la cookie `HttpOnly`; una recuperación correcta invalida
+las queries y navega al detalle autorizado.
+
+La validación local comprobó recuperación, validación accesible, conservación de
+la referencia y sesión ausente contra la API real sin crear pedidos ni registrar
+intentos de recuperación inválidos. Frontend: 23 pruebas, lint y build correctos.
+Backend: 52 pruebas, lint y build correctos.
+
+El próximo punto de continuación es la **Fase 8.5: infraestructura de seguridad
+administrativa**. Debe implementar solamente autenticación, sesión, perfil y
+autorización del administrador; los CRUD y casos de uso administrativos
+permanecen reservados para la Fase 9.
+
+No se deben crear rutas administrativas funcionales ni CRUD antes de completar la
+Fase 8.5.
+
+La variante nueva del Hero quedó implementada de forma reversible y su decisión
+final está pendiente de aprobación del cliente. No debe eliminarse la variante
+anterior ni actualizarse la especificación definitiva de la Landing hasta recibir
+esa confirmación; esta decisión visual no bloquea el incremento 8.1.
+
 ## Tareas
 
 - Productos
@@ -379,7 +611,6 @@ Reemplazar Mock Data por la API.
 - Carrito
 - Checkout
 - Configuración
-- Clientes
 - Pedidos
 - Ruta `/pedido/:orderNumber`
 - Ruta `/recuperar-pedido`
@@ -404,6 +635,11 @@ La aplicación pública utiliza exclusivamente la API.
 Implementar toda la infraestructura de autenticación y autorización antes de desarrollar el Panel Administrativo.
 
 Esta fase corresponde exclusivamente a la sesión autenticada del administrador. La sesión anónima y de solo lectura del comprador deberá quedar implementada en las Fases 6, 7 y 8 y no utilizará Supabase Auth.
+
+Esta fase implementará únicamente la infraestructura transversal de seguridad y
+los endpoints estrictamente necesarios para autenticación, sesión y perfil del
+administrador. No implementará todavía CRUD de productos, categorías, pedidos,
+clientes, inventario, Settings ni Storage administrativo.
 
 ## Funcionalidades
 
@@ -430,6 +666,9 @@ Esta fase corresponde exclusivamente a la sesión autenticada del administrador.
 ### Roles
 
 Administrador
+
+En la Fase 8.5 se validará únicamente la identidad y el rol que habilitarán estas
+capacidades; su implementación funcional corresponde a la Fase 9.
 
 - Acceso completo al Panel Administrativo
 - Gestión de productos
@@ -459,17 +698,27 @@ Usuario Público
 
 Toda la infraestructura de autenticación y autorización implementada y validada, lista para soportar el Panel Administrativo.
 
+## Implementación incremental completada
+
+- [x] **8.5.1 — Contrato y dominio:** proveedor aislado de Supabase Auth, perfil administrador y errores indistinguibles.
+- [x] **8.5.2 — Backend seguro:** login, sesión, renovación, logout y perfil; cookies `HttpOnly`; validación JWT, rol, Origin, CSRF y rate limiting.
+- [x] **8.5.3 — Acceso administrativo:** formulario React Hook Form + Zod, Axios, TanStack Query y estados accesibles.
+- [x] **8.5.4 — Ciclo de sesión:** rutas protegidas, restauración al recargar, redirección segura y cierre de sesión.
+- [x] **8.5.5 — Validación transversal:** pruebas automatizadas, lint, builds y revisión de asesores de Supabase.
+
+La Fase 8.5 no incorpora CRUD ni navegación hacia módulos de gestión. Esa superficie comienza en la Fase 9.
+
 ---
 
-# FASE 9 — Panel Administrativo
+# FASE 9 — API y Panel Administrativo
 
 ## Objetivo
 
-Construir el BackOffice.
+Construir conjuntamente los casos de uso, endpoints protegidos y pantallas del
+BackOffice sobre la infraestructura de seguridad de la Fase 8.5.
 
 ## Módulos
 
-- Login
 - Dashboard
 - Productos
 - Categorías
@@ -480,6 +729,8 @@ Construir el BackOffice.
 
 ## Funcionalidades
 
+- Routes, Controllers, Services, Repositories, DTO y schemas administrativos
+- Todos los endpoints bajo `/api/admin` con autenticación y autorización obligatorias
 - CRUD Productos
 - Gestión y ajustes de stock
 - Historial de movimientos de inventario
@@ -493,9 +744,149 @@ Construir el BackOffice.
 - Gestión de dirección, horarios y ubicación de retiro
 - Subida de Imágenes
 
+## Implementación incremental
+
+- [x] **9.1 — Dashboard administrativo de solo lectura**
+  - [x] **9.1.1 — Contrato y métricas:** productos activos, productos sin stock,
+    productos con stock bajo según Settings, categorías, clientes, pedidos en
+    curso, pedidos retirados y ventas recientes.
+  - [x] **9.1.2 — Backend protegido:** repositorio, servicio, controlador y
+    `GET /api/admin/dashboard` detrás de autenticación y rol administrador.
+  - [x] **9.1.3 — Pruebas backend:** autorización, contrato privado, agregaciones
+    y ausencia de datos personales innecesarios.
+  - [x] **9.1.4 — Interfaz:** TanStack Query, carga, error, estados vacíos y
+    composición responsive para escritorio, tablet y móvil.
+  - [x] **9.1.5 — Validación transversal:** consulta real en Supabase, pruebas,
+    lint, builds y verificación visual responsive.
+- [x] **9.2 — Gestión de Productos:** listado paginado, filtros, alta, edición,
+  imágenes, activación, baja lógica, ajustes de stock e historial.
+  - [x] **9.2.1 — Listado administrativo de solo lectura.**
+    - [x] **9.2.1.1 — Contrato:** filtros por nombre, publicación y stock;
+      orden estable y paginación acotada.
+    - [x] **9.2.1.2 — Backend protegido:** repositorio, servicio, controlador y
+      `GET /api/admin/products` con rol administrador y `Cache-Control: no-store`.
+    - [x] **9.2.1.3 — Pruebas backend:** autenticación, validación de filtros,
+      contrato privado, paginación y resolución de imágenes.
+    - [x] **9.2.1.4 — Interfaz:** ruta `/admin/productos`, filtros persistidos en
+      la URL, tabla responsive, estados de carga, error y vacío, y paginación.
+    - [x] **9.2.1.5 — Validación transversal:** consulta real en Supabase,
+      pruebas, lint, builds y revisión visual en desktop, tablet y móvil.
+  - [x] **9.2.2 — Alta, edición e imágenes de productos.**
+    - [x] **9.2.2.1 — Contrato y esquema:** imagen opcional sincronizada mediante
+      migración, validaciones compartidas y categorías agrupadas por área.
+    - [x] **9.2.2.2 — Alta:** creación protegida con slug derivado, precio y stock
+      inicial validados, y movimiento inicial registrado por la base de datos.
+    - [x] **9.2.2.3 — Edición:** formulario reutilizable, control de concurrencia
+      optimista y actualización de datos comerciales sin modificar stock.
+    - [x] **9.2.2.4 — Imágenes:** carga, reemplazo y retiro en Storage privado;
+      JPG, PNG o WebP de hasta 5 MB, firma real validada y respaldo visual local.
+    - [x] **9.2.2.5 — Validación:** pruebas backend y frontend, lint, builds,
+      consulta real de Supabase y revisión visual responsive.
+  - [x] **9.2.3 — Ajustes de stock e historial de movimientos.**
+    - [x] **9.2.3.1 — Contrato y base de datos:** verificación de la RPC atómica,
+      invariantes de stock, auditoría y privilegios exclusivos de `service_role`.
+    - [x] **9.2.3.2 — Backend protegido:** historial paginado y ajuste manual con
+      autor autenticado, motivo obligatorio, Origin, CSRF y errores de dominio.
+    - [x] **9.2.3.3 — Pruebas backend:** autorización, validación, dirección del
+      delta, paginación, producto inexistente y rechazo de stock negativo.
+    - [x] **9.2.3.4 — Interfaz:** confirmación en dos pasos, stock proyectado,
+      bloqueo ante cambios comerciales sin guardar e historial responsive.
+    - [x] **9.2.3.5 — Validación:** pruebas, lint, builds y revisión visual en
+      escritorio y móvil sin modificar inventario comercial.
+  - [x] **9.2.4 — Activación, destacado y baja lógica.**
+    - [x] **9.2.4.1 — Reglas y persistencia:** reutilización de `is_active`,
+      `is_featured` y `deleted_at`, sin migraciones ni cambios de stock o imagen.
+    - [x] **9.2.4.2 — Backend protegido:** endpoints dedicados, concurrencia
+      optimista, validación de categoría, auditoría, Origin y CSRF.
+    - [x] **9.2.4.3 — Pruebas backend:** publicación, categoría inactiva,
+      destacado, baja lógica, preservación de recursos y contrato HTTP.
+    - [x] **9.2.4.4 — Interfaz:** acciones rápidas accesibles, feedback seguro y
+      confirmación destructiva explícita en tabla y tarjetas responsive.
+    - [x] **9.2.4.5 — Validación:** pruebas, lint, builds, verificación remota de
+      Supabase y revisión visual a 1440 px y 390 px sin datos comerciales.
+  - [x] **9.2.5 — Validación transversal del módulo.**
+    - [x] **9.2.5.1 — Contratos y seguridad:** revisión conjunta de listado,
+      formulario, imágenes, inventario y ciclo de vida detrás de sesión, rol,
+      Origin, CSRF y control de concurrencia.
+    - [x] **9.2.5.2 — Persistencia:** verificación remota de columnas,
+      restricciones, RLS, triggers, Storage privado y privilegios de la RPC de
+      stock sin escribir datos comerciales.
+    - [x] **9.2.5.3 — Calidad automatizada:** pruebas, lint, tipos y builds de
+      Backend y Frontend, incluyendo contratos TypeScript estrictos en las
+      pruebas administrativas.
+    - [x] **9.2.5.4 — Acceso y responsive:** conservación de la validación visual
+      1440/390 del incremento anterior y nueva comprobación del guard de acceso,
+      sin errores de consola ni exposición de la pantalla sin sesión.
+- [ ] **9.3 — Gestión de Categorías.**
+- [ ] **9.4 — Gestión de Pedidos y verificación manual de pagos.**
+- [ ] **9.5 — Gestión de Clientes.**
+- [ ] **9.6 — Configuración del Negocio.**
+- [ ] **9.7 — Perfil administrativo.**
+
+### Incremento 9.2.3 completado — 2 de agosto de 2026
+
+Los ajustes manuales utilizan la función transaccional `adjust_product_stock` ya
+existente. El Backend toma el perfil administrador desde la sesión, traduce la
+operación a un delta firmado y devuelve errores seguros para producto ausente,
+permisos inválidos o stock insuficiente. El historial es de solo lectura,
+append-only, paginado y conserva las referencias a pedidos o administradores.
+
+La edición de productos incorpora un flujo de revisión antes de confirmar, muestra
+el stock resultante y exige un motivo. Para evitar conflictos o pérdida de datos,
+el ajuste se deshabilita mientras existan cambios comerciales sin guardar. En
+escritorio el historial utiliza tabla y, por debajo de 1024 px, tarjetas sin
+desbordamiento horizontal.
+
+La validación finalizó con 87 pruebas de Backend y 38 de Frontend, lint y builds
+correctos en ambos proyectos. La revisión visual comprobó 1440 px y 390 px sin
+errores de consola. La función, `search_path` y permisos remotos fueron verificados
+sin ejecutar ajustes contra stock comercial.
+
+### Incremento 9.2.4 completado — 2 de agosto de 2026
+
+El listado de productos incorpora controles rápidos para publicación y destacado.
+Cada escritura utiliza `updated_at` como control de concurrencia y el Backend
+vuelve a validar la categoría antes de activar un producto. Activar, desactivar o
+destacar no modifica stock, imagen, precio ni historial.
+
+La eliminación es exclusivamente lógica mediante `deleted_at`. Requiere una
+confirmación que identifica el producto y explica que stock, imagen e historial
+de ventas se conservan para una futura restauración. No se elimina ningún objeto
+de Storage ni se expone una operación de borrado físico.
+
+La validación finalizó con 95 pruebas de Backend y 41 de Frontend, lint, tipos y
+builds correctos. Supabase confirmó las columnas y privilegios existentes, por lo
+que no fue necesaria una migración. La revisión visual comprobó 1440 px y 390 px,
+sin desbordamiento horizontal ni errores de consola y sin alterar productos reales.
+
+### Incremento 9.2.5 completado — 3 de agosto de 2026
+
+La revisión transversal confirmó que todas las rutas del módulo permanecen bajo
+autenticación y rol administrador, que cada escritura exige Origin y CSRF, y que
+la edición comercial, las imágenes, el inventario y las acciones de ciclo de vida
+aplican el control de concurrencia correspondiente sin introducir borrado físico.
+
+Supabase confirmó en modo de solo lectura las columnas y restricciones de
+`products`, RLS habilitado, los triggers de stock inicial y `updated_at`, el bucket
+privado `products` limitado a 5 MB y la función `adjust_product_stock` con
+`search_path` seguro y ejecución exclusiva de `service_role`. No fue necesaria
+ninguna migración ni se modificaron productos, imágenes o existencias.
+
+La validación detectó y corrigió contratos TypeScript imprecisos en los helpers de
+las pruebas API: el origen administrativo ahora es una constante no opcional y
+los fixtures de producto ya no dependen de accesos de arreglo potencialmente
+ausentes. El cierre finalizó con 95 pruebas de Backend y 41 de Frontend, lint,
+typecheck y builds correctos. El acceso local volvió a confirmar que
+`/admin/productos` no expone contenido sin sesión y no produjo errores de consola.
+La revisión visual 1440/390 del incremento 9.2.4 continúa vigente porque esta fase
+no modificó la interfaz.
+
+El siguiente punto de continuación es **9.3 — Gestión de Categorías**.
+
 ## Resultado esperado
 
-Panel completamente funcional.
+API y Panel Administrativo completamente funcionales. Ninguna ruta administrativa
+existirá o se montará sin la protección implementada en la Fase 8.5.
 
 ---
 

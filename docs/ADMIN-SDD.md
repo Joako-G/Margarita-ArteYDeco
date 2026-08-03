@@ -16,6 +16,11 @@ El Panel Administrativo representa el BackOffice del sistema.
 
 Toda funcionalidad administrativa deberá respetar este documento.
 
+La implementación corresponde a la Fase 9 e incluye tanto la interfaz como los
+endpoints administrativos requeridos por cada módulo. Depende obligatoriamente
+de la autenticación, validación JWT y autorización implementadas en la Fase 8.5.
+La Fase 7 no implementará rutas ni casos de uso administrativos.
+
 ---
 
 # Relación con las Reglas de Negocio
@@ -135,7 +140,7 @@ Funcionalidades
 Formulario de producto
 
 - Categoría obligatoria
-- Imagen con vista previa
+- Imagen opcional con vista previa y respaldo visual cuando no exista
 - Nombre
 - Descripción
 - Precio mayor a cero
@@ -143,11 +148,17 @@ Formulario de producto
 - Estado Activo o Inactivo
 - Producto destacado
 
-El slug se generará a partir del nombre y deberá ser único. Las imágenes aceptadas serán JPG, PNG o WebP, con un tamaño máximo de 5 MB. El Backend repetirá todas las validaciones.
+El slug se generará a partir del nombre y deberá ser único. Las imágenes aceptadas serán JPG, PNG o WebP, con un tamaño máximo de 5 MB. Un producto podrá guardarse sin imagen y mostrará el respaldo visual del Frontend. El Backend repetirá todas las validaciones.
 
 No permitir eliminación física.
 
 El estado Activo controla la publicación y no modifica el stock. Un producto activo con stock cero seguirá publicado como "Sin stock". Nunca permitir valores negativos.
+
+El listado ofrecerá acciones rápidas visibles para activar, desactivar y cambiar
+el estado destacado. La baja lógica será una acción separada y destructiva que
+siempre requerirá confirmación; la interfaz deberá aclarar que conserva stock,
+imagen e historial de ventas. Las acciones se bloquearán mientras exista una
+mutación pendiente para el mismo producto.
 
 ---
 
@@ -168,6 +179,7 @@ Funcionalidades
 
 Formulario de categoría
 
+- Área del catálogo obligatoria: Arte o Decoraciones
 - Nombre
 - Imagen
 - Descripción
@@ -175,6 +187,11 @@ Formulario de categoría
 - Estado Activo o Inactivo
 
 No eliminar categorías con productos asociados.
+
+El listado permitirá filtrar por área y ordenará las categorías dentro de cada
+área. No se permitirá cambiar el área de una categoría con productos asociados.
+El formulario de producto agrupará las opciones de categoría por área, pero el
+producto almacenará únicamente `category_id`.
 
 ---
 
@@ -254,6 +271,7 @@ Modificar la información general del comercio.
 Configuraciones
 
 - Nombre del negocio
+- Logo de la marca
 - WhatsApp
 - Dirección
 - URL de Google Maps
@@ -268,6 +286,11 @@ Configuraciones
 Existirá un único registro.
 
 La URL de Google Maps deberá validarse antes de guardar. El Panel mostrará una vista previa del enlace público de ubicación.
+
+El Panel permitirá cargar o reemplazar el logo con vista previa. Aceptará JPG,
+PNG o WebP de hasta 5 MB, conservará la proporción de la imagen y almacenará el
+archivo en el bucket privado `settings`. Quitar el logo configurado restaurará
+el uso de la variante local oficial en la aplicación pública.
 
 ---
 

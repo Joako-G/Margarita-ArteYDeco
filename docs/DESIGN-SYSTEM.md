@@ -80,12 +80,6 @@ Nunca utilizar colores fuertes o saturados.
 
 Uso:
 
-Header
-
-Botones Primarios
-
-CTA
-
 Elementos destacados
 
 HEX
@@ -98,7 +92,13 @@ HEX
 
 Uso:
 
+Header
+
 Footer
+
+Botones Primarios
+
+CTA
 
 Hover
 
@@ -214,7 +214,7 @@ Body
 
 Header
 
-#6E8B74
+#4F6B58
 
 Footer
 
@@ -255,6 +255,12 @@ superficies crema es `frontend/src/assets/images/logo.webp`.
 
 Ambos deben conservar sus proporciones, colores y composición original.
 
+En producción, Header y Footer utilizarán el logo configurado por el
+administrador y resuelto por el Backend desde el bucket privado `settings`. La
+variante local `logo-header.png` es el respaldo obligatorio cuando no exista una
+configuración válida o la imagen remota no pueda cargarse. El origen de la imagen
+no alterará ninguna regla visual de esta sección.
+
 ## Logo Principal
 
 Visible.
@@ -282,7 +288,7 @@ el Footer.
 
 Color:
 
-#6E8B74
+#4F6B58
 
 Altura Desktop
 
@@ -475,13 +481,13 @@ Ejemplo:
 
 ## Primario
 
-Verde principal
+Verde oscuro
 
 Texto blanco
 
 Hover:
 
-Verde oscuro
+Mantener Verde oscuro y aplicar la escala definida
 
 Escala:
 
@@ -564,6 +570,17 @@ Input, TextArea y Select compartirán:
 - Section utiliza padding vertical de 64, 80 o 96 px.
 - Section admite fondo Blanco o Crema.
 
+### Paneles de datos administrativos
+
+- El contenido del Dashboard tendrá un ancho máximo de 1120 px y utilizará el
+  token `--container-admin`.
+- Las métricas relacionadas se agruparán en una sola superficie con divisores;
+  no se presentará cada número como una card independiente.
+- Inventario y actividad reciente podrán utilizar paneles blancos con borde Gris
+  Claro, sin elevación decorativa.
+- Los valores numéricos usarán cifras tabulares y los estados reutilizarán las
+  variantes semánticas de Badge.
+
 ### Divider
 
 - Línea de 1 px en Gris Claro.
@@ -580,9 +597,14 @@ Input, TextArea y Select compartirán:
 ### Drawer
 
 - Overlay oficial, capa 90, ancho máximo de 420 px y radius de 28 px.
-- Puede abrirse desde la derecha o la izquierda.
+- Puede abrirse desde la derecha, la izquierda o desde el borde inferior.
 - En móvil ocupa el ancho disponible.
+- La variante inferior utiliza el contenido necesario, conserva el radius de 28 px
+  en sus esquinas superiores y respeta el área segura del dispositivo.
 - Debe atrapar el foco, cerrarse con Escape y devolver el foco al activador.
+- Cuando la variante inferior complementa una barra de navegación persistente,
+  puede ser no modal: se ubicará por encima de la barra, mantendrá visibles y
+  operables sus acciones, y conservará cierre explícito y mediante Escape.
 
 ### Accordion
 
@@ -602,7 +624,9 @@ Input, TextArea y Select compartirán:
 
 - Spinner utiliza Verde Principal, tamaño base de 24 px y texto alternativo
   accesible.
-- Skeleton utiliza Gris Claro, radius de 12 px y animación sutil de 500 ms.
+- Skeleton utiliza Gris Claro, radius de 12 px y un shimmer sutil de 1500 ms.
+- El skeleton de producto replica la jerarquía y dimensiones aproximadas de la card
+  final para evitar saltos de layout durante la carga.
 - Ambos respetan `prefers-reduced-motion`.
 
 ### Empty State
@@ -654,11 +678,20 @@ Nunca utilizar bordes visibles.
 
 # Categorías
 
+La Landing presentará dos grupos visibles: "Arte para crear" y "Decoraciones
+listas para disfrutar". No ocultará uno detrás de pestañas, selectores o gestos.
+Cada grupo incluirá una explicación breve y una acción para consultar todos sus
+productos.
+
 Forma
 
 Circular
 
 140 px
+
+En móvil
+
+160 px
 
 Imagen
 
@@ -723,11 +756,35 @@ comunicar que existen más categorías y convivirán con el gesto táctil.
 
 ---
 
+# Tablas administrativas
+
+Las tablas de gestión utilizarán una superficie Blanca con borde Gris Claro y
+radius de Card. El encabezado tendrá Fondo Crema, tipografía Caption en Verde
+Oscuro y títulos en mayúsculas. Los valores numéricos usarán cifras tabulares y
+los estados se comunicarán mediante Badge semántico y texto, nunca solo color.
+
+En anchos inferiores a 1024 px las filas se reorganizarán como fichas verticales
+con etiquetas visibles. No se utilizará scroll horizontal para resolver la falta
+de espacio. Los filtros permanecerán antes de los resultados, usarán los campos
+estándar del sistema y pasarán progresivamente de una a varias columnas.
+
+Las imágenes de producto usarán el placeholder oficial cuando la URL firmada no
+exista o falle. Los estados de carga conservarán la estructura mediante Skeleton;
+los estados vacíos y de error deberán ofrecer una explicación y una acción útil.
+
+---
+
 # Productos
 
 Cards verticales.
 
 Imagen superior.
+
+Cuando la imagen de un producto esté temporalmente ausente o falle su carga, se
+utilizará `frontend/src/assets/images/product-placeholder.webp`. El placeholder
+mantendrá el mismo aspect ratio y recorte de la card, con texto alternativo que
+indique que la imagen del producto no está disponible. No sustituye la imagen
+propia requerida para publicar el producto.
 
 Nombre.
 
@@ -947,6 +1004,18 @@ Mobile
 Mobile Small
 
 360 px
+
+## Navegación administrativa
+
+- En viewports menores a 480 px, el Panel Administrativo utiliza una barra
+  inferior con las acciones Inicio, Gestión y Cuenta.
+- Gestión y Cuenta abren un Drawer inferior compacto y no modal, ubicado por
+  encima de la barra para que Inicio, Gestión y Cuenta permanezcan visibles y
+  operables. La barra y los paneles respetan las áreas seguras del dispositivo
+  y mantienen acciones de al menos 44 × 44 px.
+- Desde 480 px y hasta 1279 px, la navegación utiliza hamburguesa y Drawer
+  lateral izquierdo.
+- Desde 1280 px, utiliza Sidebar permanente y oculta la hamburguesa.
 
 ---
 

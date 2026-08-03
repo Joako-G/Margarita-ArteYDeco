@@ -45,7 +45,8 @@ Las reglas aquí definidas tienen prioridad sobre cualquier decisión técnica.
 
 - Todo producto deberá pertenecer a una categoría.
 - Todo producto deberá tener un nombre.
-- Todo producto deberá tener una imagen.
+- La imagen del producto será opcional. Cuando no exista, las interfaces pública y
+  administrativa mostrarán la imagen de respaldo definida por el Frontend.
 - Todo producto deberá tener un precio mayor a cero.
 - Todo producto deberá crearse con un stock inicial entero mayor o igual a cero.
 
@@ -75,6 +76,16 @@ Las reglas aquí definidas tienen prioridad sobre cualquier decisión técnica.
 ---
 
 # Categorías
+
+## Áreas del catálogo
+
+- El catálogo tendrá dos áreas fijas: Arte y Decoraciones.
+- Arte agrupará materiales, herramientas y objetos sin terminar destinados a ser intervenidos por el cliente.
+- Decoraciones agrupará piezas terminadas, pintadas o intervenidas por el negocio y listas para usar o regalar.
+- Toda categoría deberá pertenecer exactamente a una de estas áreas.
+- Los productos heredarán el área de su categoría; el área nunca se almacenará de forma duplicada en el producto.
+- El orden de visualización de las categorías se administrará de forma independiente dentro de cada área.
+- No podrá cambiarse el área de una categoría que posea productos asociados.
 
 ## Creación
 
@@ -174,6 +185,7 @@ Transiciones del MVP:
 La configuración incluirá como mínimo:
 
 - Nombre del negocio
+- Logo de la marca
 - WhatsApp
 - Dirección
 - URL de Google Maps
@@ -187,6 +199,10 @@ La configuración incluirá como mínimo:
 
 La dirección, ubicación y horarios configurados corresponderán al local y deberán mostrarse al cliente para retirar su pedido.
 
+El logo configurado se utilizará en el Header y el Footer de la aplicación
+pública. Si todavía no existe un logo configurado o no puede resolverse, el
+Frontend utilizará la variante local oficial como respaldo.
+
 ---
 
 # Catálogo Público
@@ -195,6 +211,8 @@ La dirección, ubicación y horarios configurados corresponderán al local y deb
 - Solo se mostrarán productos activos.
 - Nunca se mostrarán productos eliminados lógicamente.
 - Un producto activo sin stock permanecerá visible, identificado como "Sin stock" y sin acciones de compra disponibles.
+- La tienda distinguirá de manera explícita Arte de Decoraciones y nunca dependerá únicamente de una imagen o del color para comunicar la diferencia.
+- La página principal comenzará por las categorías, mostrando primero las de Arte y luego las de Decoraciones.
 
 ---
 

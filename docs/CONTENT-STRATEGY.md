@@ -125,6 +125,10 @@ Pequeños detalles crean grandes proyectos.
 
 # Hero
 
+La Landing vigente no utilizará Hero. Su función de orientación se trasladará al
+título y a las explicaciones de los dos grupos de categorías, que serán el primer
+contenido después del Header.
+
 ## Objetivo
 
 Captar la atención en menos de cinco segundos.
@@ -164,6 +168,14 @@ Consultar por WhatsApp
 ---
 
 # Categorías
+
+La comunicación distinguirá:
+
+- "Arte para crear": materiales, herramientas y objetos sin terminar.
+- "Decoraciones listas para disfrutar": piezas pintadas o terminadas, listas para usar o regalar.
+
+Los nombres y descripciones deberán aclarar si el producto se entrega sin pintar
+o terminado. No utilizar "Deco" como única explicación del área.
 
 Cada categoría debe invitar al usuario a descubrir productos.
 

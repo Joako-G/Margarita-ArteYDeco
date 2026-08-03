@@ -2,6 +2,12 @@
 
 ## 1. Objetivo
 
+La aplicación pública se conectará al Backend durante la Fase 8. La Fase 8.5
+incorporará únicamente el acceso, sesión y protección de rutas administrativas.
+Los módulos del Panel y sus endpoints protegidos se implementarán juntos en la
+Fase 9; no se crearán clientes Axios hacia rutas administrativas inexistentes o
+sin autorización.
+
 ## 2. Arquitectura Frontend
 
 ## 3. Routing
@@ -16,18 +22,29 @@
 
 ### Landing
 
-- En la navegación completa de escritorio, actualizar el enlace activo según la
-  sección visible durante el scroll.
-- Considerar `Inicio`, `Inspiración`, `Nosotros` y `Contacto` como hitos; mantener
-  activo el último hito alcanzado hasta ingresar en el siguiente.
-- No modificar la URL automáticamente durante el scroll.
-- Mantener el menú móvil fuera de este seguimiento automático y conservar en él
-  el estado derivado de la ruta o hash seleccionado.
+- La Landing no tendrá Hero y comenzará con un único `h1` dentro de la sección de categorías.
+- Mostrar las categorías de Arte y Decoraciones en dos grupos visibles, con una explicación breve que diferencie productos sin terminar de piezas terminadas.
+- Después de las categorías, mostrar destacados de Arte y destacados de Decoraciones; luego Beneficios, Testimonios, Preguntas frecuentes y CTA final.
+- No incluir las secciones Inspiración, Galería ni Nosotros.
+- En móvil, las categorías tendrán imágenes de 160 px y conservarán desplazamiento táctil, flechas visibles cuando exista overflow y nombres legibles fuera de la imagen.
+
+- La navegación pública incluirá accesos directos a Categorías, Productos y Contacto.
+  El estado activo se derivará de la ruta, query o hash,
+  sin modificar la URL automáticamente durante el scroll.
 
 ### Catálogo
 
 - Componer el catálogo con filtros de categorías y un grid de productos.
+- Mostrar inmediatamente un hero compacto, búsqueda, categorías y ordenamiento sin
+  bloquear la página mientras se obtienen los datos.
+- Durante la carga, conservar la estructura completa y representar el grid mediante
+  cards skeleton: 8 en desktop, 4 en tablet y 2 en mobile.
+- Reemplazar los skeletons por las cards reales con una aparición breve de opacidad y
+  desplazamiento vertical progresivo, respetando `prefers-reduced-motion`.
+- Resolver los estados vacío y error dentro del área del grid, con acciones para
+  limpiar los filtros o reintentar sin ocultar el hero ni los controles.
 - Mantener el filtro seleccionado en la URL mediante `/categoria/:slug`.
+- Permitir filtrar por área mediante `/productos?area=arte` o `/productos?area=decoraciones` sin perder búsqueda ni ordenamiento.
 - Incluir búsqueda y ordenamiento sin perder la categoría activa.
 - Adaptar la carga progresiva al viewport: 8 productos en desktop, 6 en tamaños medianos y 4 en pantallas pequeñas.
 - La acción explícita para ver más cargará otro bloque del tamaño correspondiente al viewport.
@@ -37,7 +54,7 @@
 
 ### Categorías
 
-- Mostrar una opción "Todos" y únicamente categorías activas.
+- Mostrar una opción "Todos" por cada área y únicamente categorías activas.
 - Representar cada categoría mediante un único botón con imagen circular, nombre y cantidad de productos.
 - Utilizar una imagen cuadrada WebP específica por categoría, con un mínimo de
   560 × 560 px y el sujeto principal preparado para el recorte circular.
@@ -46,7 +63,7 @@
 - Mostrar el nombre y la cantidad debajo de la imagen para mejorar su lectura.
 - Utilizar `aria-pressed` para comunicar la selección.
 - Resaltar el botón seleccionado mediante superficie blanca, borde circular, halo y check.
-- Mostrar sobre el grid el texto "Estás viendo: {categoryName}".
+- En el catálogo, mostrar sobre el grid el texto "Estás viendo: {categoryName}".
 - Para "Todos", mostrar "Todos los productos".
 - Utilizar desplazamiento horizontal con la barra nativa oculta, conservando gesto
   táctil, rueda horizontal y trackpad.
@@ -60,6 +77,11 @@
 ### Producto
 
 - Mostrar únicamente productos activos.
+- Si la URL de imagen de un producto no existe o no puede cargarse, mostrar el
+  asset local `product-placeholder.webp` sin ocultar el nombre del producto ni
+  presentar el placeholder como una fotografía real.
+- El fallback visual no reemplaza la validación administrativa y de Backend que
+  exige una imagen propia antes de activar el producto.
 - Mostrar el stock disponible en el detalle del producto y cuando aporte valor en sus cards.
 - Mostrar "Sin stock" y deshabilitar la compra cuando `stock_quantity` sea cero.
 - Permitir agregar al carrito únicamente productos activos con stock suficiente.
@@ -143,10 +165,29 @@ Flujo:
 
 ### Dashboard
 
-- Mostrar productos activos, productos sin stock, productos con stock bajo, pedidos pendientes y ventas recientes.
+- Mostrar productos activos, productos sin stock, productos con stock bajo según
+  Settings, categorías, clientes registrados, pedidos en curso, pedidos retirados
+  y ventas recientes.
+- Consultar el resumen mediante TanStack Query y el servicio Axios administrativo.
+- Resolver carga con skeleton, error con reintento y listas vacías sin ocultar el
+  encabezado de la pantalla.
+- En móvil utilizar una columna y conservar libre la barra inferior; desde tablet
+  reordenar inventario y actividad reciente sin desbordamiento horizontal.
 
 ### Productos
 
+- El listado inicial de `/admin/productos` será de solo lectura y consumirá
+  `GET /api/admin/products` mediante Axios y TanStack Query.
+- Permitirá buscar por nombre, filtrar por publicación y estado de stock, ordenar
+  y elegir 10, 20 o 50 filas. Los filtros y la página se conservarán en la URL.
+- Mostrará imagen, nombre, slug, categoría, área del catálogo, precio, stock,
+  publicación, destacado y fecha de actualización sin exponer rutas privadas de
+  Storage.
+- En desktop utilizará una tabla semántica. Por debajo de 1024 px cada fila se
+  reorganizará como ficha etiquetada sin scroll horizontal y conservará libre la
+  navegación administrativa inferior.
+- Resolverá carga con skeleton, actualización en segundo plano, error con
+  reintento y vacíos diferenciados para catálogo vacío y filtros sin resultados.
 - Consultar, crear y editar `stock_quantity`.
 - Mostrar filtros de productos con stock y sin stock.
 - Permitir ajustes manuales con un motivo obligatorio.
@@ -174,6 +215,13 @@ Flujo:
 ### Clientes
 
 ### Configuración
+
+- El DTO público de configuración expondrá `logoUrl`, nunca `logoPath`.
+- Header y Footer utilizarán la misma `logoUrl` resuelta por el Backend.
+- Mientras `logoUrl` no exista, esté vencida o la imagen no pueda cargarse, se
+  utilizará `frontend/src/assets/images/logo-header.png` como respaldo.
+- El cambio de origen no modificará las dimensiones, proporciones ni el texto
+  alternativo del logo.
 
 ## 7. Componentes Compartidos
 
@@ -222,6 +270,11 @@ La consulta pública contemplará además:
 
 ## 15. Flujo de Navegación
 
+- Acceso administrativo: `/admin` sin sesión → `/admin/login` conservando el destino interno solicitado.
+- Login correcto: `/admin/login` → destino administrativo solicitado o `/admin`.
+- Sesión administrativa vigente: recargar `/admin` restaura el perfil desde el Backend sin leer tokens.
+- Sesión administrativa vencida o revocada: cualquier ruta privada → `/admin/login`.
+- Cierre de sesión: revocación en Backend, limpieza de caché de sesión y redirección a `/admin/login`.
 - Después de crear un pedido: `/checkout` → `/pedido/:orderNumber`.
 - Desde "Ver mi último pedido": cualquier ruta pública → último `/pedido/:orderNumber` autorizado.
 - Sin sesión: `/pedido/:orderNumber` → estado de recuperación → `/recuperar-pedido`.

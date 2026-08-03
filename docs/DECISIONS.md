@@ -679,3 +679,211 @@ Permite recuperar la confirmación sin crear cuentas, evita exponer credenciales
 La Fase 6 deberá incorporar sesiones anónimas y su relación con pedidos. La Fase 7 implementará cookies, hashing, expiración, endpoints públicos, rate limiting, recuperación e invalidación. La Fase 8 incorporará la ruta de pedido, "Ver mi último pedido", el formulario de recuperación y los estados de sesión expirada o bloqueada.
 
 La infraestructura de sesión anónima será independiente de la autenticación administrativa de la Fase 8.5. El acceso desde otro dispositivo o después de borrar cookies requerirá recuperar el pedido con número y celular.
+
+---
+
+# ADR-035
+
+## Persistencia de imágenes y privilegios de base de datos
+
+### Contexto
+
+El Frontend no puede acceder directamente a Supabase y las URLs firmadas de
+Storage vencen. Persistir una URL firmada produciría referencias inválidas,
+mientras que buckets públicos permitirían eludir al Backend. Además,
+`service_role` posee capacidades amplias por defecto que permitirían modificar
+stock o pedidos sin ejecutar las invariantes transaccionales.
+
+### Decisión
+
+Categories y Products almacenarán `image_path`, una ruta relativa dentro de un
+bucket privado. El Backend resolverá URLs firmadas de corta duración o servirá el
+archivo mediante un endpoint controlado.
+
+Todas las tablas de negocio tendrán RLS habilitado y denegarán acceso directo a
+`anon` y `authenticated`. `service_role` utilizará privilegios mínimos por tabla.
+No podrá modificar directamente stock, detalles históricos ni pedidos. La
+creación y cancelación de pedidos, los ajustes de inventario y las transiciones
+de estado se ejecutarán mediante RPC `SECURITY DEFINER`, con `search_path` vacío
+y permisos de ejecución explícitos.
+
+### Justificación
+
+Mantiene al Backend como única frontera de acceso, evita URLs persistidas que
+expiran y reduce el impacto de errores futuros en repositories. Las invariantes
+de stock, historial y estados se conservan aunque una capa superior intente una
+operación incompleta.
+
+### Consecuencias
+
+La API deberá generar o renovar URLs de imagen y aplicar una política de caché
+compatible con su vencimiento. Cada nueva tabla o función requerirá privilegios
+explícitos; no heredará acceso automático para roles públicos ni para
+`service_role`.
+
+---
+
+# ADR-036
+
+## Arte y Decoraciones como áreas fijas del catálogo
+
+### Contexto
+
+El negocio vende tanto materiales y objetos sin terminar como piezas intervenidas
+y terminadas. Una categoría plana llamada "Deco" no permite comunicar ni
+administrar correctamente esta diferencia.
+
+### Decisión
+
+Categories incorporará `catalog_area`, limitado a `art` y `decoration`. Products
+continuará relacionado únicamente mediante `category_id` y heredará el área de
+su categoría. La Landing mostrará ambos grupos de categorías como primer contenido
+y eliminará Hero, Inspiración, Galería y Nosotros.
+
+### Justificación
+
+El modelo evita duplicar datos, mantiene simples los filtros y hace explícita la
+diferencia entre productos sin terminar y productos listos para usar o regalar.
+
+### Consecuencias
+
+La Fase 6 incorpora una migración incremental y seeds actualizados. Backend,
+administración y frontend deberán exponer, validar y filtrar por área.
+
+---
+
+# ADR-037
+
+## Logo de marca administrable desde Settings
+
+### Contexto
+
+El Header y el Footer utilizan la misma identidad visual, pero el logo estaba
+acoplado exclusivamente a un asset del Frontend. El negocio necesita poder
+reemplazarlo sin publicar una nueva versión de la aplicación y sin permitir que
+el Frontend acceda directamente a Supabase.
+
+### Decisión
+
+Settings incorporará `logo_path`, nullable, con una ruta relativa dentro del
+bucket privado `settings`. El Backend resolverá una URL temporal o servirá el
+archivo y expondrá únicamente `logoUrl` en el DTO público. Header y Footer usarán
+esa URL y conservarán `logo-header.png` como respaldo local.
+
+### Justificación
+
+Mantiene una única fuente configurable para la marca, conserva la frontera
+Frontend → Backend → Supabase y evita persistir URLs firmadas que vencen.
+
+### Consecuencias
+
+El Panel Administrativo deberá permitir cargar, reemplazar y quitar el logo. La
+ausencia o el fallo de la imagen remota no afectará la navegación porque el asset
+local continuará disponible como fallback.
+
+---
+
+# ADR-038
+
+## Cloudflare Turnstile como verificación humana adaptativa
+
+### Contexto
+
+La recuperación pública utiliza número de pedido y celular, por lo que necesita
+encarecer ataques automatizados distribuidos sin interrumpir a compradores en el
+primer intento. El rate limiting persistente continúa siendo obligatorio, pero
+no reemplaza una señal de navegador ante abuso.
+
+### Decisión
+
+El sistema utilizará Cloudflare Turnstile en modo administrado únicamente cuando
+el Backend indique `captchaRequired`. El Frontend emitirá tokens con la acción
+`order_recovery`; el Backend los validará mediante Siteverify y comprobará
+resultado, acción y hostname permitido antes de consultar el pedido.
+
+La clave secreta residirá exclusivamente en el Backend. Los errores internos o
+timeouts del proveedor producirán un fallo cerrado temporal y no incrementarán
+los intentos del comprador. Los tokens inválidos, vencidos o repetidos no
+permitirán continuar y sí conservarán la protección antiabuso.
+
+### Justificación
+
+Turnstile agrega defensa en profundidad con una experiencia poco invasiva,
+mantiene la verificación sensible fuera del navegador y ofrece claves oficiales
+de prueba para automatizar casos exitosos y fallidos.
+
+### Consecuencias
+
+El Backend incorpora Axios para Siteverify y requiere `TURNSTILE_SECRET_KEY` y
+`TURNSTILE_ALLOWED_HOSTNAMES` en producción. La Fase 8 agregará la sitekey pública,
+el widget adaptativo y la política CSP necesaria para los scripts y frames de
+Cloudflare.
+
+---
+
+# ADR-039
+
+## Separación temporal de la API pública y la API administrativa
+
+### Contexto
+
+La Fase 7 originalmente enumeraba módulos administrativos, mientras que el
+roadmap ubicaba Supabase Auth, JWT y autorización en la Fase 8.5 y el Panel en la
+Fase 9. Implementar rutas administrativas antes de su infraestructura de
+seguridad permitiría exponerlas accidentalmente o producir código sin una forma
+real de validar autorización.
+
+### Decisión
+
+La Fase 7 queda limitada a la API pública. La Fase 8.5 implementará autenticación,
+autorización y endpoints estrictamente relacionados con la sesión y el perfil
+administrativo. La Fase 9 implementará conjuntamente los casos de uso, endpoints
+`/api/admin` y pantallas de cada módulo administrativo.
+
+No se crearán rutas administrativas anticipadamente para mantenerlas desmontadas
+ni se habilitarán excepciones temporales sin JWT y rol administrativo válido.
+
+### Justificación
+
+Mantiene una única frontera de seguridad verificable, evita endpoints huérfanos
+y permite probar Backend y Frontend administrativo como una unidad funcional
+detrás de los mismos middlewares.
+
+### Consecuencias
+
+Finalizar la Fase 7 habilita la integración pública de la Fase 8. Los módulos de
+productos, categorías, inventario, pedidos, clientes, Settings y Storage
+administrativo comenzarán recién después de completar la Fase 8.5.
+
+---
+
+# ADR-040
+
+## Sesión administrativa mediada por el Backend
+
+### Contexto
+
+El Frontend requiere persistir una sesión de Supabase Auth sin acceder a
+Supabase, almacenar JWT en Web Storage ni confiar en metadatos editables para
+autorizar el Panel Administrativo.
+
+### Decisión
+
+El Backend es el único cliente de Supabase. Después del password grant conserva
+el access token y el refresh token en cookies `__Host-`, `HttpOnly`, `Secure`,
+`SameSite=Lax` y `Path=/`. El navegador solo recibe el perfil público. Cada
+acceso privado valida la identidad mediante Supabase Auth y autoriza consultando
+el perfil activo y su rol `administrator` en PostgreSQL. Una sesión con access
+token vencido puede renovarse mediante su refresh token y rota ambas cookies.
+
+Login y logout requieren Origin permitido y token CSRF. El login aplica límite
+de intentos fallidos y devuelve un mensaje indistinguible para correo inexistente,
+contraseña incorrecta, perfil ausente o perfil inactivo. El logout revoca solo la
+sesión actual y limpia siempre las cookies locales.
+
+### Consecuencias
+
+El Frontend no conoce ni persiste JWT. La autorización puede revocarse mediante
+`profiles.is_active` sin desplegar código. Los futuros endpoints de la Fase 9
+deberán reutilizar los mismos middlewares de autenticación y rol antes de sus
+controllers.

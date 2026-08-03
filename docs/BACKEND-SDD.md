@@ -18,6 +18,22 @@ No implementar lógica fuera de la capa correspondiente.
 
 ---
 
+# Alcance por fase
+
+- La Fase 7 implementa exclusivamente la API pública: catálogo, Settings público,
+  creación y consulta de pedidos, sesiones anónimas, recuperación y sus controles
+  de seguridad. No crea ni monta rutas `/api/admin`.
+- La Fase 8.5 implementa Supabase Auth, validación JWT, autenticación, autorización
+  y los endpoints estrictamente relacionados con sesión y perfil administrativo.
+- La Fase 9 implementa los Routes, Controllers, Services, Repositories, DTO y
+  schemas de cada caso de uso administrativo, junto con su interfaz, siempre
+  detrás de los middlewares de la Fase 8.5.
+
+No se implementarán endpoints administrativos anticipadamente para dejarlos sin
+montar ni se expondrán temporalmente sin autenticación.
+
+---
+
 # Relación con las Reglas de Negocio
 
 Toda la lógica implementada en el Backend deberá respetar las reglas definidas en `BUSINESS-RULES.md`.
@@ -50,7 +66,7 @@ Base de Datos
 
 Autenticación
 
-- Supabase Auth
+- Supabase Auth, incorporado en la Fase 8.5 para el área administrativa
 
 Validaciones
 
@@ -249,7 +265,7 @@ PublicOrderService
 
 Una recuperación válida nunca dependerá únicamente del número de pedido.
 
-SettingsService validará `maps_url` como URL HTTPS y no permitirá publicar una configuración sin dirección ni horarios de retiro.
+SettingsService validará `maps_url` como URL HTTPS y no permitirá publicar una configuración sin dirección ni horarios de retiro. Resolverá `logo_path` desde el bucket privado `settings` y expondrá `logoUrl` en el DTO público; nunca expondrá la ruta interna ni persistirá una URL firmada.
 
 Al cancelar un pedido, `OrderService` restaurará las unidades y registrará movimientos `order_cancelled`. La operación deberá ser idempotente para impedir una devolución duplicada.
 
@@ -323,6 +339,7 @@ OrderService
 SettingsService
 
 - Configuración del comercio.
+- Resolución del logo público a partir de `settings.logo_path`.
 
 InventoryService
 
@@ -331,9 +348,10 @@ InventoryService
 
 StorageService
 
-- Validación y subida de imágenes de productos y categorías.
+- Validación y subida de imágenes de productos, categorías y configuración.
 - Aceptar únicamente JPG, PNG o WebP de hasta 5 MB.
-- Guardar en Supabase Storage y persistir únicamente la URL.
+- Guardar en Supabase Storage y persistir únicamente la ruta relativa del objeto.
+- Almacenar el logo de marca bajo `brand/` dentro del bucket `settings` y reemplazarlo de forma controlada.
 
 ---
 
@@ -393,6 +411,40 @@ El Backend estará dividido en los siguientes dominios.
 - Inventory
 - Settings
 - Guest Sessions
+
+Categories expondrá `catalogArea` con los valores `art` o `decoration`. Los
+listados públicos de categorías y productos admitirán un filtro opcional por
+área. Products resolverá el área mediante su categoría y no persistirá una copia
+del campo.
+
+Los endpoints públicos iniciales de solo lectura serán:
+
+- `GET /api/public/categories`, con filtro opcional `catalogArea`.
+- `GET /api/public/products`, con filtros opcionales `catalogArea`,
+  `categorySlug`, `featured`, `search`, `sort` y `limit` limitado a 100.
+- `GET /api/public/settings`.
+
+Antes de una escritura pública, el Frontend obtendrá un token mediante
+`GET /api/public/csrf-token`. El Backend lo entregará en JSON y en una cookie
+host-only `__Host-mad-csrf`, y exigirá su coincidencia en `X-CSRF-Token` junto
+con una firma HMAC válida y un `Origin` permitido. La respuesta no se almacenará
+en caché.
+
+`POST /api/orders` aceptará `customer`, `items` y `paymentMethod` (`cash` o
+`transfer`). El Backend normalizará el celular, traducirá `transfer` a
+`bank_transfer` e ignorará cualquier importe calculado por el cliente. La RPC
+transaccional continuará siendo la autoridad para actividad, stock, precios,
+descuento, totales, snapshots e inventario.
+
+Categories y Products expondrán `imageUrl`, nunca `image_path`. Si una ruta no
+existe o Storage no puede firmarla, devolverán `imageUrl: null` para permitir el
+respaldo visual local sin ocultar el resto del catálogo. Settings expondrá
+`logoUrl` bajo la misma regla.
+
+El DTO público de Settings no incluirá `transfer_alias`, `transfer_cbu`,
+`bank_name`, `low_stock_threshold` ni `logo_path`. Los datos bancarios se
+devolverán únicamente en la confirmación de un pedido por transferencia creado
+correctamente.
 
 Cada módulo deberá seguir la misma estructura.
 
@@ -626,7 +678,14 @@ La recuperación aplicará por defecto:
 
 Los umbrales podrán configurarse sin desplegar código, pero nunca deshabilitarse en producción. Las huellas para rate limiting se derivarán mediante HMAC y no almacenarán el celular ni el número de pedido en texto plano.
 
-El proveedor de CAPTCHA deberá aprobarse antes de agregar una dependencia. Su token se verificará siempre en el Backend, tendrá uso único y no sustituirá el rate limiting.
+El proveedor aprobado es Cloudflare Turnstile. Su token se verificará siempre en
+el Backend mediante Siteverify, tendrá uso único, deberá corresponder a la acción
+`order_recovery` y a un hostname permitido, y no sustituirá el rate limiting.
+
+El incremento 7.3 implementa los límites persistentes, las huellas HMAC, la
+señal `captchaRequired`, el bloqueo temporal, la validación Turnstile fail-closed,
+la rotación atómica y la purga programada. Una indisponibilidad de Cloudflare
+rechazará temporalmente la recuperación sin sumar un fallo al comprador.
 
 El mensaje de recuperación fallida será siempre genérico y no revelará si existe el pedido, si el celular coincide o si una sesión previa estuvo asociada.
 
@@ -668,6 +727,96 @@ Las rutas públicas de pedidos serán:
 
 Todo endpoint administrativo deberá validar autenticación.
 
+Las rutas estrictamente relacionadas con autenticación, sesión y perfil se
+incorporarán en la Fase 8.5. Los demás endpoints `/api/admin` se implementarán en
+la Fase 9 junto con su caso de uso y nunca existirán públicamente antes de contar
+con autenticación y autorización activas.
+
+La Fase 8.5 expone únicamente:
+
+- `GET /api/admin/auth/csrf-token`
+- `POST /api/admin/auth/login`
+- `GET /api/admin/auth/session`
+- `POST /api/admin/auth/logout`
+- `GET /api/admin/auth/profile`
+
+El incremento 9.1 incorpora:
+
+- `GET /api/admin/dashboard`
+
+Este endpoint es de solo lectura, utiliza `Cache-Control: no-store` y exige una
+sesión administrativa activa. Cuenta productos activos, categorías y clientes no
+eliminados, pedidos operativos y pedidos retirados. El stock bajo se calcula con
+`settings.low_stock_threshold`; las ventas recientes excluyen pedidos cancelados
+y no exponen celulares, notas ni IDs internos de clientes.
+
+El incremento 9.2.1 incorpora:
+
+- `GET /api/admin/products`
+
+Es un endpoint privado de solo lectura con `Cache-Control: no-store`. Acepta
+`page`, `pageSize`, `search`, `publication`, `stock` y `sort`; rechaza parámetros
+desconocidos o inválidos. Excluye productos y categorías eliminados lógicamente,
+selecciona solo las columnas necesarias y devuelve categoría, área del catálogo,
+precio, stock, estado de stock, publicación, destacado, fecha de actualización y
+URL firmada de imagen. El estado de stock bajo utiliza
+`settings.low_stock_threshold`. La paginación por rango queda limitada a 50 filas
+por página y usa el ID como segundo criterio para conservar un orden estable.
+
+El incremento 9.2.2 incorpora:
+
+- `GET /api/admin/products/:productId`
+- `POST /api/admin/products`
+- `PUT /api/admin/products/:productId`
+- `PUT /api/admin/products/:productId/image`
+- `DELETE /api/admin/products/:productId/image`
+
+El alta y la edición validan el contrato en el Backend y derivan el slug desde el
+nombre. La edición utiliza `updated_at` como control de concurrencia optimista y
+no modifica stock. La imagen es opcional; sus operaciones aceptan JPG, PNG o WebP
+de hasta 5 MB con firma de archivo validada y Storage privado.
+
+El incremento 9.2.3 incorpora:
+
+- `GET /api/admin/products/:productId/inventory`
+- `POST /api/admin/products/:productId/inventory-adjustments`
+
+La consulta devuelve el stock vigente y movimientos paginados con tipo, delta,
+stock anterior y posterior, motivo, fecha y referencia administrativa o de pedido.
+Excluye productos eliminados y utiliza fecha e ID descendentes como orden estable.
+
+El ajuste acepta exclusivamente `direction=increase|decrease`, una cantidad entera
+positiva y un motivo entre 3 y 500 caracteres. La identidad del autor procede de
+la sesión administrativa, nunca del body. La escritura exige `Origin` y CSRF
+válidos y ejecuta `adjust_product_stock`: la función bloquea la fila del producto,
+impide stock negativo y registra el movimiento y la auditoría dentro de la misma
+transacción. Los movimientos son append-only y no se exponen endpoints para
+editarlos o eliminarlos.
+
+El incremento 9.2.4 incorpora:
+
+- `PATCH /api/admin/products/:productId/publication`
+- `PATCH /api/admin/products/:productId/featured`
+- `DELETE /api/admin/products/:productId`
+
+Publicación y destacado reciben el valor objetivo junto con `expectedUpdatedAt`.
+La activación vuelve a validar que la categoría exista y esté activa. Las tres
+operaciones requieren sesión administrativa, rol, `Origin` permitido y token
+CSRF; el autor siempre se obtiene de la sesión y cada cambio queda registrado en
+el log estructurado del Backend.
+
+La baja actualiza únicamente `products.deleted_at` con concurrencia optimista.
+No elimina la fila, no modifica el stock ni el estado de publicación, y no retira
+la imagen de Storage. Los repositorios continúan excluyendo productos dados de
+baja mediante `deleted_at is null`.
+
+Los tokens de acceso y renovación permanecen exclusivamente en cookies host-only
+`__Host-`, `HttpOnly`, `Secure`, `SameSite=Lax` y `Path=/`; nunca forman parte del
+JSON. El Backend valida el access token contra Supabase Auth, utiliza el refresh
+token solo para renovar una sesión vencida y consulta `profiles` en cada
+autenticación para comprobar que el único rol `administrator` continúa activo.
+Los metadatos editables del usuario de Auth no conceden autorización.
+
 ---
 
 # Soft Delete
@@ -700,7 +849,12 @@ Nunca acceder directamente a Supabase desde Controllers o Services.
 
 Las imágenes serán almacenadas en Supabase Storage.
 
-La Base de Datos almacenará únicamente las URLs.
+La Base de Datos almacenará únicamente rutas relativas de objetos.
+
+El Backend generará URLs firmadas por lote y mantendrá una caché acotada en
+memoria hasta poco antes de su vencimiento. No generará una firma por producto
+ni persistirá URLs temporales. Los fallos de firma se cachearán como máximo 60
+segundos para permitir recuperación rápida cuando se cargue o corrija un objeto.
 
 ---
 
