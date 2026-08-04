@@ -31,7 +31,11 @@ function createAuthProvider(): IAdminAuthProvider {
 }
 
 function createProfileRepository(): IAdminProfileRepository {
-  return { findByUserId: vi.fn().mockResolvedValue(PROFILE) }
+  return {
+    findByUserId: vi.fn().mockResolvedValue(PROFILE),
+    findDetailByUserId: vi.fn(),
+    updateFullName: vi.fn(),
+  }
 }
 
 describe('AdminAuthService', () => {

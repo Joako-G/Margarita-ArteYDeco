@@ -2,6 +2,7 @@ import type { NextFunction, Request, RequestHandler, Response } from 'express'
 
 import type { IAdminAuthService } from '../services/admin-auth.service.js'
 import type { IAdminProfile } from '../types/admin-auth.js'
+import type { IAdminSessionTokens } from '../types/admin-auth.js'
 import { AppError } from '../utils/app-error.js'
 import {
   ADMIN_ACCESS_COOKIE_NAME,
@@ -12,6 +13,7 @@ import {
 } from '../utils/cookies.js'
 
 const adminProfiles = new WeakMap<Request, IAdminProfile>()
+const adminTokens = new WeakMap<Request, Pick<IAdminSessionTokens, 'accessToken' | 'refreshToken'>>()
 
 export function getAuthenticatedAdmin(request: Request): IAdminProfile {
   const profile = adminProfiles.get(request)
@@ -21,6 +23,18 @@ export function getAuthenticatedAdmin(request: Request): IAdminProfile {
   }
 
   return profile
+}
+
+export function getAuthenticatedAdminTokens(
+  request: Request,
+): Pick<IAdminSessionTokens, 'accessToken' | 'refreshToken'> {
+  const tokens = adminTokens.get(request)
+
+  if (tokens === undefined) {
+    throw new AppError(401, 'Tu sesión no es válida o venció', 'ADMIN_SESSION_REQUIRED')
+  }
+
+  return tokens
 }
 
 export function createAdminAuthenticationMiddleware(
@@ -44,6 +58,15 @@ export function createAdminAuthenticationMiddleware(
       }
 
       adminProfiles.set(request, session.profile)
+      const effectiveAccessToken = session.tokensToSet?.accessToken ?? accessToken
+      const effectiveRefreshToken = session.tokensToSet?.refreshToken ?? refreshToken
+
+      if (effectiveAccessToken !== null && effectiveRefreshToken !== null) {
+        adminTokens.set(request, {
+          accessToken: effectiveAccessToken,
+          refreshToken: effectiveRefreshToken,
+        })
+      }
       next()
     } catch (error) {
       clearAdminSessionCookies(response)

@@ -8,6 +8,7 @@ import { AdminDashboardController } from '../controllers/admin-dashboard.control
 import { AdminInventoryController } from '../controllers/admin-inventory.controller.js'
 import { AdminOrderController } from '../controllers/admin-orders.controller.js'
 import { AdminProductController } from '../controllers/admin-products.controller.js'
+import { AdminProfileController } from '../controllers/admin-profile.controller.js'
 import { AdminSettingsController } from '../controllers/admin-settings.controller.js'
 import { CsrfController } from '../controllers/csrf.controller.js'
 import { OrderController } from '../controllers/orders.controller.js'
@@ -38,6 +39,7 @@ import { AdminDashboardService } from '../services/admin-dashboard.service.js'
 import { AdminInventoryService } from '../services/admin-inventory.service.js'
 import { AdminOrderService } from '../services/admin-orders.service.js'
 import { AdminProductService } from '../services/admin-products.service.js'
+import { AdminProfileService, type IAdminProfileService } from '../services/admin-profile.service.js'
 import { AdminSettingsService } from '../services/admin-settings.service.js'
 import { CsrfService, type ICsrfService } from '../services/csrf.service.js'
 import { GuestSessionService } from '../services/guest-sessions.service.js'
@@ -61,6 +63,8 @@ export interface IApplicationDependencies {
   adminInventoryController: AdminInventoryController
   adminOrderController: AdminOrderController
   adminProductController: AdminProductController
+  adminProfileController: AdminProfileController
+  adminProfileService: IAdminProfileService
   adminSettingsController: AdminSettingsController
   categoryController: CategoryController
   csrfController: CsrfController
@@ -76,9 +80,15 @@ export function createApplicationDependencies(
   logger: Logger,
 ): IApplicationDependencies {
   const supabase = createSupabaseClient(env)
+  const adminProfileRepository = new AdminProfileRepository(supabase)
+  const adminAuthProvider = new SupabaseAdminAuthProvider(env.supabaseUrl, env.supabaseSecretKey)
   const adminAuthService = new AdminAuthService(
-    new SupabaseAdminAuthProvider(env.supabaseUrl, env.supabaseSecretKey),
-    new AdminProfileRepository(supabase),
+    adminAuthProvider,
+    adminProfileRepository,
+  )
+  const adminProfileService = new AdminProfileService(
+    adminProfileRepository,
+    adminAuthProvider,
   )
   const adminDashboardService = new AdminDashboardService(
     new AdminDashboardRepository(supabase),
@@ -159,6 +169,8 @@ export function createApplicationDependencies(
     adminInventoryController: new AdminInventoryController(adminInventoryService),
     adminOrderController: new AdminOrderController(adminOrderService),
     adminProductController: new AdminProductController(adminProductService),
+    adminProfileController: new AdminProfileController(adminProfileService),
+    adminProfileService,
     adminSettingsController: new AdminSettingsController(adminSettingsService),
     categoryController: new CategoryController(categoryService, env.publicCacheMaxAgeSeconds),
     csrfController: new CsrfController(csrfService),

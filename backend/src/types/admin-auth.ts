@@ -8,6 +8,23 @@ export interface IAdminProfile {
   role: typeof ADMINISTRATOR_ROLE
 }
 
+export interface IAdminProfileDetail extends IAdminProfile {
+  createdAt: string
+  updatedAt: string
+}
+
+export type AdminEmailChangeResult =
+  | { email: string; status: 'confirmed' }
+  | { email: string; status: 'confirmation_pending' }
+
+export type AdminCredentialUpdateResult =
+  | { status: 'updated' }
+  | { status: 'invalid_current_password' }
+  | { status: 'email_unavailable' }
+  | { status: 'rate_limited' }
+  | { status: 'same_password' }
+  | { status: 'weak_password' }
+
 export interface IAdminSessionTokens {
   accessToken: string
   expiresAt: Date

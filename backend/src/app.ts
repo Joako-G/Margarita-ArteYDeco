@@ -13,6 +13,7 @@ import { createAdminCustomerRouter } from './routes/admin-customers.routes.js'
 import { createAdminDashboardRouter } from './routes/admin-dashboard.routes.js'
 import { createAdminOrderRouter } from './routes/admin-orders.routes.js'
 import { createAdminProductRouter } from './routes/admin-products.routes.js'
+import { createAdminProfileRouter } from './routes/admin-profile.routes.js'
 import { createAdminSettingsRouter } from './routes/admin-settings.routes.js'
 import { createOrderRouter } from './routes/orders.routes.js'
 import { createPublicRouter } from './routes/public.routes.js'
@@ -37,6 +38,7 @@ export function createApp(
   app.use('/api/admin/dashboard', createAdminDashboardRouter(dependencies, env))
   app.use('/api/admin/orders', createAdminOrderRouter(dependencies, env))
   app.use('/api/admin/products', createAdminProductRouter(dependencies, env))
+  app.use('/api/admin/profile', createAdminProfileRouter(dependencies, env))
   app.use('/api/admin/settings', createAdminSettingsRouter(dependencies, env))
   app.use('/api/orders', createOrderRouter(dependencies, env))
   app.use('/api/public', createPublicRouter(dependencies, env))
