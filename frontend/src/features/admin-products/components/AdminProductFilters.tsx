@@ -1,6 +1,6 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { RotateCcw, Search } from 'lucide-react'
+import { RotateCcw, Search, SlidersHorizontal } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 
 import { Button, Input, Select } from '@/shared/components'
@@ -17,6 +17,8 @@ interface IAdminProductFiltersProps {
   onClear: () => void
 }
 
+const MOBILE_MEDIA_QUERY = '(max-width: 39.999rem)'
+
 function getFormValues(filters: IAdminProductFilters): AdminProductFiltersFormType {
   return {
     pageSize: String(filters.pageSize) as AdminProductFiltersFormType['pageSize'],
@@ -27,7 +29,31 @@ function getFormValues(filters: IAdminProductFilters): AdminProductFiltersFormTy
   }
 }
 
+function getActiveFilterCount(filters: IAdminProductFilters): number {
+  let count = 0
+
+  if (filters.search) count += 1
+  if (filters.publication !== 'all') count += 1
+  if (filters.stock !== 'all') count += 1
+  if (filters.sort !== 'newest') count += 1
+
+  return count
+}
+
 export function AdminProductFilters({ filters, onApply, onClear }: IAdminProductFiltersProps) {
+  const [areAdvancedFiltersOpen, setAreAdvancedFiltersOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' ? window.matchMedia(MOBILE_MEDIA_QUERY).matches : false,
+  )
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(MOBILE_MEDIA_QUERY)
+    const handleChange = (event: MediaQueryListEvent) => setIsMobile(event.matches)
+
+    mediaQuery.addEventListener('change', handleChange)
+    return () => mediaQuery.removeEventListener('change', handleChange)
+  }, [])
+
   const {
     formState: { errors },
     handleSubmit,
@@ -42,32 +68,36 @@ export function AdminProductFilters({ filters, onApply, onClear }: IAdminProduct
     reset(getFormValues(filters))
   }, [filters, reset])
 
-  return (
-    <form
-      aria-label="Filtros de productos"
-      className="admin-product-filters"
-      onSubmit={handleSubmit(onApply)}
-    >
-      <Input
-        autoComplete="off"
-        error={errors.search?.message}
-        label="Buscar producto"
-        placeholder="Nombre del producto"
-        type="search"
-        {...register('search')}
-      />
-      <Select label="Publicación" {...register('publication')}>
+  const applyFilters = handleSubmit(onApply)
+  const activeFilterCount = useMemo(() => getActiveFilterCount(filters), [filters])
+
+  const publicationRegister = register('publication', {
+    onChange: isMobile ? applyFilters : undefined,
+  })
+  const stockRegister = register('stock', {
+    onChange: isMobile ? applyFilters : undefined,
+  })
+  const sortRegister = register('sort', {
+    onChange: isMobile ? applyFilters : undefined,
+  })
+  const pageSizeRegister = register('pageSize', {
+    onChange: isMobile ? applyFilters : undefined,
+  })
+
+  const advancedFilters = (
+    <>
+      <Select label={isMobile ? 'Visible en la tienda' : 'Publicación'} {...publicationRegister}>
         <option value="all">Todos</option>
-        <option value="active">Activos</option>
-        <option value="inactive">Inactivos</option>
+        <option value="active">{isMobile ? 'Visibles' : 'Activos'}</option>
+        <option value="inactive">{isMobile ? 'Ocultos' : 'Inactivos'}</option>
       </Select>
-      <Select label="Stock" {...register('stock')}>
+      <Select label={isMobile ? 'Unidades disponibles' : 'Stock'} {...stockRegister}>
         <option value="all">Todos</option>
-        <option value="inStock">Disponible</option>
+        <option value="inStock">{isMobile ? 'En stock' : 'Disponible'}</option>
         <option value="lowStock">Stock bajo</option>
         <option value="outOfStock">Sin stock</option>
       </Select>
-      <Select label="Ordenar por" {...register('sort')}>
+      <Select label={isMobile ? 'Mostrar primero' : 'Ordenar por'} {...sortRegister}>
         <option value="newest">Última actualización</option>
         <option value="nameAsc">Nombre A–Z</option>
         <option value="nameDesc">Nombre Z–A</option>
@@ -76,21 +106,74 @@ export function AdminProductFilters({ filters, onApply, onClear }: IAdminProduct
         <option value="stockAsc">Menor stock</option>
         <option value="stockDesc">Mayor stock</option>
       </Select>
-      <Select label="Filas" {...register('pageSize')}>
+      <Select label={isMobile ? 'Productos por página' : 'Filas'} {...pageSizeRegister}>
         <option value="10">10</option>
         <option value="20">20</option>
         <option value="50">50</option>
       </Select>
-      <div className="admin-product-filters__actions">
-        <Button type="submit">
-          <Search aria-hidden="true" size={18} />
-          Aplicar
-        </Button>
-        <Button onClick={onClear} type="button" variant="ghost">
-          <RotateCcw aria-hidden="true" size={18} />
-          Limpiar
-        </Button>
+    </>
+  )
+
+  return (
+    <form
+      aria-label="Filtros de productos"
+      className="admin-product-filters"
+      onSubmit={applyFilters}
+    >
+      <div className="admin-product-filters__search">
+        <Search aria-hidden="true" className="admin-product-filters__search-icon" size={18} />
+        <Input
+          autoComplete="off"
+          className="admin-product-filters__search-input"
+          error={errors.search?.message}
+          label="Buscar producto"
+          placeholder="Nombre del producto"
+          type="search"
+          {...register('search')}
+        />
       </div>
+
+      {isMobile ? (
+        <>
+          <div className="admin-product-filters__mobile-toolbar">
+            <Button
+              aria-expanded={areAdvancedFiltersOpen}
+              onClick={() => setAreAdvancedFiltersOpen((open) => !open)}
+              type="button"
+              variant="secondary"
+            >
+              <SlidersHorizontal aria-hidden="true" size={18} />
+              Más filtros
+              {activeFilterCount > 0 ? (
+                <span className="admin-product-filters__active-count">{activeFilterCount}</span>
+              ) : null}
+            </Button>
+            <Button onClick={onClear} type="button" variant="ghost">
+              <RotateCcw aria-hidden="true" size={18} />
+              Quitar filtros
+            </Button>
+          </div>
+          <div
+            className={`admin-product-filters__advanced ${areAdvancedFiltersOpen ? 'admin-product-filters__advanced--open' : ''}`}
+          >
+            {advancedFilters}
+          </div>
+        </>
+      ) : (
+        <>
+          {advancedFilters}
+          <div className="admin-product-filters__actions">
+            <Button type="submit">
+              <Search aria-hidden="true" size={18} />
+              Aplicar
+            </Button>
+            <Button onClick={onClear} type="button" variant="ghost">
+              <RotateCcw aria-hidden="true" size={18} />
+              Limpiar
+            </Button>
+          </div>
+        </>
+      )}
     </form>
   )
 }

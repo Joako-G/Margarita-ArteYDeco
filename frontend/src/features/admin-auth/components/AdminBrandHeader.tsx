@@ -6,7 +6,7 @@ import logo from '@/assets/images/logo-header-optimized.webp'
 interface IAdminBrandHeaderProps {
   actions?: ReactNode
   brandDestination: string
-  contextLabel: string
+  contextLabel?: string
   leadingAction?: ReactNode
 }
 
@@ -35,7 +35,9 @@ export function AdminBrandHeader({
               width="1097"
             />
           </Link>
-          <span className="admin-brand-header__context">{contextLabel}</span>
+          {contextLabel ? (
+            <span className="admin-brand-header__context">{contextLabel}</span>
+          ) : null}
         </div>
         {actions ? <div className="admin-brand-header__actions">{actions}</div> : null}
       </div>

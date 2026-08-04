@@ -9,23 +9,23 @@ export function DashboardOverview({ metrics }: IDashboardOverviewProps) {
     <section aria-labelledby="dashboard-overview-title" className="admin-dashboard__overview">
       <div className="admin-dashboard__section-heading">
         <div>
-          <p className="admin-dashboard__section-label">Vista general</p>
-          <h2 id="dashboard-overview-title">Estado del negocio</h2>
+          <p className="admin-dashboard__section-label">Resumen</p>
+          <h2 id="dashboard-overview-title">Así está tu tienda hoy</h2>
         </div>
-        <p>Datos actuales del catálogo y la operación.</p>
+        <p>Los números de tu tienda de un solo vistazo.</p>
       </div>
 
       <dl className="admin-dashboard__metrics">
         <div>
-          <dt>Pedidos en curso</dt>
+          <dt>Pedidos por atender</dt>
           <dd>{metrics.openOrders}</dd>
         </div>
         <div>
-          <dt>Productos activos</dt>
+          <dt>Productos a la venta</dt>
           <dd>{metrics.activeProducts}</dd>
         </div>
         <div>
-          <dt>Clientes registrados</dt>
+          <dt>Clientes</dt>
           <dd>{metrics.customers}</dd>
         </div>
         <div>

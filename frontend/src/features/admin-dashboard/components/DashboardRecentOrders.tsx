@@ -37,8 +37,12 @@ export function DashboardRecentOrders({
         </p>
       </div>
 
+      <p className="admin-dashboard__panel-intro">
+        Los pedidos más recientes recibidos en tu tienda.
+      </p>
+
       {orders.length === 0 ? (
-        <p className="admin-dashboard__empty">Todavía no hay ventas para mostrar.</p>
+        <p className="admin-dashboard__empty">Todavía no recibiste pedidos.</p>
       ) : (
         <ol className="admin-dashboard__order-list">
           {orders.map((order) => {

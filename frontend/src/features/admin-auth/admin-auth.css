@@ -650,6 +650,18 @@
   }
 }
 
+@media (max-width: 47.99rem) {
+  .admin-brand-header__inner {
+    position: relative;
+  }
+
+  .admin-brand-header__brand {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
 @media (min-width: 48rem) {
   .admin-brand-header__inner {
     padding-inline: var(--space-3);
@@ -698,8 +710,16 @@
 }
 
 @media (min-width: 80rem) {
+  .admin-shell__body {
+    align-items: start;
+  }
+
   .admin-sidebar {
+    position: sticky;
+    top: 96px;
     display: block;
+    height: calc(100vh - 96px);
+    overflow-y: auto;
   }
 
   .admin-brand-header .admin-header__menu-button {

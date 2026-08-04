@@ -19,9 +19,13 @@ export function DashboardStockPanel({
         </span>
         <div>
           <p className="admin-dashboard__section-label">Inventario</p>
-          <h2 id="dashboard-stock-title">Atención de stock</h2>
+          <h2 id="dashboard-stock-title">Stock por reponer</h2>
         </div>
       </div>
+
+      <p className="admin-dashboard__panel-intro">
+        Revisá qué productos tenés que reponer para no perder ventas.
+      </p>
 
       <dl className="admin-dashboard__stock-metrics">
         <div>
@@ -41,12 +45,12 @@ export function DashboardStockPanel({
       </dl>
 
       <div className="admin-dashboard__subsection-heading">
-        <h3>Prioridad de reposición</h3>
+        <h3>Productos por reponer</h3>
         <span>Hasta 5 productos</span>
       </div>
 
       {lowStockProducts.length === 0 ? (
-        <p className="admin-dashboard__empty">No hay productos activos con stock bajo.</p>
+        <p className="admin-dashboard__empty">Todo listo: no hay productos con stock bajo.</p>
       ) : (
         <ul className="admin-dashboard__stock-list">
           {lowStockProducts.map((product) => (

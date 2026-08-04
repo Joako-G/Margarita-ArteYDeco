@@ -88,7 +88,6 @@ export function AdminLayout() {
       <AdminBrandHeader
         actions={headerActions}
         brandDestination={routes.admin}
-        contextLabel="Administración"
         leadingAction={headerNavigation}
       />
 
@@ -117,12 +116,6 @@ export function AdminLayout() {
       >
         <div className="admin-sidebar-drawer__body">
           <AdminNavigation onNavigate={() => setIsSidebarOpen(false)} />
-          <AdminMobileAccount
-            isLoggingOut={logout.isPending}
-            onLogout={() => void handleLogout()}
-            onNavigate={() => setIsSidebarOpen(false)}
-            profile={session.data?.profile}
-          />
         </div>
       </Drawer>
 

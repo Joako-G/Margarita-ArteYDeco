@@ -30,10 +30,10 @@ export function AdminDashboardPage() {
   return (
     <main className="admin-page admin-dashboard" aria-labelledby="admin-dashboard-title">
       <AdminPageHeader
-        currentLabel="Dashboard"
-        description="Una lectura rápida del catálogo, el inventario y los pedidos recientes."
+        currentLabel="Inicio"
+        description="Un resumen de tus productos, los pedidos recibidos y la actividad reciente de tu tienda."
         sectionLabel="Administración"
-        title="Panel principal"
+        title="Resumen de tu tienda"
         titleId="admin-dashboard-title"
       />
 
@@ -48,7 +48,7 @@ export function AdminDashboardPage() {
           <CircleAlert aria-hidden="true" size={28} />
           <div>
             <h2 id="dashboard-error-title">No pudimos cargar el resumen</h2>
-            <p>Revisá que el backend esté disponible e intentá nuevamente.</p>
+            <p>Verificá tu conexión y volvé a intentar en un momento.</p>
           </div>
           <Button onClick={() => void dashboard.refetch()} variant="secondary">
             Reintentar
@@ -60,13 +60,13 @@ export function AdminDashboardPage() {
         <div className="admin-dashboard__content">
           <DashboardOverview metrics={dashboard.data.metrics} />
           <div className="admin-dashboard__operational-grid">
-            <DashboardStockPanel
-              lowStockProducts={dashboard.data.lowStockProducts}
-              metrics={dashboard.data.metrics}
-            />
             <DashboardRecentOrders
               completedOrders={dashboard.data.metrics.completedOrders}
               orders={dashboard.data.recentOrders}
+            />
+            <DashboardStockPanel
+              lowStockProducts={dashboard.data.lowStockProducts}
+              metrics={dashboard.data.metrics}
             />
           </div>
         </div>

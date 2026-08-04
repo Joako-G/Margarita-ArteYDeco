@@ -195,6 +195,12 @@
   border-bottom: 1px solid var(--color-border);
 }
 
+.admin-dashboard__panel-intro {
+  max-width: 52ch;
+  margin-top: var(--space-1);
+  font-size: var(--font-size-small);
+}
+
 .admin-dashboard__subsection-heading span,
 .admin-dashboard__empty {
   font-size: var(--font-size-caption);
