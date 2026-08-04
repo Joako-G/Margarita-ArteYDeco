@@ -1,9 +1,7 @@
-import { createRequire } from 'node:module'
-
 import cors, { type CorsOptions } from 'cors'
 import type { RequestHandler } from 'express'
 import { rateLimit } from 'express-rate-limit'
-import type { HelmetOptions } from 'helmet'
+import helmetModule, { type HelmetOptions } from 'helmet'
 
 import type { IEnv } from '../config/env.js'
 import type { ICsrfService } from '../services/csrf.service.js'
@@ -12,7 +10,7 @@ import { CSRF_COOKIE_NAME, parseCookieValue } from '../utils/cookies.js'
 
 type HelmetFactory = (options?: Readonly<HelmetOptions>) => RequestHandler
 
-const helmet = createRequire(import.meta.url)('helmet') as HelmetFactory
+const helmet = helmetModule as unknown as HelmetFactory
 
 export function createHelmetMiddleware(): RequestHandler {
   return helmet({
