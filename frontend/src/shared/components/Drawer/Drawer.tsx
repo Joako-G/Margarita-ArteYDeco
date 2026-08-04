@@ -6,11 +6,13 @@ import { IconButton } from '@/shared/components/IconButton'
 import { useDialog } from '@/shared/hooks/useDialog'
 import { mergeClassNames } from '@/shared/utils/class-names'
 
-type DrawerSideType = 'left' | 'right'
+type DrawerSideType = 'bottom' | 'left' | 'right'
 
 interface IDrawerProps {
   children: ReactNode
   className?: string
+  id?: string
+  isModal?: boolean
   isOpen: boolean
   onClose: () => void
   side?: DrawerSideType
@@ -20,6 +22,8 @@ interface IDrawerProps {
 export function Drawer({
   children,
   className,
+  id,
+  isModal = true,
   isOpen,
   onClose,
   side = 'right',
@@ -27,6 +31,7 @@ export function Drawer({
 }: IDrawerProps) {
   const titleId = useId()
   const { dialogRef, handleBackdropClick, handleCancel } = useDialog({
+    isModal,
     isOpen,
     onClose,
   })
@@ -38,8 +43,10 @@ export function Drawer({
         'ui-dialog',
         'ui-drawer',
         side === 'left' && 'ui-drawer--left',
+        side === 'bottom' && 'ui-drawer--bottom',
         className,
       )}
+      id={id}
       onCancel={handleCancel}
       onClick={handleBackdropClick}
       ref={dialogRef}

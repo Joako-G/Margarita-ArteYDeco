@@ -3,14 +3,18 @@ import { persist } from 'zustand/middleware'
 
 import type { IProduct } from '@/shared/types/catalog'
 
-import type { ICartItem } from '../types/cart'
+import type { CartAvailabilityStatusType, ICartAvailabilityChange, ICartItem } from '../types/cart'
+import { reconcileCartItems } from '../utils/cart-availability'
 
 interface ICartStore {
-  availabilityMessage: string | null
+  availabilityChanges: ICartAvailabilityChange[]
+  availabilityStatus: CartAvailabilityStatusType
+  beginAvailabilityCheck: () => void
   clearCart: () => void
   closeCart: () => void
-  dismissAvailabilityMessage: () => void
+  dismissAvailabilityChanges: () => void
   dismissSuccessMessage: () => void
+  failAvailabilityCheck: () => void
   isCartOpen: boolean
   items: ICartItem[]
   addItem: (product: IProduct, quantity: number) => boolean
@@ -33,8 +37,10 @@ export const useCartStore = create<ICartStore>()(
     (set) => ({
       items: [],
       isCartOpen: false,
-      availabilityMessage: null,
+      availabilityChanges: [],
+      availabilityStatus: 'checking',
       successMessage: null,
+      beginAvailabilityCheck: () => set({ availabilityStatus: 'checking' }),
       addItem: (product, quantity) => {
         if (!product.isActive || product.stockQuantity < 1 || quantity < 1) return false
 
@@ -70,40 +76,27 @@ export const useCartStore = create<ICartStore>()(
 
         return wasAdded
       },
-      clearCart: () => set({ items: [], availabilityMessage: null, successMessage: null }),
+      clearCart: () => set({ items: [], availabilityChanges: [], successMessage: null }),
       closeCart: () => set({ isCartOpen: false }),
-      dismissAvailabilityMessage: () => set({ availabilityMessage: null }),
+      dismissAvailabilityChanges: () => set({ availabilityChanges: [] }),
       dismissSuccessMessage: () => set({ successMessage: null }),
+      failAvailabilityCheck: () => set({ availabilityStatus: 'error' }),
       openCart: () => set({ isCartOpen: true }),
       removeItem: (productId) =>
         set((state) => ({
           items: state.items.filter((item) => item.id !== productId),
         })),
       syncProducts: (products) => {
-        const productsById = new Map(products.map((product) => [product.id, product]))
-        let nextAvailabilityMessage: string | null = null
-
         set((state) => {
-          const nextItems = state.items.flatMap((item) => {
-            const currentProduct = productsById.get(item.id)
-
-            if (!currentProduct || !currentProduct.isActive || currentProduct.stockQuantity === 0) {
-              nextAvailabilityMessage = `${item.name} dejó de estar disponible y se quitó del carrito.`
-              return []
-            }
-
-            const nextQuantity = Math.min(item.quantity, currentProduct.stockQuantity)
-
-            if (nextQuantity !== item.quantity) {
-              nextAvailabilityMessage = `Actualizamos la cantidad de ${item.name} según el stock disponible.`
-            }
-
-            return [createCartItem(currentProduct, nextQuantity)]
-          })
+          const result = reconcileCartItems(state.items, products)
 
           return {
-            items: nextItems,
-            availabilityMessage: nextAvailabilityMessage ?? state.availabilityMessage,
+            availabilityChanges:
+              result.changes.length > 0
+                ? [...state.availabilityChanges, ...result.changes]
+                : state.availabilityChanges,
+            availabilityStatus: 'ready',
+            items: result.items,
           }
         })
       },

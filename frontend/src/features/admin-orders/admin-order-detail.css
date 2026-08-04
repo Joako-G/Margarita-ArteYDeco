@@ -1,0 +1,303 @@
+.admin-order-detail {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.admin-order-detail h2,
+.admin-order-detail p,
+.admin-order-detail dl,
+.admin-order-detail dd {
+  margin: 0;
+}
+
+.admin-order-detail__feedback,
+.admin-order-detail__operation,
+.admin-order-detail__panel,
+.admin-order-detail__load-error {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+
+.admin-order-detail__feedback {
+  display: flex;
+  align-items: flex-start;
+  padding: var(--space-2) var(--space-3);
+  gap: var(--space-2);
+}
+
+.admin-order-detail__feedback--success {
+  color: var(--color-success);
+  background: var(--color-success-soft);
+}
+
+.admin-order-detail__feedback--error,
+.admin-order-detail__load-error {
+  color: var(--color-error);
+  background: var(--color-error-soft);
+}
+
+.admin-order-detail__operation {
+  display: grid;
+  padding: var(--space-3);
+  gap: var(--space-3);
+  background: var(--color-surface-muted);
+}
+
+.admin-order-detail__operation h2,
+.admin-order-detail__panel h2 {
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+  text-wrap: balance;
+}
+
+.admin-order-detail__label {
+  margin-bottom: var(--space-1) !important;
+  color: var(--color-primary-dark);
+  font-size: var(--font-size-caption);
+  font-weight: 600;
+}
+
+.admin-order-detail__badges,
+.admin-order-detail__primary-actions,
+.admin-order-detail__modal-actions,
+.admin-whatsapp-composer__templates {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.admin-order-detail__badges {
+  margin-top: var(--space-2);
+}
+
+.admin-order-detail__badges > span:last-child {
+  color: var(--color-primary-dark);
+  font-size: var(--font-size-small);
+}
+
+.admin-order-detail__primary-actions {
+  align-self: end;
+}
+
+.admin-order-detail .admin-order-detail__cancel {
+  color: var(--color-error);
+}
+
+.admin-order-detail .admin-order-detail__cancel:hover:not(:disabled) {
+  color: var(--color-error);
+  background: var(--color-error-soft);
+}
+
+.admin-order-detail__grid {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.admin-order-detail__panel {
+  min-width: 0;
+  padding: var(--space-3);
+}
+
+.admin-order-detail__panel-heading {
+  display: grid;
+  margin-bottom: var(--space-3);
+  gap: var(--space-1);
+}
+
+.admin-order-detail__panel-heading > p:last-child {
+  max-width: 65ch;
+  color: var(--color-primary-dark);
+  font-size: var(--font-size-small);
+}
+
+.admin-order-items,
+.admin-order-totals,
+.admin-order-detail__facts,
+.admin-whatsapp-composer,
+.admin-order-cancellation {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.admin-order-items__row,
+.admin-order-totals > div,
+.admin-order-detail__facts > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.admin-order-items__row {
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.admin-order-items__row > div {
+  display: grid;
+  gap: calc(var(--space-1) / 2);
+}
+
+.admin-order-items__row span,
+.admin-order-detail__facts dt {
+  color: var(--color-primary-dark);
+  font-size: var(--font-size-caption);
+}
+
+.admin-order-items__row > strong,
+.admin-order-totals dd {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.admin-order-totals {
+  padding-top: var(--space-1);
+}
+
+.admin-order-totals__total {
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border);
+  color: var(--color-primary-dark);
+  font-size: var(--font-size-body);
+  font-weight: 700;
+}
+
+.admin-order-detail__facts > div {
+  padding-bottom: var(--space-1);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.admin-order-detail__facts dd {
+  max-width: 65%;
+  text-align: right;
+}
+
+.admin-order-detail__maps {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  margin-top: var(--space-2);
+  gap: var(--space-1);
+  border-radius: var(--radius-button);
+  color: var(--color-primary-dark);
+  font-weight: 600;
+}
+
+.admin-order-detail__maps:focus-visible {
+  outline: 3px solid var(--color-primary-dark);
+  outline-offset: 2px;
+}
+
+.admin-order-detail__notes {
+  padding: var(--space-2);
+  margin-top: var(--space-2);
+  border-radius: var(--radius-input);
+  background: var(--color-surface-muted);
+}
+
+.admin-order-detail__notes p {
+  margin-top: var(--space-1);
+  white-space: pre-wrap;
+}
+
+.admin-whatsapp-composer__open {
+  width: fit-content;
+  text-decoration: none;
+}
+
+.admin-order-cancellation > p {
+  line-height: 1.55;
+}
+
+.admin-order-cancellation__error {
+  margin-top: var(--space-1) !important;
+  color: var(--color-error);
+  font-size: var(--font-size-caption);
+}
+
+.admin-order-cancellation__actions {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.admin-order-detail__modal-actions {
+  justify-content: flex-end;
+}
+
+.admin-order-detail__load-error {
+  display: grid;
+  justify-items: start;
+  padding: var(--space-4);
+  gap: var(--space-2);
+}
+
+.admin-order-detail__load-error > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.admin-order-detail__skeleton-title {
+  width: min(100%, 24rem);
+  height: var(--space-6);
+}
+
+.admin-order-detail__skeleton-grid {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.admin-order-detail__skeleton-grid .ui-skeleton {
+  min-height: 14rem;
+}
+
+@media (max-width: 30rem) {
+  .admin-order-detail__primary-actions,
+  .admin-order-detail__modal-actions,
+  .admin-order-detail__load-error > div,
+  .admin-whatsapp-composer__open {
+    width: 100%;
+  }
+
+  .admin-order-detail__primary-actions .ui-button,
+  .admin-order-detail__modal-actions .ui-button,
+  .admin-order-detail__load-error .ui-button,
+  .admin-whatsapp-composer__open {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .admin-order-detail__facts > div {
+    display: grid;
+    gap: calc(var(--space-1) / 2);
+  }
+
+  .admin-order-detail__facts dd {
+    max-width: none;
+    text-align: left;
+  }
+}
+
+@media (min-width: 40rem) {
+  .admin-order-cancellation__actions {
+    grid-template-columns: repeat(2, max-content);
+    justify-content: end;
+  }
+}
+
+@media (min-width: 64rem) {
+  .admin-order-detail__operation {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+  }
+
+  .admin-order-detail__grid,
+  .admin-order-detail__skeleton-grid {
+    grid-template-columns: minmax(0, 1.25fr) minmax(18rem, 0.75fr);
+  }
+
+  .admin-order-detail__skeleton-grid .ui-skeleton:last-child {
+    grid-column: 1 / -1;
+  }
+}

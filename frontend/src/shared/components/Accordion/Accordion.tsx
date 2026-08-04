@@ -1,6 +1,5 @@
 import { useId, useState } from 'react'
 import type { ReactNode } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
 
 import { mergeClassNames } from '@/shared/utils/class-names'
@@ -60,22 +59,15 @@ export function Accordion({ allowMultiple = false, className, items }: IAccordio
                 />
               </button>
             </h3>
-            <AnimatePresence initial={false}>
-              {isOpen && (
-                <motion.div
-                  animate={{ opacity: 1 }}
-                  aria-labelledby={triggerId}
-                  className="ui-accordion__panel"
-                  exit={{ opacity: 0 }}
-                  id={panelId}
-                  initial={{ opacity: 0 }}
-                  role="region"
-                  transition={{ duration: 0.2 }}
-                >
-                  {item.content}
-                </motion.div>
-              )}
-            </AnimatePresence>
+            <div
+              aria-labelledby={triggerId}
+              className="ui-accordion__panel"
+              hidden={!isOpen}
+              id={panelId}
+              role="region"
+            >
+              {item.content}
+            </div>
           </article>
         )
       })}

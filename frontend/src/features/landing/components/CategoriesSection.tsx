@@ -1,7 +1,7 @@
-import { Sprout } from 'lucide-react'
+import { PackageOpen, Sprout } from 'lucide-react'
 
 import { CategoryFilter } from '@/features/categories'
-import { Container, Section, Typography } from '@/shared/components'
+import { Container, EmptyState, Section, Typography } from '@/shared/components'
 import type { CatalogAreaType, ICategory } from '@/shared/types/catalog'
 
 interface ICategoriesSectionProps {
@@ -60,14 +60,22 @@ export function CategoriesSection({
                   <Typography>{content.description}</Typography>
                 </div>
 
-                <CategoryFilter
-                  allLabel={content.allLabel}
-                  ariaLabel={`Explorar categorías de ${content.title}`}
-                  categories={areaCategories}
-                  onSelect={(slug) => onSelect(area, slug)}
-                  productCountByCategory={productCountByCategory}
-                  selectedSlug=""
-                />
+                {areaCategories.length > 0 ? (
+                  <CategoryFilter
+                    allLabel={content.allLabel}
+                    ariaLabel={`Explorar categorías de ${content.title}`}
+                    categories={areaCategories}
+                    onSelect={(slug) => onSelect(area, slug)}
+                    productCountByCategory={productCountByCategory}
+                    selectedSlug=""
+                  />
+                ) : (
+                  <EmptyState
+                    description="Volvé a visitarnos pronto para descubrir nuevas opciones."
+                    icon={<PackageOpen />}
+                    title="Estamos preparando nuevas categorías para esta sección."
+                  />
+                )}
               </article>
             )
           })}

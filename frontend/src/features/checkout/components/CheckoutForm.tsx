@@ -2,7 +2,7 @@ import type { FieldErrors, UseFormRegister } from 'react-hook-form'
 import { Banknote, Clock3, MapPin, WalletCards } from 'lucide-react'
 
 import { Input, Radio, TextArea, Typography } from '@/shared/components'
-import type { ISettings } from '@/shared/types/commerce'
+import type { IPublicSettings } from '@/shared/types/commerce'
 
 import type { ICheckoutFormValues } from '../types/checkout'
 import { normalizePhone } from '../utils/checkout-links'
@@ -10,7 +10,7 @@ import { normalizePhone } from '../utils/checkout-links'
 interface ICheckoutFormProps {
   errors: FieldErrors<ICheckoutFormValues>
   register: UseFormRegister<ICheckoutFormValues>
-  settings: ISettings
+  settings: IPublicSettings
 }
 
 export function CheckoutForm({ errors, register, settings }: ICheckoutFormProps) {

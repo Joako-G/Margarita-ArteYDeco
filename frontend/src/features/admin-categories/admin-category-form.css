@@ -1,0 +1,193 @@
+.admin-category-editor {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.admin-category-form {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.admin-category-form__layout,
+.admin-category-form__side,
+.admin-category-form__fields {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.admin-category-form__panel {
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+
+.admin-category-form__section-heading {
+  margin-bottom: var(--space-3);
+}
+
+.admin-category-form__section-heading p {
+  margin: 0 0 var(--space-1);
+  color: var(--color-primary-dark);
+  font-size: var(--font-size-caption);
+  font-weight: 600;
+}
+
+.admin-category-form__section-heading h2,
+.admin-category-form__load-error h2 {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+  text-wrap: balance;
+}
+
+.admin-category-form__preview,
+.admin-category-form__preview-placeholder {
+  width: 10rem;
+  height: 10rem;
+  margin: 0 auto var(--space-3);
+  border-radius: 100%;
+}
+
+.admin-category-form__preview {
+  display: block;
+  object-fit: cover;
+}
+
+.admin-category-form__preview-placeholder {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: var(--space-1);
+  color: var(--color-primary-dark);
+  background: var(--color-sand);
+  font-size: var(--font-size-caption);
+  text-align: center;
+}
+
+.admin-category-form__publication-help {
+  margin: var(--space-2) 0 0;
+  color: var(--color-primary-dark);
+  font-size: var(--font-size-caption);
+  line-height: 1.55;
+}
+
+.admin-category-form__summary {
+  display: flex;
+  align-items: center;
+  margin-top: var(--space-3);
+  padding: var(--space-2);
+  gap: var(--space-2);
+  border-radius: var(--radius-input);
+  background: var(--color-surface-muted);
+}
+
+.admin-category-form__summary > div {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-1);
+}
+
+.admin-category-form__summary span {
+  color: var(--color-primary-dark);
+  font-size: var(--font-size-caption);
+}
+
+.admin-category-form__actions {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: var(--space-1);
+}
+
+.admin-category-form__actions .ui-button {
+  width: 100%;
+}
+
+.admin-category-form__alert,
+.admin-category-form__load-error {
+  display: flex;
+  align-items: flex-start;
+  padding: var(--space-2);
+  gap: var(--space-2);
+  border-radius: var(--radius-input);
+}
+
+.admin-category-form__alert {
+  color: var(--color-success);
+  background: var(--color-success-soft);
+}
+
+.admin-category-form__alert--warning {
+  color: var(--color-warning);
+  background: var(--color-warning-soft);
+}
+
+.admin-category-form__alert--error,
+.admin-category-form__load-error {
+  color: var(--color-error);
+  background: var(--color-error-soft);
+}
+
+.admin-category-form__alert > div,
+.admin-category-form__load-error > div {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.admin-category-form__alert span,
+.admin-category-form__load-error p {
+  margin: 0;
+  font-size: var(--font-size-small);
+}
+
+.admin-category-form__load-error .ui-button {
+  margin-left: auto;
+}
+
+.admin-category-form__loading {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.admin-category-form__loading-main,
+.admin-category-form__loading-side {
+  min-height: 24rem;
+}
+
+@media (max-width: 30rem) {
+  .admin-category-form__load-error {
+    flex-direction: column;
+  }
+
+  .admin-category-form__load-error .ui-button {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+@media (min-width: 48rem) {
+  .admin-category-form__actions {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+
+  .admin-category-form__actions .ui-button {
+    width: auto;
+  }
+
+  .admin-category-form__loading {
+    grid-template-columns: minmax(0, 1.7fr) minmax(18rem, 1fr);
+  }
+}
+
+@media (min-width: 64rem) {
+  .admin-category-form__layout {
+    grid-template-columns: minmax(0, 1.7fr) minmax(18rem, 1fr);
+    align-items: start;
+  }
+
+  .admin-category-form__side {
+    position: sticky;
+    top: var(--space-3);
+  }
+}

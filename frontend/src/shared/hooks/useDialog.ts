@@ -2,11 +2,12 @@ import { useEffect, useRef } from 'react'
 import type { MouseEvent, SyntheticEvent } from 'react'
 
 interface IUseDialogOptions {
+  isModal?: boolean
   isOpen: boolean
   onClose: () => void
 }
 
-export function useDialog({ isOpen, onClose }: IUseDialogOptions) {
+export function useDialog({ isModal = true, isOpen, onClose }: IUseDialogOptions) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const returnFocusRef = useRef<HTMLElement | null>(null)
 
@@ -19,7 +20,11 @@ export function useDialog({ isOpen, onClose }: IUseDialogOptions) {
 
     if (isOpen && !dialog.open) {
       returnFocusRef.current = document.activeElement as HTMLElement
-      dialog.showModal()
+      if (isModal) {
+        dialog.showModal()
+      } else {
+        dialog.show()
+      }
       return
     }
 
@@ -27,7 +32,7 @@ export function useDialog({ isOpen, onClose }: IUseDialogOptions) {
       dialog.close()
       returnFocusRef.current?.focus()
     }
-  }, [isOpen])
+  }, [isModal, isOpen])
 
   useEffect(() => {
     return () => returnFocusRef.current?.focus()

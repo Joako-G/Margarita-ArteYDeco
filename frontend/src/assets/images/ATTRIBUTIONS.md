@@ -6,6 +6,7 @@ Decoraciones. Pexels las identifica como gratuitas y sujetas a su licencia.
 
 - `category-cajas-decoradas.webp`: betül nur akyürek — https://www.pexels.com/photo/whimsical-gift-box-with-hand-painted-art-34784652/
 - `category-decoracion-hogar.webp`: Ionela Mat — https://www.pexels.com/photo/ceramic-decor-28100133/
+- `hero-decoracion-480.webp` y `hero-decoracion-800.webp`: variantes optimizadas de `category-decoracion-hogar.webp`.
 - `category-fechas-especiales.webp`: Aljona Ovtšinnikova — https://www.pexels.com/photo/christmas-handmade-ornaments-19188842/
 - `category-regalos-personalizados.webp`: betül nur akyürek — https://www.pexels.com/photo/handcrafted-gift-box-with-vintage-floral-background-34784650/
 

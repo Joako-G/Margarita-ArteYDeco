@@ -8,13 +8,20 @@ import { formatPrice } from '@/shared/utils/format-price'
 import type { CheckoutCartItemType, ICheckoutTotals, PaymentMethodType } from '../types/checkout'
 
 interface IOrderSummaryProps {
+  isSubmissionBlocked: boolean
   isSubmitting: boolean
   items: CheckoutCartItemType[]
   paymentMethod: PaymentMethodType
   totals: ICheckoutTotals
 }
 
-export function OrderSummary({ isSubmitting, items, paymentMethod, totals }: IOrderSummaryProps) {
+export function OrderSummary({
+  isSubmissionBlocked,
+  isSubmitting,
+  items,
+  paymentMethod,
+  totals,
+}: IOrderSummaryProps) {
   const openCart = useCartStore((state) => state.openCart)
 
   return (
@@ -76,13 +83,14 @@ export function OrderSummary({ isSubmitting, items, paymentMethod, totals }: IOr
       </Button>
       <Button
         className="checkout-summary__submit"
+        disabled={isSubmissionBlocked}
         form="checkout-form"
         isLoading={isSubmitting}
         loadingText="Confirmando pedido…"
         size="large"
         type="submit"
       >
-        Confirmar pedido
+        {isSubmissionBlocked ? 'Verificá tu pedido antes de continuar' : 'Confirmar pedido'}
       </Button>
       <p className="checkout-summary__security">
         <LockKeyhole aria-hidden="true" size={16} strokeWidth={2} />

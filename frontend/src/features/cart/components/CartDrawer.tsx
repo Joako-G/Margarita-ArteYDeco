@@ -1,26 +1,32 @@
-import { Minus, PackageOpen, Plus, Trash2, X } from 'lucide-react'
+import { CircleAlert, Minus, PackageOpen, Plus, RefreshCw, Trash2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
+import { queryClient } from '@/app/query-client'
 import productPlaceholderImage from '@/assets/images/product-placeholder.webp'
 import { routes } from '@/config/routes'
+import { CATALOG_QUERY_KEY } from '@/features/catalog/hooks/useCatalog'
 import { Button, DeferredImage, Divider, Drawer, EmptyState, IconButton } from '@/shared/components'
 import { formatPrice } from '@/shared/utils/format-price'
 
 import { useCart } from '../hooks/useCart'
 import { useCartStore } from '../stores/cart.store'
+import { getCartAvailabilityChangeMessage } from '../utils/cart-availability'
 import { getItemAvailabilityLabel } from '../utils/cart-calculations'
 import './cart.css'
 
 export function CartDrawer() {
   const navigate = useNavigate()
   const { discount, items, subtotal, total } = useCart()
-  const availabilityMessage = useCartStore((state) => state.availabilityMessage)
+  const availabilityChanges = useCartStore((state) => state.availabilityChanges)
+  const availabilityStatus = useCartStore((state) => state.availabilityStatus)
   const clearCart = useCartStore((state) => state.clearCart)
   const closeCart = useCartStore((state) => state.closeCart)
-  const dismissAvailabilityMessage = useCartStore((state) => state.dismissAvailabilityMessage)
+  const dismissAvailabilityChanges = useCartStore((state) => state.dismissAvailabilityChanges)
   const isCartOpen = useCartStore((state) => state.isCartOpen)
   const removeItem = useCartStore((state) => state.removeItem)
   const updateItemQuantity = useCartStore((state) => state.updateItemQuantity)
+  const hasUnconfirmedChanges = availabilityChanges.length > 0
+  const canContinueCheckout = availabilityStatus === 'ready' && !hasUnconfirmedChanges
 
   function handleContinueCheckout() {
     closeCart()
@@ -32,17 +38,47 @@ export function CartDrawer() {
     navigate(routes.products)
   }
 
+  function handleRetryAvailability() {
+    void queryClient.refetchQueries({ queryKey: CATALOG_QUERY_KEY })
+  }
+
   return (
     <Drawer className="shopping-cart" isOpen={isCartOpen} onClose={closeCart} title="Tu carrito">
-      {availabilityMessage ? (
+      {hasUnconfirmedChanges ? (
         <div aria-live="polite" className="shopping-cart__availability" role="status">
-          <p>{availabilityMessage}</p>
-          <IconButton
-            aria-label="Cerrar aviso de disponibilidad"
-            onClick={dismissAvailabilityMessage}
-          >
-            <X aria-hidden="true" size={18} strokeWidth={2} />
-          </IconButton>
+          <CircleAlert aria-hidden="true" size={22} strokeWidth={2} />
+          <div>
+            <strong>Actualizamos tu carrito</strong>
+            <ul>
+              {availabilityChanges.map((change) => (
+                <li key={`${change.productId}-${change.reason}`}>
+                  {getCartAvailabilityChangeMessage(change)}
+                </li>
+              ))}
+            </ul>
+            <Button onClick={dismissAvailabilityChanges} size="small" variant="ghost">
+              Entendido
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
+      {items.length > 0 && availabilityStatus === 'checking' ? (
+        <div aria-live="polite" className="shopping-cart__sync-status" role="status">
+          <RefreshCw aria-hidden="true" className="shopping-cart__sync-icon" size={20} />
+          <p>Estamos verificando la disponibilidad de tus productos.</p>
+        </div>
+      ) : null}
+
+      {items.length > 0 && availabilityStatus === 'error' ? (
+        <div className="shopping-cart__sync-status shopping-cart__sync-status--error" role="alert">
+          <CircleAlert aria-hidden="true" size={20} strokeWidth={2} />
+          <div>
+            <p>No pudimos confirmar el stock. Reintentá antes de continuar.</p>
+            <Button onClick={handleRetryAvailability} size="small" variant="ghost">
+              Reintentar
+            </Button>
+          </div>
         </div>
       ) : null}
 
@@ -124,7 +160,18 @@ export function CartDrawer() {
           <p className="shopping-cart__discount-note">
             El descuento por transferencia se aplicará al continuar con la compra.
           </p>
-          <Button onClick={handleContinueCheckout}>Continuar compra</Button>
+          <Button
+            disabled={!canContinueCheckout}
+            isLoading={availabilityStatus === 'checking'}
+            loadingText="Verificando disponibilidad…"
+            onClick={handleContinueCheckout}
+          >
+            {availabilityStatus === 'error'
+              ? 'Disponibilidad sin confirmar'
+              : hasUnconfirmedChanges
+                ? 'Revisá los cambios para continuar'
+                : 'Continuar compra'}
+          </Button>
           <Button onClick={clearCart} variant="ghost">
             Vaciar carrito
           </Button>

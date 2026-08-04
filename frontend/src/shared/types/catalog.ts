@@ -5,7 +5,7 @@ export interface ICategory {
   description: string
   displayOrder: number
   id: string
-  image: string
+  image: string | null
   isActive: boolean
   isGenericImage?: boolean
   name: string

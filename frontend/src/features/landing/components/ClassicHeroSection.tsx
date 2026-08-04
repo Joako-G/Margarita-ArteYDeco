@@ -29,6 +29,7 @@ export function ClassicHeroSection() {
           <img
             alt="Sellos artesanales en relieve sobre una mesa de trabajo"
             className="landing-hero__image"
+            decoding="async"
             fetchPriority="high"
             height="560"
             loading="eager"

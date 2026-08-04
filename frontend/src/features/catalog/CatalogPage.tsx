@@ -3,7 +3,6 @@ import { ChevronDown, PackageOpen, Search } from 'lucide-react'
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
 import { CategoryFilter } from '@/features/categories'
-import { useSyncCartProducts } from '@/features/cart'
 import {
   Button,
   Container,
@@ -81,8 +80,6 @@ export function CatalogPage() {
   })
   const categories = data?.categories ?? EMPTY_CATEGORIES
   const products = data?.products ?? EMPTY_PRODUCTS
-
-  useSyncCartProducts(data?.products)
 
   const activeCategories = useMemo(
     () =>

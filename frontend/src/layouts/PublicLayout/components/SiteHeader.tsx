@@ -3,9 +3,10 @@ import type { SyntheticEvent } from 'react'
 import { Menu } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 
-import logoHeaderImage from '@/assets/images/logo-header.png'
+import logoHeaderImage from '@/assets/images/logo-header-optimized.webp'
 import { CartButton } from '@/features/cart'
-import { settingsMock } from '@/mocks'
+import { usePublicSettings } from '@/features/settings'
+import { RecentOrderLink } from '@/features/public-orders/components/RecentOrderLink'
 import { Drawer, IconButton } from '@/shared/components'
 
 const NAVIGATION_ITEMS = [
@@ -26,7 +27,8 @@ function handleLogoError(event: SyntheticEvent<HTMLImageElement>) {
 
 export function SiteHeader() {
   const location = useLocation()
-  const logoSource = settingsMock.logoUrl ?? logoHeaderImage
+  const { data: settings } = usePublicSettings()
+  const logoSource = settings?.logoUrl ?? logoHeaderImage
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
 
@@ -101,8 +103,10 @@ export function SiteHeader() {
           to="/"
         >
           <img
-            alt="Margaritas Arte & Deco"
+            alt={settings?.businessName ?? 'Margaritas Arte & Deco'}
             className="landing-header__logo"
+            decoding="async"
+            fetchPriority="high"
             height="544"
             onError={handleLogoError}
             src={logoSource}
@@ -124,6 +128,7 @@ export function SiteHeader() {
               {item.label}
             </Link>
           ))}
+          <RecentOrderLink />
         </nav>
 
         <div className="landing-header__actions">
@@ -156,6 +161,7 @@ export function SiteHeader() {
               {item.label}
             </Link>
           ))}
+          <RecentOrderLink onNavigate={() => setIsMenuOpen(false)} />
         </nav>
       </Drawer>
     </header>

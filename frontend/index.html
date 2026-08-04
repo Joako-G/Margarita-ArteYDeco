@@ -3,20 +3,40 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link
+      rel="preload"
+      as="image"
+      href="/src/assets/images/hero-decoracion-800.webp"
+      imagesrcset="/src/assets/images/hero-decoracion-480.webp 480w, /src/assets/images/hero-decoracion-800.webp 800w"
+      imagesizes="(max-width: 767px) calc(100vw - 2rem), 50vw"
+      type="image/webp"
+      fetchpriority="high"
+    />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="%VITE_API_URL%" crossorigin="use-credentials" />
     <link
       href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&amp;family=Poppins:wght@400;500;600;700&amp;display=swap"
+      media="print"
+      onload="this.media='all'"
       rel="stylesheet"
     />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&amp;family=Poppins:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#6e8b74" />
+    <meta name="robots" content="index, follow" />
     <meta
       name="description"
       content="Materiales, herramientas y accesorios para manualidades, decoración y proyectos creativos."
     />
     <meta property="og:locale" content="es_AR" />
     <meta property="og:type" content="website" />
+    <meta property="og:url" content="/" />
     <meta property="og:title" content="Margaritas Arte &amp; Deco" />
     <meta
       property="og:description"

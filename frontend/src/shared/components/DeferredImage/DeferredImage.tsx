@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import type { ImgHTMLAttributes, SyntheticEvent } from 'react'
 
 interface IDeferredImageProps
@@ -17,38 +17,9 @@ export function DeferredImage({
   src,
   ...props
 }: IDeferredImageProps) {
-  const imageRef = useRef<HTMLImageElement>(null)
   const [failedSrc, setFailedSrc] = useState<string | null>(null)
-  const [isVisible, setIsVisible] = useState(
-    () => typeof window !== 'undefined' && !('IntersectionObserver' in window),
-  )
   const isShowingFallback = Boolean(fallbackSrc && (!src || failedSrc === src))
   const currentSrc = isShowingFallback ? fallbackSrc : src
-
-  useEffect(() => {
-    const image = imageRef.current
-
-    if (isVisible || !image || !('IntersectionObserver' in window)) {
-      return
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true)
-          observer.disconnect()
-        }
-      },
-      {
-        rootMargin: '160px',
-        threshold: 0.01,
-      },
-    )
-
-    observer.observe(image)
-
-    return () => observer.disconnect()
-  }, [isVisible])
 
   function handleError(event: SyntheticEvent<HTMLImageElement>) {
     onError?.(event)
@@ -66,8 +37,7 @@ export function DeferredImage({
       fetchPriority="low"
       loading="lazy"
       onError={handleError}
-      ref={imageRef}
-      src={isVisible ? (currentSrc ?? undefined) : undefined}
+      src={currentSrc ?? undefined}
     />
   )
 }

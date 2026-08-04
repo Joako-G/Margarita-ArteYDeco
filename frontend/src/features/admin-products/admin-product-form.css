@@ -1,0 +1,194 @@
+.admin-product-editor h2,
+.admin-product-editor p {
+  margin: 0;
+}
+
+.admin-product-form {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.admin-product-form__layout,
+.admin-product-form__side,
+.admin-product-form__fields {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-3);
+}
+
+.admin-product-form__panel,
+.admin-product-form__alert,
+.admin-product-form__load-error {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+}
+
+.admin-product-form__panel {
+  display: grid;
+  align-content: start;
+  padding: var(--space-3);
+  gap: var(--space-3);
+}
+
+.admin-product-form__section-heading {
+  display: grid;
+  gap: calc(var(--space-1) / 2);
+}
+
+.admin-product-form__section-heading p {
+  color: var(--color-primary-dark);
+  font-size: var(--font-size-caption);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-product-form__section-heading h2,
+.admin-product-form__load-error h2 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--font-size-h3);
+  line-height: 1.15;
+}
+
+.admin-product-form__row {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.admin-product-form__preview {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-input);
+}
+
+.admin-product-form__remove-image {
+  width: fit-content;
+  color: var(--color-error);
+}
+
+.admin-product-form__summary {
+  display: flex;
+  align-items: center;
+  padding: var(--space-2);
+  gap: var(--space-2);
+  color: var(--color-primary-dark);
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-input);
+}
+
+.admin-product-form__summary > div {
+  display: grid;
+  min-width: 0;
+}
+
+.admin-product-form__summary strong,
+.admin-product-form__summary span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-product-form__summary span {
+  font-size: var(--font-size-caption);
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-product-form__actions {
+  position: sticky;
+  bottom: calc(var(--admin-mobile-navigation-offset) + var(--space-1));
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  padding: var(--space-2);
+  gap: var(--space-1);
+  background: color-mix(in srgb, var(--color-surface) 94%, transparent);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-default);
+  backdrop-filter: blur(8px);
+}
+
+.admin-product-form__actions .ui-button {
+  flex: 1 1 auto;
+}
+
+.admin-product-form__alert,
+.admin-product-form__load-error {
+  display: flex;
+  align-items: flex-start;
+  padding: var(--space-3);
+  gap: var(--space-2);
+}
+
+.admin-product-form__alert {
+  color: var(--color-primary-dark);
+  border-color: var(--color-success);
+}
+
+.admin-product-form__alert--warning {
+  color: var(--color-text);
+  border-color: var(--color-warning);
+}
+
+.admin-product-form__alert--error,
+.admin-product-form__load-error > svg {
+  color: var(--color-error);
+}
+
+.admin-product-form__alert > div,
+.admin-product-form__alert:not(:has(> div)),
+.admin-product-form__load-error > div {
+  display: grid;
+  gap: calc(var(--space-1) / 2);
+}
+
+.admin-product-form__alert span,
+.admin-product-form__load-error p {
+  color: var(--color-text);
+  font-size: var(--font-size-small);
+}
+
+.admin-product-form__loading {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.admin-product-form__loading-main,
+.admin-product-form__loading-side {
+  display: block;
+  min-height: 28rem;
+  border-radius: var(--radius-card);
+}
+
+@media (min-width: 40rem) {
+  .admin-product-form__row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-product-form__actions .ui-button {
+    flex: 0 0 auto;
+  }
+}
+
+@media (min-width: 64rem) {
+  .admin-product-form__layout,
+  .admin-product-form__loading {
+    grid-template-columns: minmax(0, 1.7fr) minmax(17rem, 0.75fr);
+    align-items: start;
+  }
+
+  .admin-product-form__side {
+    position: sticky;
+    top: var(--space-3);
+  }
+
+  .admin-product-form__actions {
+    bottom: var(--space-2);
+  }
+}

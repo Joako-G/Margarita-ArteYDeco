@@ -48,6 +48,63 @@ summary {
   outline: 3px solid var(--color-primary-dark);
 }
 
+.route-loading {
+  display: grid;
+  min-height: 100dvh;
+  place-content: center;
+  justify-items: center;
+  padding: var(--space-4);
+  gap: var(--space-2);
+  color: var(--color-primary-dark);
+  background: var(--color-surface-muted);
+}
+
+.route-loading p {
+  margin: 0;
+  font-size: var(--font-size-small);
+  font-weight: 600;
+}
+
+.route-error {
+  display: grid;
+  min-height: 100dvh;
+  align-content: center;
+  justify-items: start;
+  padding: clamp(var(--space-3), 8vw, var(--space-10));
+  gap: var(--space-2);
+  background: var(--color-surface-muted);
+}
+
+.route-error > p,
+.route-error > h1,
+.route-error > span {
+  max-width: 42rem;
+  margin: 0;
+}
+
+.route-error > p {
+  color: var(--color-primary-dark);
+  font-size: var(--font-size-small);
+  font-weight: 600;
+}
+
+.route-error > h1 {
+  font-family: var(--font-heading);
+  font-size: clamp(2.25rem, 7vw, var(--font-size-h1));
+  line-height: 1.05;
+  text-wrap: balance;
+}
+
+.route-error > span {
+  line-height: 1.6;
+}
+
+.route-error > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

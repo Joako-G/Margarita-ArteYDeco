@@ -8,6 +8,6 @@ export function useCatalog() {
   return useQuery({
     queryKey: CATALOG_QUERY_KEY,
     queryFn: catalogService.fetchCatalog,
-    staleTime: Number.POSITIVE_INFINITY,
+    staleTime: 60_000,
   })
 }

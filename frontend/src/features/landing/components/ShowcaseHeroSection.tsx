@@ -1,7 +1,8 @@
 import { ArrowRight, Heart, Lightbulb, Sparkles, Star } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
-import heroImage from '@/assets/images/category-decoracion-hogar.webp'
+import heroImageSmall from '@/assets/images/hero-decoracion-480.webp'
+import heroImage from '@/assets/images/hero-decoracion-800.webp'
 import { Badge, Container, Section, Typography } from '@/shared/components'
 import type { IProduct } from '@/shared/types/catalog'
 import { formatPrice } from '@/shared/utils/format-price'
@@ -71,10 +72,13 @@ export function ShowcaseHeroSection({ featuredProduct }: IShowcaseHeroSectionPro
             <img
               alt="Jarrones decorativos modelados y pintados a mano bajo luz natural"
               className="landing-showcase-hero__image"
+              decoding="async"
               fetchPriority="high"
               height="800"
               loading="eager"
+              sizes="(max-width: 767px) calc(100vw - 2rem), 50vw"
               src={heroImage}
+              srcSet={`${heroImageSmall} 480w, ${heroImage} 800w`}
               width="800"
             />
           </div>

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Check, ChevronLeft, ChevronRight, LayoutGrid } from 'lucide-react'
 
+import categoryPlaceholderImage from '@/assets/images/product-placeholder.webp'
 import { DeferredImage, IconButton } from '@/shared/components'
 import type { ICategory } from '@/shared/types/catalog'
 import './CategoryFilter.css'
@@ -169,6 +170,8 @@ export function CategoryFilter({
                 <DeferredImage
                   alt=""
                   className="category-filter__image"
+                  fallbackAlt=""
+                  fallbackSrc={categoryPlaceholderImage}
                   height="160"
                   src={category.image}
                   width="160"

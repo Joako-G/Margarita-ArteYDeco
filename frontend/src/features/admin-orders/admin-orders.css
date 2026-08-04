@@ -1,0 +1,290 @@
+.admin-orders {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.admin-orders h2,
+.admin-orders p {
+  margin: 0;
+}
+
+.admin-orders__filters-panel,
+.admin-orders__list-panel {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+
+.admin-orders__filters-panel {
+  padding: var(--space-3);
+}
+
+.admin-orders__section-heading,
+.admin-orders__list-heading {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.admin-orders__section-heading {
+  margin-bottom: var(--space-3);
+}
+
+.admin-orders__section-heading h2,
+.admin-orders__list-heading h2,
+.admin-orders__error h2 {
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+  text-wrap: balance;
+}
+
+.admin-orders__section-heading > p,
+.admin-orders__result-count,
+.admin-orders__error p {
+  font-size: var(--font-size-small);
+}
+
+.admin-orders__section-label {
+  margin-bottom: var(--space-1) !important;
+  color: var(--color-primary-dark);
+  font-size: var(--font-size-caption);
+  font-weight: 600;
+}
+
+.admin-orders__list-heading {
+  padding: var(--space-3);
+  background: var(--color-surface-muted);
+}
+
+.admin-order-filters {
+  display: grid;
+  align-items: end;
+  gap: var(--space-2);
+}
+
+.admin-order-filters__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.admin-order-filters__actions .ui-button {
+  flex: 1 1 auto;
+}
+
+.admin-orders__error {
+  display: flex;
+  align-items: flex-start;
+  padding: var(--space-3);
+  gap: var(--space-2);
+  color: var(--color-error);
+  background: var(--color-error-soft);
+}
+
+.admin-orders__error .ui-button {
+  margin-left: auto;
+}
+
+.admin-order-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-order-table th,
+.admin-order-table td {
+  padding: var(--space-2);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.admin-order-table th {
+  color: var(--color-primary-dark);
+  background: var(--color-surface-muted);
+  font-size: var(--font-size-caption);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.admin-order-table td {
+  font-size: var(--font-size-small);
+  border-top: 1px solid var(--color-border);
+}
+
+.admin-order-table__stacked,
+.admin-order-table__payment {
+  display: grid;
+  min-width: 0;
+  gap: calc(var(--space-1) / 2);
+}
+
+.admin-order-table__stacked span,
+.admin-order-table__payment > span:last-child,
+.admin-order-table time {
+  color: var(--color-primary-dark);
+  font-size: var(--font-size-caption);
+}
+
+.admin-order-table__payment .ui-badge {
+  width: fit-content;
+}
+
+.admin-order-table__numeric,
+.admin-orders__result-count {
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-order-table__detail {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  padding-inline: var(--space-1);
+  gap: var(--space-1);
+  border-radius: var(--radius-button);
+  color: var(--color-primary-dark);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.admin-order-table__detail:hover {
+  background: var(--color-primary-soft);
+}
+
+.admin-order-table__detail:focus-visible {
+  outline: 3px solid var(--color-primary-dark);
+  outline-offset: 2px;
+}
+
+.admin-order-table--skeleton {
+  display: grid;
+  padding: var(--space-2) var(--space-3);
+  gap: var(--space-2);
+}
+
+.admin-order-table__skeleton-row {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr repeat(3, 0.7fr);
+  padding-block: var(--space-1);
+  gap: var(--space-2);
+}
+
+.admin-order-table__skeleton-row .ui-skeleton {
+  height: var(--space-3);
+}
+
+@media (max-width: 63.999rem) {
+  .admin-order-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .admin-order-table,
+  .admin-order-table table,
+  .admin-order-table tbody,
+  .admin-order-table tr,
+  .admin-order-table td {
+    display: block;
+  }
+
+  .admin-order-table tbody {
+    display: grid;
+    padding: var(--space-2);
+    gap: var(--space-2);
+    background: var(--color-surface-muted);
+  }
+
+  .admin-order-table tr {
+    padding: var(--space-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  .admin-order-table td {
+    display: grid;
+    grid-template-columns: minmax(var(--space-16), 0.42fr) minmax(0, 1fr);
+    align-items: center;
+    padding: var(--space-1) 0;
+    gap: var(--space-2);
+    border-top: 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .admin-order-table td::before {
+    content: attr(data-label);
+    color: var(--color-primary-dark);
+    font-size: var(--font-size-caption);
+    font-weight: 600;
+  }
+
+  .admin-order-table td:first-child,
+  .admin-order-table td:last-child {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-order-table td:first-child::before,
+  .admin-order-table td:last-child::before {
+    display: none;
+  }
+
+  .admin-order-table td:last-child {
+    padding-top: var(--space-2);
+    border-bottom: 0;
+  }
+}
+
+@media (max-width: 30rem) {
+  .admin-orders__error {
+    flex-direction: column;
+  }
+
+  .admin-orders__error .ui-button,
+  .admin-order-table__detail {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+@media (min-width: 40rem) {
+  .admin-order-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-order-filters > .ui-field:first-child,
+  .admin-order-filters__actions {
+    grid-column: 1 / -1;
+  }
+
+  .admin-order-filters__actions {
+    justify-content: flex-end;
+  }
+
+  .admin-order-filters__actions .ui-button {
+    flex: 0 0 auto;
+  }
+
+  .admin-orders__section-heading,
+  .admin-orders__list-heading {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+  }
+
+  .admin-orders__section-heading > p,
+  .admin-orders__result-count {
+    text-align: right;
+  }
+}
+
+@media (min-width: 64rem) {
+  .admin-order-filters {
+    grid-template-columns: minmax(14rem, 1.5fr) repeat(4, minmax(9rem, 1fr));
+  }
+
+  .admin-order-filters > .ui-field:first-child {
+    grid-column: auto;
+  }
+}

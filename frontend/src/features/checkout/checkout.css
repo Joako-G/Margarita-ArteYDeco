@@ -31,11 +31,7 @@
 
 .checkout__header p,
 .checkout-form__section-heading p,
-.checkout-form__pickup p,
-.checkout-confirmation__heading p,
-.checkout-confirmation__bank-details p,
-.checkout-confirmation__cash-note,
-.checkout-confirmation__proof-note {
+.checkout-form__pickup p {
   margin: 0;
   text-wrap: pretty;
 }
@@ -212,29 +208,25 @@
   color: var(--color-primary-dark);
 }
 
-.checkout-form__pickup dl,
-.checkout-confirmation__pickup dl {
+.checkout-form__pickup dl {
   display: grid;
   gap: var(--space-2);
   margin: 0;
 }
 
-.checkout-form__pickup dl > div,
-.checkout-confirmation__pickup dl > div {
+.checkout-form__pickup dl > div {
   display: grid;
   gap: var(--space-1);
 }
 
-.checkout-form__pickup dt,
-.checkout-confirmation__pickup dt {
+.checkout-form__pickup dt {
   display: flex;
   align-items: center;
   gap: var(--space-1);
   font-weight: 600;
 }
 
-.checkout-form__pickup dd,
-.checkout-confirmation__pickup dd {
+.checkout-form__pickup dd {
   margin: 0;
 }
 
@@ -373,132 +365,10 @@
   transform: scale(1.02);
 }
 
-.checkout__link-button--secondary {
-  color: var(--color-primary-dark);
-  background: var(--color-surface);
-  border: 1px solid var(--color-primary);
-}
-
-.checkout__link-button--secondary:hover {
-  color: var(--color-surface);
-  background: var(--color-primary);
-}
-
-.checkout__link-button--whatsapp {
-  width: 100%;
-  background: var(--color-success);
-}
-
-.checkout-confirmation {
-  min-height: calc(100vh - var(--space-12));
-  padding: var(--space-8) var(--space-2);
-  background: var(--color-surface-muted);
-}
-
-.checkout-confirmation__panel {
-  display: grid;
-  max-width: 720px;
-  gap: var(--space-4);
-  margin-inline: auto;
-  padding: var(--space-4);
-  border-radius: var(--radius-card);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-default);
-}
-
-.checkout-confirmation__success-icon {
-  color: var(--color-success);
-}
-
-.checkout-confirmation__heading {
-  display: grid;
-  gap: var(--space-1);
-}
-
-.checkout-confirmation__total {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-2);
-  padding: var(--space-3);
-  border-radius: var(--radius-card);
-  background: var(--color-primary-soft);
-}
-
-.checkout-confirmation__total strong {
-  color: var(--color-primary-dark);
-  font-family: var(--font-heading);
-  font-size: var(--font-size-h2);
-  font-variant-numeric: tabular-nums;
-}
-
-.checkout-confirmation__bank-details,
-.checkout-confirmation__pickup {
-  display: grid;
-  gap: var(--space-3);
-}
-
-.checkout-confirmation__bank-details > div {
-  display: grid;
-  gap: var(--space-1);
-}
-
-.checkout-confirmation__bank-details dl {
-  display: grid;
-  gap: var(--space-1);
-  margin: 0;
-}
-
-.checkout-confirmation__bank-details dl > div {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: var(--space-1) var(--space-2);
-  align-items: center;
-  padding: var(--space-2);
-  border-radius: var(--radius-input);
-  background: var(--color-surface-muted);
-}
-
-.checkout-confirmation__bank-details dt {
-  font-size: var(--font-size-caption);
-  font-weight: 600;
-}
-
-.checkout-confirmation__bank-details dd {
-  grid-column: 1;
-  margin: 0;
-  overflow-wrap: anywhere;
-  font-weight: 600;
-}
-
-.checkout-confirmation__copy {
-  grid-column: 2;
-  grid-row: 1 / span 2;
-}
-
-.checkout-confirmation__proof-note {
-  font-size: var(--font-size-caption);
-}
-
-.checkout-confirmation__cash-note {
-  padding: var(--space-2);
-  border-radius: var(--radius-input);
-  background: var(--color-success-soft);
-  color: var(--color-success);
-}
-
-.checkout-confirmation__catalog-link {
-  width: fit-content;
-  min-height: 44px;
-  color: var(--color-primary-dark);
-  font-weight: 600;
-}
-
 @media (min-width: 768px) {
   .checkout-form__contact-fields,
   .checkout-form__payment-options,
-  .checkout-form__pickup dl,
-  .checkout-confirmation__pickup dl {
+  .checkout-form__pickup dl {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -534,32 +404,12 @@
 
 @media (max-width: 480px) {
   .checkout__form-card,
-  .checkout__summary-card,
-  .checkout-confirmation__panel {
+  .checkout__summary-card {
     padding: var(--space-2);
   }
 
-  .checkout-form__pickup,
-  .checkout-confirmation__total {
+  .checkout-form__pickup {
     padding: var(--space-2);
-  }
-
-  .checkout-confirmation {
-    padding-block: var(--space-4);
-  }
-
-  .checkout-confirmation__total {
-    display: grid;
-  }
-
-  .checkout-confirmation__bank-details dl > div {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .checkout-confirmation__copy {
-    width: 100%;
-    grid-column: 1;
-    grid-row: auto;
   }
 }
 

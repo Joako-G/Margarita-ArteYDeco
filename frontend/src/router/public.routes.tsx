@@ -1,29 +1,57 @@
 import type { RouteObject } from 'react-router-dom'
 
-import { PublicLayout } from '@/layouts/PublicLayout/layout'
-import { Catalog } from '@/pages/Catalog'
-import { HomePage } from '@/pages/Home'
-import { CheckoutRoute } from '@/router/CheckoutRoute'
+const shouldPreloadHome = window.location.pathname === '/'
+const publicLayoutPreload = shouldPreloadHome
+  ? import('@/layouts/PublicLayout/layout')
+  : undefined
+const homePagePreload = shouldPreloadHome ? import('@/pages/Home') : undefined
+
+const loadPublicLayout = async () => ({
+  Component: (await (publicLayoutPreload ?? import('@/layouts/PublicLayout/layout'))).PublicLayout,
+})
+const loadHomePage = async () => ({
+  Component: (await (homePagePreload ?? import('@/pages/Home'))).HomePage,
+})
+const loadCatalogPage = async () => ({
+  Component: (await import('@/pages/Catalog')).Catalog,
+})
+const loadCheckoutRoute = async () => ({
+  Component: (await import('@/router/CheckoutRoute')).CheckoutRoute,
+})
+const loadOrderRoute = async () => ({
+  Component: (await import('@/router/PublicOrderRoutes')).OrderRoute,
+})
+const loadRecoverOrderRoute = async () => ({
+  Component: (await import('@/router/PublicOrderRoutes')).RecoverOrderRoute,
+})
 
 export const publicRoutes: RouteObject[] = [
   {
-    element: <PublicLayout />,
+    lazy: loadPublicLayout,
     children: [
       {
         index: true,
-        element: <HomePage />,
+        lazy: loadHomePage,
       },
       {
         path: 'productos',
-        element: <Catalog />,
+        lazy: loadCatalogPage,
       },
       {
         path: 'categoria/:slug',
-        element: <Catalog />,
+        lazy: loadCatalogPage,
       },
       {
         path: 'checkout',
-        element: <CheckoutRoute />,
+        lazy: loadCheckoutRoute,
+      },
+      {
+        path: 'pedido/:orderNumber',
+        lazy: loadOrderRoute,
+      },
+      {
+        path: 'recuperar-pedido',
+        lazy: loadRecoverOrderRoute,
       },
     ],
   },

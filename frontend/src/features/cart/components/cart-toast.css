@@ -14,5 +14,18 @@
   font-size: var(--font-size-small);
   font-weight: 600;
   text-wrap: pretty;
+  animation: cart-toast-enter var(--duration-fast) ease-out;
   z-index: var(--z-toast);
+}
+
+@keyframes cart-toast-enter {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

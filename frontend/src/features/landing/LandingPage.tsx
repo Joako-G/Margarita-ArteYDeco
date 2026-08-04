@@ -1,9 +1,11 @@
 import { useMemo } from 'react'
+import { PackageOpen } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
-import { useSyncCartProducts } from '@/features/cart'
 import { useCatalog } from '@/features/catalog'
+import { ProductCardSkeleton } from '@/features/products'
 import { faqMock, testimonialsMock } from '@/mocks'
+import { Button, Container, EmptyState, Section, Typography } from '@/shared/components'
 import type { CatalogAreaType, ICategory, IProduct } from '@/shared/types/catalog'
 
 import { BenefitsSection } from './components/BenefitsSection'
@@ -20,11 +22,9 @@ const EMPTY_PRODUCTS: IProduct[] = []
 
 export function LandingPage() {
   const navigate = useNavigate()
-  const { data } = useCatalog()
+  const { data, isError, isPending, refetch } = useCatalog()
   const categories = data?.categories ?? EMPTY_CATEGORIES
   const products = data?.products ?? EMPTY_PRODUCTS
-
-  useSyncCartProducts(data?.products)
 
   const activeCategories = useMemo(
     () =>
@@ -77,28 +77,59 @@ export function LandingPage() {
   return (
     <main id="main-content">
       <HeroSection featuredProduct={featuredProductsByArea.decoration[0]} />
-      <CategoriesSection
-        categories={activeCategories}
-        onSelect={selectCategory}
-        productCountByCategory={productCountByCategory}
-      />
-      <FeaturedProductsSection
-        area="art"
-        catalogHref="/productos?area=arte"
-        description="Materiales y objetos sin terminar elegidos para acompañar tu próximo proyecto."
-        id="arte-destacado"
-        products={featuredProductsByArea.art}
-        title="Destacados de Arte"
-      />
-      <FeaturedProductsSection
-        area="decoration"
-        background="muted"
-        catalogHref="/productos?area=decoraciones"
-        description="Piezas terminadas por la artista, listas para decorar o hacer un regalo especial."
-        id="decoraciones-destacadas"
-        products={featuredProductsByArea.decoration}
-        title="Decoraciones destacadas"
-      />
+      {isPending ? (
+        <Section aria-label="Cargando catálogo" background="muted">
+          <Container>
+            <div aria-busy="true" className="landing-catalog-loading" role="status">
+              <div className="landing-section-heading">
+                <Typography variant="h2">Estamos preparando el catálogo</Typography>
+                <Typography>En un momento vas a poder explorar todas las opciones.</Typography>
+              </div>
+              <div className="landing-products__grid">
+                {Array.from({ length: 3 }, (_, index) => (
+                  <ProductCardSkeleton key={index} />
+                ))}
+              </div>
+            </div>
+          </Container>
+        </Section>
+      ) : isError ? (
+        <Section aria-label="No se pudo cargar el catálogo" background="muted">
+          <Container>
+            <EmptyState
+              action={<Button onClick={() => refetch()}>Reintentar</Button>}
+              description="Intentá nuevamente en unos minutos."
+              icon={<PackageOpen />}
+              title="Ocurrió un problema al cargar el catálogo."
+            />
+          </Container>
+        </Section>
+      ) : (
+        <>
+          <CategoriesSection
+            categories={activeCategories}
+            onSelect={selectCategory}
+            productCountByCategory={productCountByCategory}
+          />
+          <FeaturedProductsSection
+            area="art"
+            catalogHref="/productos?area=arte"
+            description="Materiales y objetos sin terminar elegidos para acompañar tu próximo proyecto."
+            id="arte-destacado"
+            products={featuredProductsByArea.art}
+            title="Destacados de Arte"
+          />
+          <FeaturedProductsSection
+            area="decoration"
+            background="muted"
+            catalogHref="/productos?area=decoraciones"
+            description="Piezas terminadas por la artista, listas para decorar o hacer un regalo especial."
+            id="decoraciones-destacadas"
+            products={featuredProductsByArea.decoration}
+            title="Decoraciones destacadas"
+          />
+        </>
+      )}
       <BenefitsSection />
       <TestimonialsSection testimonials={testimonialsMock} />
       <FaqSection items={faqMock} />
