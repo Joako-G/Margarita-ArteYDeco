@@ -1,15 +1,21 @@
+import { createRequire } from 'node:module'
+
 import cors, { type CorsOptions } from 'cors'
 import type { RequestHandler } from 'express'
 import { rateLimit } from 'express-rate-limit'
-import * as helmetModule from 'helmet'
+import type { HelmetOptions } from 'helmet'
 
 import type { IEnv } from '../config/env.js'
 import type { ICsrfService } from '../services/csrf.service.js'
 import { AppError } from '../utils/app-error.js'
 import { CSRF_COOKIE_NAME, parseCookieValue } from '../utils/cookies.js'
 
+type HelmetFactory = (options?: Readonly<HelmetOptions>) => RequestHandler
+
+const helmet = createRequire(import.meta.url)('helmet') as HelmetFactory
+
 export function createHelmetMiddleware(): RequestHandler {
-  return helmetModule.default({
+  return helmet({
     crossOriginResourcePolicy: { policy: 'same-site' },
   })
 }
