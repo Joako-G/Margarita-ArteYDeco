@@ -30,7 +30,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://margarita-backend.vercel.app//api/:path*"
+      "destination": "https://margarita-backend.vercel.app/api/:path*"
     },
     {
       "source": "/(.*)",
