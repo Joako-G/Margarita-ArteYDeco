@@ -1,7 +1,7 @@
 import cors, { type CorsOptions } from 'cors'
 import type { RequestHandler } from 'express'
 import { rateLimit } from 'express-rate-limit'
-import helmet from 'helmet'
+import * as helmetModule from 'helmet'
 
 import type { IEnv } from '../config/env.js'
 import type { ICsrfService } from '../services/csrf.service.js'
@@ -9,7 +9,7 @@ import { AppError } from '../utils/app-error.js'
 import { CSRF_COOKIE_NAME, parseCookieValue } from '../utils/cookies.js'
 
 export function createHelmetMiddleware(): RequestHandler {
-  return helmet({
+  return helmetModule.default({
     crossOriginResourcePolicy: { policy: 'same-site' },
   })
 }
