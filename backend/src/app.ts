@@ -1,8 +1,14 @@
+import type { IncomingMessage, ServerResponse } from 'node:http'
+
 import express, { type Express } from 'express'
 import type { Logger } from 'pino'
 
-import type { IApplicationDependencies } from './config/dependencies.js'
-import type { IEnv } from './config/env.js'
+import {
+  createApplicationDependencies,
+  type IApplicationDependencies,
+} from './config/dependencies.js'
+import { type IEnv, loadEnv } from './config/env.js'
+import { createLogger } from './config/logger.js'
 import { createErrorMiddleware, notFoundMiddleware } from './middlewares/error.middleware.js'
 import { createRequestLoggerMiddleware } from './middlewares/request-logger.middleware.js'
 import { createCorsMiddleware, createHelmetMiddleware } from './middlewares/security.middleware.js'
@@ -46,4 +52,25 @@ export function createApp(
   app.use(createErrorMiddleware(logger))
 
   return app
+}
+
+let runtimeApp: Express | undefined
+
+function getRuntimeApp(): Express {
+  if (runtimeApp === undefined) {
+    const env = loadEnv()
+    const logger = createLogger(env)
+    const dependencies = createApplicationDependencies(env, logger)
+
+    runtimeApp = createApp(env, logger, dependencies)
+  }
+
+  return runtimeApp
+}
+
+export default function handler(
+  request: IncomingMessage,
+  response: ServerResponse,
+): void {
+  getRuntimeApp()(request, response)
 }
