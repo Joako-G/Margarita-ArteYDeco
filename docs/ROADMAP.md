@@ -817,11 +817,74 @@ BackOffice sobre la infraestructura de seguridad de la Fase 8.5.
     - [x] **9.2.5.4 — Acceso y responsive:** conservación de la validación visual
       1440/390 del incremento anterior y nueva comprobación del guard de acceso,
       sin errores de consola ni exposición de la pantalla sin sesión.
-- [ ] **9.3 — Gestión de Categorías.**
-- [ ] **9.4 — Gestión de Pedidos y verificación manual de pagos.**
-- [ ] **9.5 — Gestión de Clientes.**
-- [ ] **9.6 — Configuración del Negocio.**
-- [ ] **9.7 — Perfil administrativo.**
+- [x] **9.3 — Gestión de Categorías:** listado paginado por área, alta, edición,
+  imágenes, publicación, orden visual y baja lógica protegida.
+  - [x] **9.3.1 — Contrato y persistencia:** reutilización de `catalog_area`,
+    `display_order`, `is_active`, `deleted_at`, restricciones, triggers y Storage
+    privado sin migraciones nuevas.
+  - [x] **9.3.2 — Backend protegido:** listado, detalle, alta, edición y orden con
+    validación estricta, concurrencia optimista, auditoría, Origin y CSRF.
+  - [x] **9.3.3 — Imágenes y ciclo de vida:** carga y reemplazo de imagen,
+    activación condicionada a una imagen real y baja lógica rechazada cuando
+    existan productos asociados.
+  - [x] **9.3.4 — Interfaz:** filtros en URL, tabla y fichas responsive, formulario
+    reutilizable, acciones rápidas, estados completos y confirmación destructiva.
+  - [x] **9.3.5 — Validación transversal:** pruebas, lint, tipos, builds, consulta
+    remota de Supabase y revisión visual sin modificar categorías comerciales.
+- [x] **9.4 — Gestión de Pedidos y verificación manual de pagos:** listado,
+  detalle, flujo operativo, cancelación atómica y contacto manual con clientes.
+  - [x] **9.4.1 — Contrato y persistencia:** reutilización de `orders`,
+    `order_items`, `inventory_movements` y Settings, con RPC transaccionales
+    reforzadas para concurrencia y reintegro sin modificar pedidos comerciales.
+  - [x] **9.4.2 — Consulta administrativa:** listado paginado con búsqueda,
+    filtros y orden estable, más detalle completo con snapshots históricos.
+  - [x] **9.4.3 — Estados y pagos:** transiciones válidas por método, verificación
+    manual de transferencia o efectivo y retiro únicamente con pago confirmado.
+  - [x] **9.4.4 — Cancelación y stock:** motivo obligatorio, confirmación reforzada
+    para pedidos pagados y reposición idempotente mediante RPC.
+  - [x] **9.4.5 — Interfaz y contacto:** tabla/fichas responsive, detalle operativo,
+    estados completos y enlaces editables de WhatsApp sin efectos automáticos.
+  - [x] **9.4.6 — Validación transversal:** pruebas, lint, tipos, builds, consulta
+    remota de Supabase y revisión de acceso/responsive sin mutar ventas reales.
+- [x] **9.5 — Gestión de Clientes.**
+  - [x] **9.5.1 — Contrato y persistencia:** reutilización de `customers` y
+    `orders`, baja lógica y conservación de snapshots históricos sin migraciones.
+  - [x] **9.5.2 — Backend protegido:** listado, detalle, edición y baja bajo sesión
+    y rol administrador; escrituras con Origin, CSRF y concurrencia optimista.
+  - [x] **9.5.3 — Consulta administrativa:** búsqueda, orden y paginación en URL,
+    más detalle con historial de pedidos paginado y sin totales agregados sensibles.
+  - [x] **9.5.4 — Edición y baja lógica:** formulario validado, celular normalizado,
+    unicidad segura y confirmación explícita sin eliminar pedidos ni snapshots.
+  - [x] **9.5.5 — Interfaz responsive:** tabla semántica, fichas móviles y estados
+    de carga, vacío, error, éxito y conflicto accesibles.
+  - [x] **9.5.6 — Validación transversal:** pruebas, lint, tipos, builds, consulta
+    remota de Supabase y revisión de acceso/responsive sin mutar clientes reales.
+- [x] **9.6 — Configuración del Negocio.**
+  - [x] **9.6.1 — Contrato y persistencia:** reutilización del singleton `settings`,
+    sus restricciones, `updated_at` y el bucket privado sin migraciones nuevas.
+  - [x] **9.6.2 — Backend protegido:** consulta, edición, reemplazo y retiro del logo
+    bajo sesión y rol administrador; escrituras con Origin, CSRF y concurrencia.
+  - [x] **9.6.3 — Operación comercial:** edición validada de negocio, contacto,
+    retiro, transferencia, descuento, stock bajo y redes sociales.
+  - [x] **9.6.4 — Identidad visual:** vista previa, JPG/PNG/WebP de hasta 5 MB,
+    Storage privado y restauración automática del logo oficial de respaldo.
+  - [x] **9.6.5 — Interfaz responsive:** formulario por secciones, ubicación
+    comprobable y estados de carga, error, éxito, cambios pendientes y conflicto.
+  - [x] **9.6.6 — Validación transversal:** pruebas, lint, tipos, builds, consulta
+    remota de Supabase y revisión de acceso/responsive sin mutar Settings reales.
+- [x] **9.7 — Perfil administrativo.**
+  - [x] **9.7.1 — Contrato y seguridad:** perfil privado con nombre, correo, rol y
+    versiones; credenciales y tokens siempre fuera del JSON y de `localStorage`.
+  - [x] **9.7.2 — Nombre completo:** edición validada con concurrencia optimista y
+    actualización inmediata del encabezado y menú de cuenta.
+  - [x] **9.7.3 — Correo de acceso:** contraseña actual obligatoria, confirmación
+    nativa de Supabase y sincronización transaccional con `profiles` al confirmarse.
+  - [x] **9.7.4 — Contraseña:** mínimo de 12 caracteres, confirmación local,
+    contraseña actual y cierre global de sesiones después del cambio.
+  - [x] **9.7.5 — Interfaz responsive:** ruta `/admin/perfil`, acceso desde la cuenta
+    y estados accesibles de carga, error, éxito, conflicto y confirmación pendiente.
+  - [x] **9.7.6 — Validación transversal:** pruebas, lint, tipos, builds, migración
+    remota y revisión protegida sin utilizar ni modificar credenciales reales.
 
 ### Incremento 9.2.3 completado — 2 de agosto de 2026
 
@@ -881,7 +944,117 @@ typecheck y builds correctos. El acceso local volvió a confirmar que
 La revisión visual 1440/390 del incremento 9.2.4 continúa vigente porque esta fase
 no modificó la interfaz.
 
-El siguiente punto de continuación es **9.3 — Gestión de Categorías**.
+### Incremento 9.3 completado — 3 de agosto de 2026
+
+El módulo administrativo incorpora listado paginado con filtros persistidos en la
+URL, tabla semántica y fichas responsive, formulario reutilizable de alta y
+edición, acciones rápidas de publicación y baja lógica con confirmación. El alta
+se ejecuta en dos pasos seguros: la categoría nace inactiva, recibe la imagen y
+solo entonces puede publicarse.
+
+El Backend expone listado, detalle, alta, edición, imagen, publicación y baja bajo
+sesión y rol administrador. Todas las escrituras validan Origin y CSRF; edición,
+publicación y baja utilizan concurrencia optimista. Se bloquean el cambio de área
+y la baja cuando existen productos asociados, y la eliminación conserva la imagen
+privada.
+
+Supabase confirmó en modo de solo lectura que `categories`, sus restricciones,
+índices, triggers, RLS y el bucket privado existente cubren el incremento, por lo
+que no se aplicaron migraciones ni se modificaron datos comerciales. El cierre
+finalizó con 107 pruebas de Backend y 47 de Frontend, lint y builds correctos. La
+ruta `/admin/categorias` redirige a login sin sesión, sin errores de consola, y el
+acceso a 390 px no presenta desbordamiento horizontal.
+
+### Incremento 9.4 completado — 3 de agosto de 2026
+
+El Panel incorpora listado paginado con filtros recuperables en la URL, tabla y
+fichas responsive y un detalle operativo con snapshots del cliente y productos,
+importes, retiro, observaciones y la única acción siguiente permitida. La
+verificación de transferencias y efectivo es manual y cada cambio requiere una
+confirmación visible.
+
+La cancelación utiliza un formulario con motivo obligatorio y confirmación
+reforzada cuando existe un pago. El Backend ejecuta `cancel_order_with_stock`,
+restaura las unidades una sola vez y conserva el pedido como historial terminal.
+Los mensajes de WhatsApp son editables, se abren mediante `wa.me` y nunca modifican
+el pedido ni afirman que fueron enviados.
+
+Supabase confirmó las tablas, restricciones, índices, triggers y RLS. La migración
+`202608030010_admin_order_concurrency.sql` reforzó `transition_order_status` y
+`cancel_order_with_stock`: ambas validan la versión esperada bajo bloqueo de fila,
+usan `search_path` seguro y sólo permiten ejecución a `service_role`; la
+cancelación valida además la confirmación de reintegro dentro de la transacción.
+No se alteró la venta existente. El cierre finalizó con 119 pruebas de Backend y
+53 de Frontend, lint y builds correctos. El listado y el detalle no se exponen sin
+sesión; a 390 px el acceso protegido no produjo desbordamiento ni errores de
+consola.
+
+### Incremento 9.5 completado — 3 de agosto de 2026
+
+El Panel incorpora un directorio paginado con búsqueda, orden recuperable desde la
+URL, tabla semántica y fichas responsive. El detalle permite editar nombre,
+apellido, celular y notas, y consultar el historial paginado de pedidos mediante
+sus snapshots inmutables, con acceso directo al detalle operativo de cada venta.
+
+El Backend expone listado, detalle, edición y baja lógica bajo sesión y rol
+administrador. Todas las escrituras validan Origin y CSRF; la edición y la baja
+usan `updated_at` para detectar concurrencia, normalizan el celular y nunca exponen
+`phone_normalized`. La baja conserva pedidos e historial; una compra posterior con
+el mismo celular reactiva el registro maestro sin modificar snapshots anteriores.
+
+Supabase confirmó en modo de solo lectura las columnas, restricciones, índices,
+trigger de actualización, relaciones, RLS y permisos existentes. No fue necesaria
+una migración ni se modificaron clientes o pedidos reales. El cierre finalizó con
+130 pruebas de Backend y 58 de Frontend, lint, typecheck y builds correctos. Las
+rutas de clientes redirigen a login sin sesión y, a 390 px, el acceso protegido no
+presentó desbordamiento horizontal ni errores de consola.
+
+### Incremento 9.6 completado — 3 de agosto de 2026
+
+El Panel incorpora la edición centralizada del nombre del negocio, WhatsApp,
+dirección, horarios, ubicación, banco, alias, CBU, descuento por transferencia,
+umbral de stock bajo y redes sociales. Los datos se agrupan por contexto operativo,
+la ubicación puede comprobarse antes de guardar y las mutaciones actualizan las
+consultas públicas y administrativas relacionadas.
+
+El Backend expone consulta, edición, reemplazo y retiro del logo bajo sesión y rol
+administrador. Todas las escrituras validan Origin y CSRF y utilizan `updated_at`
+para detectar concurrencia. El contrato privado incluye los datos bancarios
+necesarios para administrar el negocio, mientras el endpoint público continúa sin
+exponerlos. La auditoría omite valores personales y bancarios.
+
+El logo acepta únicamente JPG, PNG o WebP válidos de hasta 5 MB. Se guarda bajo
+`brand/` en el bucket privado `settings`, la Base de Datos conserva solo la ruta y
+el Backend resuelve una URL firmada. El reemplazo limpia el archivo nuevo si la
+persistencia falla y retira el anterior después del cambio; quitarlo restaura el
+respaldo local oficial en Header y Footer.
+
+Supabase confirmó en modo de solo lectura el singleton, restricciones, trigger,
+RLS y bucket privado limitado a 5 MB. No fue necesaria una migración ni se
+modificó la configuración real. El cierre finalizó con 142 pruebas de Backend y
+62 de Frontend, lint, typecheck y builds correctos. La ruta protegida redirige a
+login sin sesión y, a 390 px, no presenta desbordamiento ni errores de consola.
+
+### Incremento 9.7 completado — 3 de agosto de 2026
+
+El Panel incorpora `/admin/perfil` con acciones separadas para editar el nombre
+visible, solicitar un cambio del correo de acceso y actualizar la contraseña. El
+nombre utiliza `updated_at` para detectar ediciones concurrentes y actualiza la
+sesión en caché sin recargar. Correo y contraseña requieren la contraseña actual;
+ninguna credencial ni token se expone al Frontend o se persiste localmente.
+
+El correo utiliza el flujo de confirmación de Supabase Auth. La migración
+`202608030011_sync_admin_profile_email_from_auth.sql` sincroniza `profiles.email`
+únicamente cuando Auth confirma el nuevo valor. El cambio de contraseña exige al
+menos 12 caracteres, revoca globalmente las sesiones renovables, limpia las
+cookies `HttpOnly` y exige iniciar sesión nuevamente.
+
+El cierre finalizó con 152 pruebas de Backend y 65 de Frontend, lint, typecheck y
+builds correctos. El asesor remoto no detectó problemas atribuibles a la nueva
+migración; se conserva como recomendación del proyecto habilitar la protección
+contra contraseñas filtradas de Supabase Auth.
+
+El siguiente punto de continuación es **FASE 10 — Optimización**.
 
 ## Resultado esperado
 
@@ -905,6 +1078,57 @@ Optimizar el proyecto.
 - SEO
 - Accesibilidad
 - Rendimiento
+
+### Incremento 10.1 completado — línea base y presupuesto
+
+Se midieron los bundles y la carga pública antes de optimizar. La entrada mezclaba
+rutas públicas y administrativas, cargaba Framer Motion sin una necesidad vigente
+y adelantaba código de formularios que la Landing no utilizaba.
+
+### Incremento 10.2 completado — división por rutas y demanda
+
+Layouts y páginas públicas secundarias, autenticación y toda la administración se
+dividen por ruta mediante `lazy`. El carrito se importa al abrirlo y la ruta Home
+inicia en paralelo la precarga de su layout y contenido crítico. Se incorporaron
+fallbacks accesibles de carga y error para fallos de chunks o navegación.
+
+### Incremento 10.3 completado — imágenes y recursos críticos
+
+La imagen LCP se convirtió en variantes WebP responsive de 480 y 800 px, se
+descubre desde el HTML inicial y mantiene dimensiones explícitas. El logo local se
+redujo y convirtió a WebP; las imágenes secundarias usan lazy loading nativo,
+decodificación asíncrona y prioridad baja. Se retiraron diez recursos legados sin
+referencias y el CSS de secciones bajo el primer viewport utiliza
+`content-visibility` cuando corresponde.
+
+### Incremento 10.4 completado — SEO y accesibilidad
+
+La aplicación actualiza por ruta título, descripción, canonical, Open Graph y
+directivas de robots. Solo Landing, catálogo y categorías son indexables; las rutas
+transaccionales y administrativas son `noindex, nofollow`. Se agregó `robots.txt`,
+gestión de foco al contenido principal, contraste AA y pruebas unitarias para la
+política de metadatos.
+
+### Incremento 10.5 completado — medición y correcciones responsive
+
+Lighthouse sobre la compilación de producción alcanzó 91 en rendimiento, 100 en
+accesibilidad, 96 en buenas prácticas y 100 en SEO. La variación entre ejecuciones
+simuladas dejó rendimiento entre 89 y 91, con TBT de 0–10 ms y CLS de 0.001. El
+único descuento estable de buenas prácticas corresponde al `401` esperado cuando
+no existe Guest Session; se conserva porque forma parte del contrato de seguridad.
+
+La validación a 390 px detectó y corrigió que Header y Footer dependían del CSS de
+la Landing en rutas secundarias. Portada, catálogo y login administrativo quedaron
+sin desbordamiento horizontal, con un único `h1`, imágenes etiquetadas y metadatos
+correctos.
+
+### Incremento 10.6 completado — cierre técnico
+
+La carga inicial ya no incluye React Hook Form ni Zod. La entrada propia se mantiene
+alrededor de 14 kB sin comprimir y los estilos de Home, catálogo, checkout, carrito
+y cada área administrativa se emiten en chunks independientes. El cierre pasó 152
+pruebas de Backend y 68 de Frontend, lint, typecheck y builds sin errores. El
+siguiente punto de continuación es **FASE 11 — Testing**.
 
 ## Resultado esperado
 

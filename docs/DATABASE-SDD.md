@@ -150,6 +150,12 @@ Campos mínimos
 - created_at
 - updated_at
 
+`profiles.id` referencia a `auth.users.id`. El correo de `profiles` es una copia
+operativa del correo confirmado en Supabase Auth: el trigger
+`auth_user_email_sync_profile` lo actualiza después de un cambio confirmado en
+`auth.users.email`. La función asociada fija un `search_path` vacío y no concede
+ejecución a `public`, `anon` ni `authenticated`.
+
 ---
 
 ## Guest Sessions
@@ -323,6 +329,7 @@ Campos mínimos
 - phone
 - phone_normalized
 - notes
+- deleted_at, nullable
 - created_at
 - updated_at
 
@@ -331,6 +338,11 @@ Relaciones
 Un Cliente posee muchos Pedidos.
 
 `phone_normalized` deberá ser único y se utilizará para encontrar y reutilizar clientes.
+
+La baja administrativa establecerá `deleted_at` sin eliminar pedidos. La creación
+de un pedido con el mismo `phone_normalized` podrá reactivar el registro maestro.
+Los datos históricos permanecerán en los snapshots de Orders y nunca se
+reescribirán al editar o reactivar un Customer.
 
 ---
 
@@ -449,6 +461,10 @@ Campos mínimos
 
 Existirá únicamente un registro.
 
+Las actualizaciones administrativas usarán `updated_at` como versión de
+concurrencia y nunca crearán un segundo registro. Los cambios de descuento, datos
+de transferencia o retiro afectarán operaciones futuras y no reescribirán Orders.
+
 `transfer_discount` deberá estar entre 0 y 100. `low_stock_threshold` deberá ser un entero mayor o igual a 0.
 
 `maps_url` deberá ser una URL HTTPS válida. `business_hours` será texto administrable para mostrar los horarios vigentes del local.
@@ -457,6 +473,10 @@ Existirá únicamente un registro.
 privado `settings`; nunca almacenará una URL pública ni una URL firmada. Será
 nullable para permitir que la aplicación utilice el logo local oficial como
 respaldo hasta que el administrador publique uno.
+
+Al reemplazar el logo se persistirá primero una ruta nueva bajo `brand/` y se
+retirará el objeto anterior después de confirmar la actualización. Al quitarlo,
+`logo_path` volverá a NULL para activar el respaldo oficial del Frontend.
 
 ---
 
@@ -695,9 +715,9 @@ Los cambios de stock utilizarán obligatoriamente Inventory Movements como regis
 La creación y cancelación de pedidos con cambios de stock deberán implementarse mediante funciones PostgreSQL invocadas por el Backend a través de Supabase RPC.
 
 - `create_order_with_stock`: valida disponibilidad, crea el pedido y sus detalles, descuenta stock, registra movimientos y vincula el pedido con la Guest Session recibida.
-- `cancel_order_with_stock`: cambia el pedido a Cancelled, restaura unidades una sola vez y registra movimientos.
+- `cancel_order_with_stock`: bloquea el pedido, valida su versión esperada y la confirmación de reintegro manual cuando ya estaba pagado, cambia el pedido a Cancelled, restaura unidades una sola vez y registra movimientos.
 - `adjust_product_stock`: aplica un ajuste manual no negativo y registra actor y motivo.
-- `transition_order_status`: aplica únicamente una transición válida y registra el cambio de pedido y pago.
+- `transition_order_status`: bloquea el pedido, valida su versión esperada, aplica únicamente una transición válida y registra el cambio de pedido y pago.
 - `link_guest_session_order`: crea de forma idempotente una relación previamente validada por el Backend.
 - `purge_guest_sessions`: elimina sesiones expiradas o revocadas después del período de retención sin eliminar pedidos.
 - `get_public_recovery_limit`: consulta los límites persistentes de recuperación.

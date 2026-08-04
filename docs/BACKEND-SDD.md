@@ -810,6 +810,113 @@ No elimina la fila, no modifica el stock ni el estado de publicación, y no reti
 la imagen de Storage. Los repositorios continúan excluyendo productos dados de
 baja mediante `deleted_at is null`.
 
+El incremento 9.3 incorpora:
+
+- `GET /api/admin/categories`
+- `GET /api/admin/categories/:categoryId`
+- `POST /api/admin/categories`
+- `PUT /api/admin/categories/:categoryId`
+- `PUT /api/admin/categories/:categoryId/image`
+- `PATCH /api/admin/categories/:categoryId/publication`
+- `DELETE /api/admin/categories/:categoryId`
+
+El listado privado acepta área, búsqueda, publicación, orden y paginación de hasta
+50 filas. Devuelve el total de productos asociados y una URL firmada para la
+imagen privada, sin exponer `image_path`. El alta genera el slug en el Backend y
+siempre crea la categoría inactiva; la interfaz carga la imagen antes de solicitar
+su publicación.
+
+La edición y las acciones de ciclo de vida utilizan `updated_at` como control de
+concurrencia optimista. Una categoría solo puede activarse cuando posee una imagen
+real, no puede cambiar de área ni darse de baja si tiene productos asociados, y su
+orden visual se mantiene mediante `display_order` dentro del área. La baja es
+exclusivamente lógica y preserva la imagen de Storage. Todas las escrituras exigen
+sesión administrativa, rol, `Origin` permitido y CSRF.
+
+El incremento 9.4 incorpora:
+
+- `GET /api/admin/orders`
+- `GET /api/admin/orders/:orderId`
+- `POST /api/admin/orders/:orderId/actions`
+- `POST /api/admin/orders/:orderId/cancellation`
+
+El listado administrativo acepta búsqueda, estado del pedido, método, estado de
+pago, orden y paginación de hasta 50 filas. El detalle devuelve snapshots del
+cliente y productos, importes, retiro y configuración operativa necesaria para
+los mensajes manuales; no expone IDs internos de clientes ni datos bancarios.
+
+Las acciones reciben una intención semántica y `expectedUpdatedAt`. El Service
+consulta el pedido vigente, valida concurrencia y deriva la única combinación de
+estado y pago permitida para efectivo o transferencia. La persistencia se ejecuta
+mediante `transition_order_status`, que bloquea la fila y vuelve a validar
+`expectedUpdatedAt` dentro de la transacción; su trigger valida nuevamente la
+transición.
+
+La cancelación exige motivo. Cuando el pago está confirmado también exige aceptar
+que el reintegro monetario se gestiona manualmente. `cancel_order_with_stock`
+bloquea el pedido y sus productos, comprueba atómicamente `expectedUpdatedAt` y la
+confirmación de reintegro, restaura las unidades una sola vez, registra movimientos
+y auditoría y deja el pedido en estado terminal. Ningún endpoint elimina pedidos.
+Todas las escrituras requieren sesión administrativa, rol, `Origin` permitido y
+CSRF.
+
+El incremento 9.5 incorpora:
+
+- `GET /api/admin/customers`
+- `GET /api/admin/customers/:customerId`
+- `PUT /api/admin/customers/:customerId`
+- `DELETE /api/admin/customers/:customerId`
+
+El listado privado acepta búsqueda, orden y paginación de hasta 50 filas, excluye
+clientes dados de baja y devuelve el conteo de pedidos sin calcular gasto acumulado.
+El detalle devuelve el registro maestro y un historial paginado de resúmenes de
+pedido; nunca expone `phone_normalized` ni altera los snapshots históricos.
+
+La edición valida y normaliza el celular, preserva su unicidad y utiliza
+`expectedUpdatedAt` para concurrencia optimista. La eliminación es exclusivamente
+lógica mediante `deleted_at`, exige la misma versión esperada y conserva todas las
+relaciones. El alta de un pedido con el mismo celular puede reactivar el registro
+maestro. Ambas escrituras requieren sesión administrativa, rol, `Origin` permitido
+y CSRF, y la auditoría estructurada omite datos personales.
+
+El incremento 9.6 incorpora:
+
+- `GET /api/admin/settings`
+- `PUT /api/admin/settings`
+- `PUT /api/admin/settings/logo`
+- `DELETE /api/admin/settings/logo`
+
+La consulta devuelve el singleton completo para uso administrativo, incluida la
+configuración bancaria, pero expone `logoUrl` firmada y nunca `logo_path`. El DTO
+público general continúa sin incluir alias, CBU ni banco. La edición normaliza
+WhatsApp y CBU, exige URLs HTTPS, valida descuento y umbral de stock y utiliza
+`expectedUpdatedAt` para concurrencia optimista.
+
+El logo acepta únicamente JPG, PNG o WebP con firma válida y hasta 5 MB. El
+Backend carga un objeto nuevo bajo `brand/`, persiste su ruta con la versión
+esperada y solo entonces retira el anterior. Ante un conflicto limpia el objeto
+nuevo; al quitar el logo persiste NULL y habilita el respaldo oficial. Todas las
+escrituras exigen sesión administrativa, rol, `Origin` permitido y CSRF, y los
+logs de auditoría omiten datos bancarios y de contacto.
+
+El incremento 9.7 incorpora:
+
+- `GET /api/admin/profile`
+- `PUT /api/admin/profile/name`
+- `PUT /api/admin/profile/email`
+- `PUT /api/admin/profile/password`
+
+La consulta privada devuelve nombre, correo, rol y marcas de creación y
+actualización, pero omite ID interno y estado de autorización. El nombre utiliza
+`expectedUpdatedAt` para concurrencia optimista. Correo y contraseña requieren la
+contraseña actual y una sesión completa en cookies; todos los `PUT` validan rol,
+Origin y CSRF.
+
+El cambio de correo utiliza `auth.updateUser` y puede quedar pendiente de
+confirmación. `profiles.email` solo se sincroniza mediante el trigger de Auth
+cuando el nuevo correo queda confirmado. El cambio de contraseña revoca las
+sesiones globales de Supabase y limpia ambas cookies administrativas.
+
 Los tokens de acceso y renovación permanecen exclusivamente en cookies host-only
 `__Host-`, `HttpOnly`, `Secure`, `SameSite=Lax` y `Path=/`; nunca forman parte del
 JSON. El Backend valida el access token contra Supabase Auth, utiliza el refresh

@@ -193,6 +193,15 @@ El listado permitirá filtrar por área y ordenará las categorías dentro de ca
 El formulario de producto agrupará las opciones de categoría por área, pero el
 producto almacenará únicamente `category_id`.
 
+El alta se realizará en dos pasos seguros: primero se creará la categoría inactiva
+y luego se cargará la imagen. La activación solo se permitirá cuando exista una
+imagen real en el bucket privado `categories`. Si la carga falla, la categoría
+continuará inactiva y podrá editarse para reintentarla.
+
+La edición, publicación y baja lógica utilizarán la fecha de actualización como
+control de concurrencia. La baja preservará la imagen y requerirá confirmación
+explícita. El orden será un entero no negativo, estable dentro de cada área.
+
 ---
 
 # Clientes
@@ -209,6 +218,22 @@ Funcionalidades
 - Eliminar lógicamente
 
 Los clientes se crean automáticamente cuando realizan una compra.
+
+El listado mostrará únicamente clientes activos, será paginado y mantendrá la
+búsqueda, el orden y la página en la URL. En escritorio utilizará una tabla
+semántica y en pantallas reducidas fichas equivalentes, sin desplazamiento
+horizontal.
+
+El detalle permitirá editar nombre, apellido, celular y notas. El celular se
+normalizará en el Backend y conservará unicidad. La edición y la baja lógica
+utilizarán `updated_at` como control de concurrencia y comunicarán los conflictos
+sin sobrescribir cambios más recientes.
+
+El historial de pedidos será paginado y de solo lectura. Mostrará número, fecha,
+estado, pago y total desde los snapshots de cada pedido; editar el registro maestro
+del cliente nunca modificará ventas anteriores. La baja requerirá confirmación,
+preservará todo el historial y una compra posterior con el mismo celular podrá
+reactivar el cliente.
 
 ---
 
@@ -256,6 +281,15 @@ Cada acción abrirá `https://wa.me/{phone}?text={message}` en WhatsApp Web o la
 
 El sistema no enviará mensajes automáticamente, no utilizará WhatsApp Business API y no podrá asegurar si un mensaje fue enviado, entregado o leído. Abrir WhatsApp no modificará el estado del pedido ni del pago.
 
+El listado conservará búsqueda, estado, método, pago, orden y página en la URL. El
+detalle mostrará únicamente las acciones válidas calculadas por el Backend y
+utilizará la fecha de actualización para detectar una vista desactualizada.
+
+La cancelación exigirá un motivo mediante formulario. Para pedidos pagados se
+solicitará además una confirmación explícita sobre el reintegro manual. El éxito
+indicará que el stock fue restaurado una sola vez; nunca se ofrecerá reapertura ni
+eliminación del pedido.
+
 Nunca eliminar pedidos.
 
 La creación de un pedido descuenta el stock. Al cancelar un pedido, el sistema deberá restaurar sus unidades una sola vez y mostrar el movimiento en el historial del producto.
@@ -291,6 +325,32 @@ El Panel permitirá cargar o reemplazar el logo con vista previa. Aceptará JPG,
 PNG o WebP de hasta 5 MB, conservará la proporción de la imagen y almacenará el
 archivo en el bucket privado `settings`. Quitar el logo configurado restaurará
 el uso de la variante local oficial en la aplicación pública.
+
+La edición se organizará por identidad y contacto, retiro en el local, datos de
+transferencia, inventario y redes sociales. La URL de Maps ofrecerá una acción de
+comprobación antes de guardar. Alias, CBU y banco serán visibles únicamente en el
+Panel y en la confirmación autorizada de pedidos por transferencia; no formarán
+parte del DTO público general de Settings.
+
+La edición y el ciclo de vida del logo utilizarán `updated_at` como control de
+concurrencia. Reemplazar el logo eliminará el objeto anterior solo después de
+persistir la ruta nueva; quitarlo establecerá `logo_path` en NULL. Los cambios se
+aplicarán a operaciones futuras y nunca reescribirán importes ni snapshots de
+pedidos anteriores.
+
+---
+
+# Perfil administrativo
+
+La cuenta administrativa se gestiona desde `/admin/perfil`, accesible desde el
+menú de cuenta en escritorio y móvil. La pantalla separa nombre visible, correo de
+acceso y contraseña para evitar guardados parciales entre datos de perfil y Auth.
+
+El nombre completo se actualiza con concurrencia optimista. Cambiar el correo
+requiere la contraseña actual y muestra el estado pendiente hasta completar la
+confirmación enviada por Supabase. Cambiar la contraseña exige al menos 12
+caracteres, confirmación coincidente y una contraseña distinta de la vigente;
+después del cambio se cierran las sesiones y se vuelve al login.
 
 ---
 

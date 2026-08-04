@@ -198,23 +198,65 @@ Flujo:
 
 ### Categorías
 
-- Crear, editar, ordenar, activar y desactivar categorías.
-- Gestionar nombre, imagen, descripción y orden visual.
+- El listado administrativo permitirá buscar, filtrar por área y publicación,
+  ordenar y paginar. Los filtros y la página se conservarán en la URL.
+- En desktop utilizará una tabla semántica y por debajo de 1024 px reorganizará
+  cada fila como ficha etiquetada sin desbordamiento horizontal.
+- Permitirá crear, editar, ordenar, activar, desactivar y dar de baja lógicamente
+  categorías, con confirmación explícita para la acción destructiva.
+- El formulario reutilizable gestionará área, nombre, imagen, descripción, orden
+  visual y publicación mediante React Hook Form y Zod.
+- Una categoría nueva se creará inactiva, cargará su imagen privada y solo después
+  solicitará la activación. Si falla la imagen conservará un estado seguro y
+  ofrecerá feedback recuperable.
+- Las acciones rápidas mostrarán el total de productos asociados y bloquearán la
+  baja o el cambio de área cuando las reglas de negocio lo impidan.
 
 ### Pedidos
 
-- Mostrar cliente, celular, productos, cantidades, importes, descuento, método y estado de pago.
-- Permitir actualizar estados y cancelar con confirmación.
-- Mostrar claramente cuándo una cancelación restauró stock.
+- El listado permitirá buscar por pedido o cliente, filtrar por estado operativo,
+  método y estado de pago, ordenar y paginar. Los filtros se conservarán en la URL.
+- En desktop utilizará una tabla semántica y por debajo de 1024 px reorganizará
+  cada fila como ficha etiquetada sin scroll horizontal.
+- El detalle mostrará cliente, celular, productos, cantidades, importes, descuento,
+  método, estado de pago, observaciones y datos de retiro.
+- Mostrará únicamente la siguiente acción válida para el método y estado vigente.
+  Confirmar pago y retiro requerirá confirmación explícita.
+- La cancelación utilizará un formulario con motivo obligatorio. Si el pedido está
+  pagado, exigirá confirmar que el reintegro se gestionará manualmente.
+- Mostrar claramente cuándo una cancelación restauró stock y actualizar Dashboard,
+  pedidos y productos mediante TanStack Query.
 - Incluir "Contactar cliente" para todos los pedidos.
 - Incluir "Avisar que está listo" únicamente cuando el pedido esté `ready`.
 - Incluir "Recordar transferencia" únicamente para transferencias con pago pendiente.
-- Abrir WhatsApp con mensajes predefinidos y editables antes del envío.
+- Ofrecer un compositor con mensajes predefinidos y editables antes de abrir WhatsApp.
 - El uso de WhatsApp no deberá cambiar estados ni asumir que el mensaje fue enviado o leído.
 
 ### Clientes
 
+- El listado administrativo utilizará TanStack Query y filtros de búsqueda, orden
+  y paginación serializados en la URL.
+- En escritorio mostrará una tabla semántica y por debajo de 1024 px fichas con la
+  misma información y acciones, sin desplazamiento horizontal.
+- El detalle incluirá un formulario React Hook Form + Zod para nombre, apellido,
+  celular y notas, junto con el historial paginado de pedidos de solo lectura.
+- La baja lógica exigirá una confirmación explícita que explique la conservación
+  del historial y la posible reactivación mediante una compra futura.
+- Carga, vacío, error, éxito, conflicto de concurrencia y eliminación tendrán
+  estados accesibles. Las mutaciones invalidarán clientes y Dashboard.
+
 ### Configuración
+
+- `/admin/configuracion` consultará el singleton mediante TanStack Query y
+  utilizará React Hook Form + Zod para toda la edición operativa.
+- El formulario agrupará negocio y contacto, retiro, transferencia, inventario y
+  redes; mostrará cambios pendientes, éxito, error y conflictos de concurrencia.
+- La URL de Google Maps podrá abrirse en una pestaña nueva para comprobar la
+  ubicación antes de guardar.
+- El logo tendrá vista previa, validación de tipo y tamaño, reemplazo explícito y
+  confirmación antes de volver al respaldo local oficial.
+- Las mutaciones invalidarán Settings público, Settings administrativo, Dashboard
+  y productos para actualizar logo, descuento y umbral de stock bajo.
 
 - El DTO público de configuración expondrá `logoUrl`, nunca `logoPath`.
 - Header y Footer utilizarán la misma `logoUrl` resuelta por el Backend.
@@ -264,9 +306,36 @@ La consulta pública contemplará además:
 
 ## 12. Responsive
 
+- Los layouts no producirán desbordamiento horizontal desde 390 px y mantendrán
+  controles táctiles de al menos 44 px.
+- Header y Footer pertenecen al `PublicLayout`; sus estilos se cargarán en todas
+  las rutas públicas y no dependerán del CSS exclusivo de la Landing.
+- Los filtros horizontales de categorías conservarán su desplazamiento interno
+  sin ampliar el ancho del documento.
+
 ## 13. Accesibilidad
 
+- Cada cambio de ruta llevará el foco programáticamente al contenido principal,
+  salvo cuando la navegación incluya un fragmento.
+- Se conservarán un único `h1`, regiones con nombre, texto alternativo o imágenes
+  decorativas vacías y contraste mínimo WCAG AA.
+- Los estados de carga y error de rutas serán perceptibles y permitirán reintentar
+  o regresar al inicio sin depender del puntero.
+
 ## 14. Performance
+
+- Las rutas públicas secundarias y todas las rutas administrativas usarán lazy
+  loading; la ruta solicitada podrá iniciar su precarga antes de montar el Router.
+- El carrito se descargará únicamente al abrirlo. Los formularios, Zod y Axios no
+  formarán parte de la carga inicial de la Landing si la ruta no los necesita.
+- Las imágenes bajo el primer viewport usarán carga nativa diferida, dimensiones
+  explícitas y decodificación asíncrona. La imagen LCP tendrá `fetchpriority=high`,
+  preload y variantes responsive WebP.
+- Las fuentes remotas no bloquearán el primer render y los orígenes externos
+  críticos usarán `preconnect`.
+- Cada ruta pública indexable actualizará título, descripción, Open Graph,
+  canonical y robots. Checkout, pedidos, recuperación y administración serán
+  `noindex, nofollow`.
 
 ## 15. Flujo de Navegación
 
@@ -275,6 +344,9 @@ La consulta pública contemplará además:
 - Sesión administrativa vigente: recargar `/admin` restaura el perfil desde el Backend sin leer tokens.
 - Sesión administrativa vencida o revocada: cualquier ruta privada → `/admin/login`.
 - Cierre de sesión: revocación en Backend, limpieza de caché de sesión y redirección a `/admin/login`.
+- Perfil administrativo: menú de cuenta → `/admin/perfil`; nombre actualizado →
+  refresco inmediato de sesión; contraseña actualizada → `/admin/login` con
+  confirmación y sin conservar datos de los formularios.
 - Después de crear un pedido: `/checkout` → `/pedido/:orderNumber`.
 - Desde "Ver mi último pedido": cualquier ruta pública → último `/pedido/:orderNumber` autorizado.
 - Sin sesión: `/pedido/:orderNumber` → estado de recuperación → `/recuperar-pedido`.
