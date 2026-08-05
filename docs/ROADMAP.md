@@ -1161,6 +1161,42 @@ Validar todo el sistema.
 
 Proyecto estable.
 
+## Implementación incremental completada
+
+- [x] **11.1 — Utilidades compartidas del Frontend:** pruebas `node:test` para
+  `format-price`, `class-names`, `create-slug` y `order-status`.
+- [x] **11.2 — Persistencia de confirmación:** cobertura de `last-order` con
+  `localStorage` simulado, conservando solo la pista del número de pedido sin
+  tokens ni datos personales.
+- [x] **11.3 — Mapeo de errores administrativos:** pruebas de los mensajes de
+  clientes, pedidos y Settings del Panel.
+- [x] **11.4 — Backend:** cookies seguras, redacción de logs, `slug`,
+  `cache-headers`, `AppError`/`RepositoryError` y validación de imágenes.
+- [x] **11.5 — Backend:** rate limiting público, de pedidos y de login
+  administrativo, CORS, validación de `Origin` y CSRF.
+- [x] **11.6 — Cierre transversal:** suite completa, lint, typecheck y builds de
+  Backend y Frontend sin errores.
+
+### Incremento 11 completado — 4 de agosto de 2026
+
+La Fase 11 extendió la suite automatizada sobre los vacíos de cobertura
+identificados en la línea base. El Frontend incorporó pruebas de las utilidades
+compartidas, de la persistencia local de confirmación con un `localStorage`
+simulado y de los mapeadores de error administrativos; estas siguen el patrón
+`node:test` con importación explícita `.ts` y se registran en el script `test`.
+
+El Backend incorporó pruebas directas de utilidades —cookies `__Host-`
+`HttpOnly`/`Secure`, redacción de logs, slug, cache público,
+`AppError`/`RepositoryError` y validación de imágenes por firma real— y de los
+middlewares de seguridad: rate limiting público, de pedidos y de login con
+`skipSuccessfulRequests`, CORS con orígenes explícitos, validación de `Origin` y
+protección CSRF por par header/cookie. El limiter de login se probó con
+respuestas fallidas para verificar que no descuenta éxitos.
+
+El cierre finalizó con 179 pruebas de Backend y 86 de Frontend, lint, typecheck
+y builds correctos en ambos proyectos, sin errores ni warnings. El siguiente
+punto de continuación es **FASE 12 — Deploy**.
+
 ---
 
 # FASE 12 — Deploy

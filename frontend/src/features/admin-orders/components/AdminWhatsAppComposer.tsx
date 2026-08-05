@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { ExternalLink, MessageCircle } from 'lucide-react'
+import { ExternalLink, MessageCircle, RotateCcw } from 'lucide-react'
 
 import { Button, TextArea } from '@/shared/components'
 
@@ -33,6 +33,10 @@ export function AdminWhatsAppComposer({ order }: IAdminWhatsAppComposerProps) {
     setMessage(getAdminWhatsAppTemplate(order, template))
   }
 
+  function handleReset() {
+    setMessage(getAdminWhatsAppTemplate(order, selected))
+  }
+
   return (
     <div className="admin-whatsapp-composer">
       <div aria-label="Tipo de mensaje" className="admin-whatsapp-composer__templates" role="group">
@@ -49,21 +53,30 @@ export function AdminWhatsAppComposer({ order }: IAdminWhatsAppComposerProps) {
         ))}
       </div>
       <TextArea
-        helpText="Podés editar el mensaje antes de abrir WhatsApp. Esta acción no cambia el pedido."
         label="Mensaje"
         onChange={(event) => setMessage(event.target.value)}
         value={message}
       />
-      <a
-        className="ui-button ui-button--primary admin-whatsapp-composer__open"
-        href={buildAdminWhatsAppUrl(order.whatsappPhone, message)}
-        rel="noreferrer"
-        target="_blank"
-      >
-        <MessageCircle aria-hidden="true" size={18} />
-        Abrir WhatsApp
-        <ExternalLink aria-hidden="true" size={16} />
-      </a>
+      <div className="admin-whatsapp-composer__actions">
+        <Button
+          onClick={handleReset}
+          type="button"
+          variant="ghost"
+        >
+          <RotateCcw aria-hidden="true" size={18} />
+          Restablecer mensaje
+        </Button>
+        <a
+          className="ui-button ui-button--primary admin-whatsapp-composer__open"
+          href={buildAdminWhatsAppUrl(order.customer.phone, message)}
+          rel="noreferrer"
+          target="_blank"
+        >
+          <MessageCircle aria-hidden="true" size={18} />
+          Abrir WhatsApp
+          <ExternalLink aria-hidden="true" size={16} />
+        </a>
+      </div>
     </div>
   )
 }

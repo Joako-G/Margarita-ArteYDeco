@@ -1,0 +1,21 @@
+[mcp_servers.supabase_margarita]
+url = "https://mcp.supabase.com/mcp?project_ref=rexefcfdcxhrrylcsocx&features=database%2Cdocs%2Cdebugging%2Cdevelopment%2Cstorage"
+auth = "oauth"
+default_tools_approval_mode = "prompt"
+startup_timeout_sec = 30
+enabled = true
+
+[mcp_servers.supabase_barbershop]
+enabled = false
+
+[mcp_servers.chrome-devtools]
+command = "C:\\Users\\galla\\AppData\\Roaming\\npm\\npx.cmd"
+args = [
+  "-y",
+  "chrome-devtools-mcp@latest",
+  "--executablePath",
+  "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe"
+]
+env = { SystemRoot = "C:\\Windows" }
+startup_timeout_sec = 60
+enabled = true

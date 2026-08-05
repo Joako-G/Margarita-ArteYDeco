@@ -6,7 +6,6 @@ import { Link } from 'react-router-dom'
 
 import { routes } from '@/config/routes'
 import { Button, Input, Select, Switch, TextArea } from '@/shared/components'
-import { createSlug } from '@/shared/utils/create-slug'
 
 import {
   adminCategoryFormSchema,
@@ -64,7 +63,6 @@ export function AdminCategoryForm({
 
   const imageUrl = previewUrl ?? category?.imageUrl ?? null
   const hasProducts = (category?.productCount ?? 0) > 0
-  const slug = createSlug(name)
 
   async function handleValidSubmit(values: AdminCategoryFormType) {
     if (category === undefined && values.image === undefined) {
@@ -93,7 +91,6 @@ export function AdminCategoryForm({
             <Input
               autoComplete="off"
               error={errors.name?.message}
-              helpText={slug ? `URL pública: /categoria/${slug}` : 'La URL se generará desde el nombre.'}
               label="Nombre"
               maxLength={100}
               {...register('name')}
@@ -127,9 +124,9 @@ export function AdminCategoryForm({
 
             <Input
               error={errors.displayOrder?.message}
-              helpText="Se aplica dentro del área seleccionada; los valores menores aparecen primero."
+              helpText="Dentro de Arte o Decoraciones, las categorías con número menor se muestran primero."
               inputMode="numeric"
-              label="Orden visual"
+              label="Posición en el área"
               {...register('displayOrder')}
             />
           </div>
@@ -177,18 +174,18 @@ export function AdminCategoryForm({
           <section aria-labelledby="category-publication-title" className="admin-category-form__panel">
             <div className="admin-category-form__section-heading">
               <p>Catálogo</p>
-              <h2 id="category-publication-title">Publicación</h2>
+              <h2 id="category-publication-title">Visible en la tienda</h2>
             </div>
-            <Switch label="Categoría activa" {...register('isActive')} />
+            <Switch label="Visible en la tienda" {...register('isActive')} />
             <p className="admin-category-form__publication-help">
-              Para activarla debe tener una imagen cargada. Las categorías inactivas no aparecen en la tienda.
+              Para mostrarla debe tener una imagen cargada. Las categorías ocultas no aparecen en la tienda.
             </p>
             <div className="admin-category-form__summary">
               <Layers3 aria-hidden="true" size={20} />
               <div>
                 <strong>{name.trim() || 'Categoría sin nombre'}</strong>
                 <span>
-                  {area === 'art' ? 'Arte' : 'Decoraciones'} · orden {displayOrder || '0'}
+                  {area === 'art' ? 'Arte' : 'Decoraciones'} · {displayOrder || '0'} en el área
                 </span>
               </div>
             </div>

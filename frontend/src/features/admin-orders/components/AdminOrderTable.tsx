@@ -1,4 +1,4 @@
-import { ArrowRight } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { routes } from '@/config/routes'
@@ -12,16 +12,56 @@ import {
   PAYMENT_METHOD_LABELS,
   PAYMENT_STATUS_DETAILS,
 } from '../utils/admin-order-formatters'
+import { AdminOrderCard } from './AdminOrderCard'
+import { AdminOrderHorizontalCard } from './AdminOrderHorizontalCard'
 
 interface IAdminOrderTableProps {
   orders: readonly IAdminOrderListItem[]
 }
 
-export function AdminOrderTable({ orders }: IAdminOrderTableProps) {
+type AdminOrderListLayoutType = 'mobile' | 'card' | 'table'
+
+const LAYOUT_MEDIA_QUERY = '(min-width: 80rem)'
+const MOBILE_MEDIA_QUERY = '(max-width: 39.999rem)'
+
+function useAdminOrderListLayout() {
+  const [layout, setLayout] = useState<AdminOrderListLayoutType>(() => {
+    if (typeof window === 'undefined') return 'table'
+
+    return window.matchMedia(LAYOUT_MEDIA_QUERY).matches ? 'table' : 'mobile'
+  })
+
+  useEffect(() => {
+    const mobileQuery = window.matchMedia(MOBILE_MEDIA_QUERY)
+    const layoutQuery = window.matchMedia(LAYOUT_MEDIA_QUERY)
+
+    const handleChange = () => {
+      if (layoutQuery.matches) {
+        setLayout('table')
+      } else if (mobileQuery.matches) {
+        setLayout('mobile')
+      } else {
+        setLayout('card')
+      }
+    }
+
+    mobileQuery.addEventListener('change', handleChange)
+    layoutQuery.addEventListener('change', handleChange)
+
+    return () => {
+      mobileQuery.removeEventListener('change', handleChange)
+      layoutQuery.removeEventListener('change', handleChange)
+    }
+  }, [])
+
+  return layout
+}
+
+function AdminOrderTableView({ orders }: { orders: readonly IAdminOrderListItem[] }) {
   return (
     <div aria-label="Listado de pedidos" className="admin-order-table" role="region">
       <table>
-        <caption className="sr-only">Pedidos administrativos</caption>
+        <caption className="sr-only">Pedidos del panel administrativo</caption>
         <thead>
           <tr>
             <th scope="col">Pedido</th>
@@ -71,7 +111,6 @@ export function AdminOrderTable({ orders }: IAdminOrderTableProps) {
                     to={routes.adminOrderDetail(order.id)}
                   >
                     Ver detalle
-                    <ArrowRight aria-hidden="true" size={17} />
                   </Link>
                 </td>
               </tr>
@@ -81,4 +120,32 @@ export function AdminOrderTable({ orders }: IAdminOrderTableProps) {
       </table>
     </div>
   )
+}
+
+export function AdminOrderTable({ orders }: IAdminOrderTableProps) {
+  const layout = useAdminOrderListLayout()
+
+  if (layout === 'mobile') {
+    return (
+      <div aria-label="Listado de pedidos" className="admin-order-cards" role="region">
+        {orders.map((order) => (
+          <AdminOrderCard key={order.id} order={order} />
+        ))}
+      </div>
+    )
+  }
+
+  if (layout === 'card') {
+    return (
+      <ul aria-label="Listado de pedidos" className="admin-order-horizontal-cards" role="list">
+        {orders.map((order) => (
+          <li key={order.id}>
+            <AdminOrderHorizontalCard order={order} />
+          </li>
+        ))}
+      </ul>
+    )
+  }
+
+  return <AdminOrderTableView orders={orders} />
 }

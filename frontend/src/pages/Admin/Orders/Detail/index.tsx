@@ -1,5 +1,14 @@
 import { useEffect, useState } from 'react'
-import { ArrowLeft, CircleAlert, CircleCheck, MapPin, PackageCheck, Trash2 } from 'lucide-react'
+import {
+  ArrowLeft,
+  CircleAlert,
+  CircleCheck,
+  Clock,
+  PackageCheck,
+  Phone,
+  Trash2,
+  User,
+} from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 
 import { routes } from '@/config/routes'
@@ -10,6 +19,7 @@ import {
   AdminWhatsAppComposer,
   formatAdminOrderDate,
   getAdminOrderErrorMessage,
+  getOrderDisplayNumber,
   ORDER_ACTION_LABELS,
   PAYMENT_METHOD_LABELS,
   PAYMENT_STATUS_DETAILS,
@@ -52,6 +62,9 @@ function AdminOrderContent({ order }: IAdminOrderContentProps) {
   const [feedback, setFeedback] = useState<{ message: string; type: 'error' | 'success' } | null>(null)
   const status = ORDER_STATUS_DETAILS[order.status]
   const payment = PAYMENT_STATUS_DETAILS[order.paymentStatus]
+  const displayNumber = getOrderDisplayNumber(order.orderNumber)
+  const hasSingleProduct = order.items.length === 1
+  const hasDiscount = order.discount > 0
 
   useRefreshAdminSessionOnUnauthorized(lifecycle.error)
 
@@ -91,11 +104,15 @@ function AdminOrderContent({ order }: IAdminOrderContentProps) {
           </Link>
         )}
         currentLabel={order.orderNumber}
-        description={`Creado el ${formatAdminOrderDate(order.createdAt)}.`}
+        description={`Realizado el ${formatAdminOrderDate(order.createdAt)}`}
         sectionLabel="Pedido"
-        title={order.orderNumber}
+        title={`Pedido #${displayNumber}`}
         titleId="admin-order-title"
       />
+
+      <p className="admin-order-detail__reference">
+        Referencia: {order.orderNumber}
+      </p>
 
       {feedback ? (
         <div className={`admin-order-detail__feedback admin-order-detail__feedback--${feedback.type}`} role={feedback.type === 'error' ? 'alert' : 'status'}>
@@ -108,12 +125,13 @@ function AdminOrderContent({ order }: IAdminOrderContentProps) {
 
       <section aria-labelledby="order-operation-title" className="admin-order-detail__operation">
         <div>
-          <p className="admin-order-detail__label">Estado operativo</p>
-          <h2 id="order-operation-title">Qué sigue</h2>
-          <div className="admin-order-detail__badges">
-            <Badge variant={status.variant}>{status.label}</Badge>
-            <Badge variant={payment.variant}>{payment.label}</Badge>
-            <span>{PAYMENT_METHOD_LABELS[order.paymentMethod]}</span>
+          <h2 id="order-operation-title">Estado del pedido</h2>
+          <div className="admin-order-detail__status">
+            <Badge className="admin-order-detail__status-badge" variant={status.variant}>{status.label}</Badge>
+            <div className="admin-order-detail__payment-info">
+              <Badge variant={payment.variant}>{payment.label}</Badge>
+              <span className="admin-order-detail__payment-method">{PAYMENT_METHOD_LABELS[order.paymentMethod]}</span>
+            </div>
           </div>
         </div>
         <div className="admin-order-detail__primary-actions">
@@ -144,8 +162,10 @@ function AdminOrderContent({ order }: IAdminOrderContentProps) {
       <div className="admin-order-detail__grid">
         <section aria-labelledby="order-products-title" className="admin-order-detail__panel admin-order-detail__products">
           <div className="admin-order-detail__panel-heading">
-            <p className="admin-order-detail__label">Contenido</p>
-            <h2 id="order-products-title">Productos</h2>
+            <p className="admin-order-detail__section-label">Productos</p>
+            <h2 id="order-products-title">
+              {hasSingleProduct ? 'Producto' : `${order.itemCount} productos`}
+            </h2>
           </div>
           <div className="admin-order-items">
             {order.items.map((item, index) => (
@@ -159,30 +179,47 @@ function AdminOrderContent({ order }: IAdminOrderContentProps) {
             ))}
           </div>
           <dl className="admin-order-totals">
-            <div><dt>Subtotal</dt><dd>{formatPrice(order.subtotal)}</dd></div>
-            <div><dt>Descuento</dt><dd>− {formatPrice(order.discount)}</dd></div>
+            {(!hasSingleProduct || hasDiscount) ? (
+              <div><dt>Subtotal</dt><dd>{formatPrice(order.subtotal)}</dd></div>
+            ) : null}
+            {hasDiscount ? (
+              <div><dt>Descuento</dt><dd>− {formatPrice(order.discount)}</dd></div>
+            ) : null}
             <div className="admin-order-totals__total"><dt>Total</dt><dd>{formatPrice(order.total)}</dd></div>
           </dl>
         </section>
 
-        <section aria-labelledby="order-customer-title" className="admin-order-detail__panel">
+        <section aria-labelledby="order-customer-title" className="admin-order-detail__panel admin-order-detail__customer">
           <div className="admin-order-detail__panel-heading">
-            <p className="admin-order-detail__label">Contacto</p>
-            <h2 id="order-customer-title">Cliente y retiro</h2>
+            <p className="admin-order-detail__section-label">Cliente</p>
+            <h2 id="order-customer-title">Información de contacto</h2>
           </div>
-          <dl className="admin-order-detail__facts">
-            <div><dt>Cliente</dt><dd>{order.customer.firstName} {order.customer.lastName}</dd></div>
-            <div><dt>Celular</dt><dd>{order.customer.phone}</dd></div>
-            <div><dt>Retiro</dt><dd>{order.business.address}</dd></div>
-            <div><dt>Horarios</dt><dd>{order.business.businessHours}</dd></div>
-            {order.pickedUpAt ? (
-              <div><dt>Retirado</dt><dd>{formatAdminOrderDate(order.pickedUpAt)}</dd></div>
-            ) : null}
-          </dl>
-          <a className="admin-order-detail__maps" href={order.business.mapsUrl} rel="noreferrer" target="_blank">
-            <MapPin aria-hidden="true" size={18} />
-            Ver ubicación del local
-          </a>
+          <div className="admin-order-customer">
+            <div className="admin-order-customer__row">
+              <div className="admin-order-customer__icon">
+                <User aria-hidden="true" size={20} />
+              </div>
+              <div className="admin-order-customer__info">
+                <span className="admin-order-customer__value">{order.customer.firstName} {order.customer.lastName}</span>
+              </div>
+            </div>
+            <div className="admin-order-customer__row">
+              <div className="admin-order-customer__icon">
+                <Phone aria-hidden="true" size={20} />
+              </div>
+              <div className="admin-order-customer__info">
+                <span className="admin-order-customer__value">{order.customer.phone}</span>
+              </div>
+            </div>
+            <div className="admin-order-customer__row">
+              <div className="admin-order-customer__icon">
+                <Clock aria-hidden="true" size={20} />
+              </div>
+              <div className="admin-order-customer__info">
+                <span className="admin-order-customer__value">{order.business.businessHours}</span>
+              </div>
+            </div>
+          </div>
           {order.notes ? (
             <div className="admin-order-detail__notes">
               <strong>Observaciones</strong>
@@ -192,11 +229,11 @@ function AdminOrderContent({ order }: IAdminOrderContentProps) {
         </section>
       </div>
 
-      <section aria-labelledby="order-whatsapp-title" className="admin-order-detail__panel">
+      <section aria-labelledby="order-whatsapp-title" className="admin-order-detail__panel admin-order-detail__whatsapp">
         <div className="admin-order-detail__panel-heading">
-          <p className="admin-order-detail__label">Comunicación manual</p>
-          <h2 id="order-whatsapp-title">WhatsApp</h2>
-          <p>Editá el mensaje antes de abrir la conversación. Nada se envía automáticamente.</p>
+          <p className="admin-order-detail__section-label">Comunicación</p>
+          <h2 id="order-whatsapp-title">Contactar al cliente</h2>
+          <p>Podés modificar el mensaje antes de abrir la conversación.</p>
         </div>
         <AdminWhatsAppComposer key={order.updatedAt} order={order} />
       </section>

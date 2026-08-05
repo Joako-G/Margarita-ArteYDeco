@@ -10,6 +10,11 @@
   margin: 0;
 }
 
+.admin-order-detail__reference {
+  color: var(--color-primary-dark);
+  font-size: var(--font-size-small);
+}
+
 .admin-order-detail__feedback,
 .admin-order-detail__operation,
 .admin-order-detail__panel,
@@ -46,39 +51,58 @@
 
 .admin-order-detail__operation h2,
 .admin-order-detail__panel h2 {
+  margin: 0;
+  color: var(--color-text);
   font-family: var(--font-body);
   font-size: var(--font-size-body);
+  font-weight: 600;
   text-wrap: balance;
 }
 
-.admin-order-detail__label {
-  margin-bottom: var(--space-1) !important;
+.admin-order-detail__section-label {
+  margin: 0 0 var(--space-1) !important;
   color: var(--color-primary-dark);
   font-size: var(--font-size-caption);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-order-detail__status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.admin-order-detail__status-badge {
+  font-size: var(--font-size-body);
   font-weight: 600;
 }
 
-.admin-order-detail__badges,
-.admin-order-detail__primary-actions,
-.admin-order-detail__modal-actions,
-.admin-whatsapp-composer__templates {
+.admin-order-detail__payment-info {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-1);
 }
 
-.admin-order-detail__badges {
-  margin-top: var(--space-2);
-}
-
-.admin-order-detail__badges > span:last-child {
+.admin-order-detail__payment-method {
   color: var(--color-primary-dark);
   font-size: var(--font-size-small);
+  font-weight: 600;
 }
 
 .admin-order-detail__primary-actions {
-  align-self: end;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.admin-order-detail__primary-actions .ui-button {
+  min-height: 44px;
 }
 
 .admin-order-detail .admin-order-detail__cancel {
@@ -112,98 +136,196 @@
   font-size: var(--font-size-small);
 }
 
-.admin-order-items,
-.admin-order-totals,
-.admin-order-detail__facts,
-.admin-whatsapp-composer,
-.admin-order-cancellation {
+.admin-order-items {
   display: grid;
   gap: var(--space-2);
 }
 
-.admin-order-items__row,
-.admin-order-totals > div,
-.admin-order-detail__facts > div {
+.admin-order-items__row {
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
   gap: var(--space-2);
-}
-
-.admin-order-items__row {
   padding-bottom: var(--space-2);
   border-bottom: 1px solid var(--color-border);
+}
+
+.admin-order-items__row:last-child {
+  border-bottom: 0;
 }
 
 .admin-order-items__row > div {
   display: grid;
   gap: calc(var(--space-1) / 2);
+  min-width: 0;
 }
 
-.admin-order-items__row span,
-.admin-order-detail__facts dt {
+.admin-order-items__row strong {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.admin-order-items__row span {
   color: var(--color-primary-dark);
-  font-size: var(--font-size-caption);
+  font-size: var(--font-size-small);
 }
 
-.admin-order-items__row > strong,
-.admin-order-totals dd {
+.admin-order-items__row > strong {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
 .admin-order-totals {
-  padding-top: var(--space-1);
+  display: grid;
+  gap: var(--space-1);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border);
+}
+
+.admin-order-totals > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.admin-order-totals dt {
+  color: var(--color-primary-dark);
+  font-size: var(--font-size-small);
+}
+
+.admin-order-totals dd {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .admin-order-totals__total {
   padding-top: var(--space-2);
+  margin-top: var(--space-1);
   border-top: 1px solid var(--color-border);
-  color: var(--color-primary-dark);
+}
+
+.admin-order-totals__total dt {
+  color: var(--color-text);
   font-size: var(--font-size-body);
   font-weight: 700;
 }
 
-.admin-order-detail__facts > div {
-  padding-bottom: var(--space-1);
-  border-bottom: 1px solid var(--color-border);
+.admin-order-totals__total dd {
+  color: var(--color-text);
+  font-family: var(--font-heading);
+  font-size: var(--font-size-h2);
+  font-weight: 700;
 }
 
-.admin-order-detail__facts dd {
-  max-width: 65%;
-  text-align: right;
+.admin-order-customer {
+  display: grid;
+  gap: var(--space-2);
 }
 
-.admin-order-detail__maps {
+.admin-order-customer__row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.admin-order-customer__icon {
   display: inline-flex;
-  min-height: 44px;
   align-items: center;
-  margin-top: var(--space-2);
-  gap: var(--space-1);
-  border-radius: var(--radius-button);
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: 0 0 auto;
   color: var(--color-primary-dark);
-  font-weight: 600;
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-input);
 }
 
-.admin-order-detail__maps:focus-visible {
-  outline: 3px solid var(--color-primary-dark);
-  outline-offset: 2px;
+.admin-order-customer__info {
+  display: grid;
+  gap: calc(var(--space-1) / 4);
+  min-width: 0;
+  padding-top: calc(var(--space-1) / 2);
+}
+
+.admin-order-customer__value {
+  color: var(--color-text);
+  font-size: var(--font-size-body);
+  font-weight: 600;
 }
 
 .admin-order-detail__notes {
   padding: var(--space-2);
-  margin-top: var(--space-2);
+  margin-top: var(--space-3);
   border-radius: var(--radius-input);
   background: var(--color-surface-muted);
 }
 
+.admin-order-detail__notes strong {
+  display: block;
+  margin-bottom: var(--space-1);
+  color: var(--color-primary-dark);
+  font-size: var(--font-size-caption);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .admin-order-detail__notes p {
-  margin-top: var(--space-1);
   white-space: pre-wrap;
+  line-height: 1.55;
+}
+
+.admin-order-detail__whatsapp {
+  background: var(--color-surface-muted);
+}
+
+.admin-whatsapp-composer {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.admin-whatsapp-composer__templates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.admin-whatsapp-composer__templates .ui-button {
+  min-height: 40px;
+}
+
+.admin-whatsapp-composer__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
 }
 
 .admin-whatsapp-composer__open {
-  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  min-height: 44px;
+  padding: var(--space-1) var(--space-3);
+  color: var(--color-surface);
+  background: var(--color-primary-dark);
+  border-radius: var(--radius-button);
+  font-weight: 600;
   text-decoration: none;
+  transition: transform var(--duration-fast), background-color var(--duration-fast);
+}
+
+.admin-whatsapp-composer__open:hover {
+  background: var(--color-primary);
+  transform: scale(1.02);
+}
+
+.admin-whatsapp-composer__open:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
 .admin-order-cancellation > p {
@@ -222,6 +344,10 @@
 }
 
 .admin-order-detail__modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
   justify-content: flex-end;
 }
 
@@ -256,8 +382,9 @@
   .admin-order-detail__primary-actions,
   .admin-order-detail__modal-actions,
   .admin-order-detail__load-error > div,
-  .admin-whatsapp-composer__open {
-    width: 100%;
+  .admin-whatsapp-composer__actions {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .admin-order-detail__primary-actions .ui-button,
@@ -266,16 +393,6 @@
   .admin-whatsapp-composer__open {
     width: 100%;
     justify-content: center;
-  }
-
-  .admin-order-detail__facts > div {
-    display: grid;
-    gap: calc(var(--space-1) / 2);
-  }
-
-  .admin-order-detail__facts dd {
-    max-width: none;
-    text-align: left;
   }
 }
 

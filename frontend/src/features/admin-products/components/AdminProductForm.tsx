@@ -14,7 +14,6 @@ import {
   type AdminProductFormType,
 } from '../schemas/admin-product-form.schema'
 import type { IAdminProductCategoryOption, IAdminProductDetail } from '../types/admin-products'
-import { createProductSlug } from '../utils/product-slug'
 
 interface IAdminProductFormProps {
   categories: readonly IAdminProductCategoryOption[]
@@ -81,7 +80,6 @@ export function AdminProductForm({
 
   const currentImageUrl = removeCurrentImage ? null : product?.imageUrl ?? null
   const displayedImage = previewUrl ?? currentImageUrl ?? productPlaceholderImage
-  const slug = createProductSlug(name)
   const numericPrice = Number(price.replace(',', '.'))
 
   const groupedCategories = {
@@ -109,7 +107,7 @@ export function AdminProductForm({
             <Input
               autoComplete="off"
               error={errors.name?.message}
-              helpText={slug ? `URL pública: /${slug}` : 'La URL se generará desde el nombre.'}
+              helpText="La URL se generará automáticamente desde el nombre."
               label="Nombre"
               maxLength={120}
               {...register('name')}

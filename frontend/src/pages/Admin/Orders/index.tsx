@@ -77,10 +77,10 @@ export function AdminOrdersPage() {
       <section aria-labelledby="admin-order-filters-title" className="admin-orders__filters-panel">
         <div className="admin-orders__section-heading">
           <div>
-            <p className="admin-orders__section-label">Operación diaria</p>
+            <p className="admin-orders__section-label">Pedidos</p>
             <h2 id="admin-order-filters-title">Buscar y filtrar</h2>
           </div>
-          <p>Los estados disponibles respetan el método y la confirmación del pago.</p>
+          <p>Filtrá por cliente, estado, método de pago y fecha para encontrar pedidos rápidamente.</p>
         </div>
         <AdminOrderFilters
           filters={filters}
@@ -92,7 +92,7 @@ export function AdminOrdersPage() {
       <section aria-labelledby="admin-order-list-title" className="admin-orders__list-panel">
         <div className="admin-orders__list-heading">
           <div>
-            <p className="admin-orders__section-label">Resultados</p>
+            <p className="admin-orders__section-label">Pedidos encontrados</p>
             <h2 id="admin-order-list-title">Listado de pedidos</h2>
           </div>
           {pagination ? (

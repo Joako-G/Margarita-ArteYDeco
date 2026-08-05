@@ -17,7 +17,7 @@ interface IAdminProductFiltersProps {
   onClear: () => void
 }
 
-const MOBILE_MEDIA_QUERY = '(max-width: 39.999rem)'
+const COMPACT_FILTERS_MEDIA_QUERY = '(max-width: 768px)'
 
 function getFormValues(filters: IAdminProductFilters): AdminProductFiltersFormType {
   return {
@@ -42,13 +42,13 @@ function getActiveFilterCount(filters: IAdminProductFilters): number {
 
 export function AdminProductFilters({ filters, onApply, onClear }: IAdminProductFiltersProps) {
   const [areAdvancedFiltersOpen, setAreAdvancedFiltersOpen] = useState(false)
-  const [isMobile, setIsMobile] = useState(() =>
-    typeof window !== 'undefined' ? window.matchMedia(MOBILE_MEDIA_QUERY).matches : false,
+  const [isCompact, setIsCompact] = useState(() =>
+    typeof window !== 'undefined' ? window.matchMedia(COMPACT_FILTERS_MEDIA_QUERY).matches : false,
   )
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia(MOBILE_MEDIA_QUERY)
-    const handleChange = (event: MediaQueryListEvent) => setIsMobile(event.matches)
+    const mediaQuery = window.matchMedia(COMPACT_FILTERS_MEDIA_QUERY)
+    const handleChange = (event: MediaQueryListEvent) => setIsCompact(event.matches)
 
     mediaQuery.addEventListener('change', handleChange)
     return () => mediaQuery.removeEventListener('change', handleChange)
@@ -72,32 +72,32 @@ export function AdminProductFilters({ filters, onApply, onClear }: IAdminProduct
   const activeFilterCount = useMemo(() => getActiveFilterCount(filters), [filters])
 
   const publicationRegister = register('publication', {
-    onChange: isMobile ? applyFilters : undefined,
+    onChange: isCompact ? applyFilters : undefined,
   })
   const stockRegister = register('stock', {
-    onChange: isMobile ? applyFilters : undefined,
+    onChange: isCompact ? applyFilters : undefined,
   })
   const sortRegister = register('sort', {
-    onChange: isMobile ? applyFilters : undefined,
+    onChange: isCompact ? applyFilters : undefined,
   })
   const pageSizeRegister = register('pageSize', {
-    onChange: isMobile ? applyFilters : undefined,
+    onChange: isCompact ? applyFilters : undefined,
   })
 
   const advancedFilters = (
     <>
-      <Select label={isMobile ? 'Visible en la tienda' : 'Publicación'} {...publicationRegister}>
+      <Select label={isCompact ? 'Visible en la tienda' : 'Publicación'} {...publicationRegister}>
         <option value="all">Todos</option>
-        <option value="active">{isMobile ? 'Visibles' : 'Activos'}</option>
-        <option value="inactive">{isMobile ? 'Ocultos' : 'Inactivos'}</option>
+        <option value="active">{isCompact ? 'Visibles' : 'Activos'}</option>
+        <option value="inactive">{isCompact ? 'Ocultos' : 'Inactivos'}</option>
       </Select>
-      <Select label={isMobile ? 'Unidades disponibles' : 'Stock'} {...stockRegister}>
+      <Select label={isCompact ? 'Unidades disponibles' : 'Stock'} {...stockRegister}>
         <option value="all">Todos</option>
-        <option value="inStock">{isMobile ? 'En stock' : 'Disponible'}</option>
+        <option value="inStock">{isCompact ? 'En stock' : 'Disponible'}</option>
         <option value="lowStock">Stock bajo</option>
         <option value="outOfStock">Sin stock</option>
       </Select>
-      <Select label={isMobile ? 'Mostrar primero' : 'Ordenar por'} {...sortRegister}>
+      <Select label={isCompact ? 'Mostrar primero' : 'Ordenar por'} {...sortRegister}>
         <option value="newest">Última actualización</option>
         <option value="nameAsc">Nombre A–Z</option>
         <option value="nameDesc">Nombre Z–A</option>
@@ -106,7 +106,7 @@ export function AdminProductFilters({ filters, onApply, onClear }: IAdminProduct
         <option value="stockAsc">Menor stock</option>
         <option value="stockDesc">Mayor stock</option>
       </Select>
-      <Select label={isMobile ? 'Productos por página' : 'Filas'} {...pageSizeRegister}>
+      <Select label={isCompact ? 'Productos por página' : 'Filas'} {...pageSizeRegister}>
         <option value="10">10</option>
         <option value="20">20</option>
         <option value="50">50</option>
@@ -133,7 +133,7 @@ export function AdminProductFilters({ filters, onApply, onClear }: IAdminProduct
         />
       </div>
 
-      {isMobile ? (
+      {isCompact ? (
         <>
           <div className="admin-product-filters__mobile-toolbar">
             <Button

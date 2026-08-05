@@ -35,6 +35,10 @@ export function formatAdminOrderDate(value: string): string {
   return dateTimeFormatter.format(new Date(value))
 }
 
+export function getOrderDisplayNumber(orderNumber: string): string {
+  return orderNumber.split('-').pop() ?? orderNumber
+}
+
 export function buildAdminWhatsAppUrl(phone: string, message: string): string {
   return `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(message.trim())}`
 }

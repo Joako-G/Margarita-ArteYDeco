@@ -15,6 +15,7 @@ export {
 } from './utils/admin-order-filters'
 export {
   formatAdminOrderDate,
+  getOrderDisplayNumber,
   ORDER_ACTION_LABELS,
   PAYMENT_METHOD_LABELS,
   PAYMENT_STATUS_DETAILS,

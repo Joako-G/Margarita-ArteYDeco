@@ -115,7 +115,7 @@ export function AdminCategoriesPage() {
           </Link>
         )}
         currentLabel="Categorías"
-        description="Organizá Arte y Decoraciones, su orden y disponibilidad en la tienda."
+        description="Organizá las categorías del catálogo y controlá qué se muestra en la tienda."
         sectionLabel="Gestión"
         title="Categorías"
         titleId="admin-categories-title"
@@ -136,7 +136,7 @@ export function AdminCategoriesPage() {
             <p className="admin-categories__section-label">Catálogo</p>
             <h2 id="admin-category-filters-title">Buscar y filtrar</h2>
           </div>
-          <p>El orden se administra de forma independiente dentro de cada área.</p>
+          <p>Buscar por nombre y filtrar las categorías que se muestran en la tienda.</p>
         </div>
         <AdminCategoryFilters
           filters={filters}
@@ -148,7 +148,7 @@ export function AdminCategoriesPage() {
       <section aria-labelledby="admin-category-list-title" className="admin-categories__list-panel">
         <div className="admin-categories__list-heading">
           <div>
-            <p className="admin-categories__section-label">Resultados</p>
+            <p className="admin-categories__section-label">Categorías encontradas</p>
             <h2 id="admin-category-list-title">Listado de categorías</h2>
           </div>
           {pagination ? (
