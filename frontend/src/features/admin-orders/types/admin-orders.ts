@@ -1,6 +1,7 @@
 import type { OrderStatusType } from '@/shared/utils/order-status'
 
 export type AdminPaymentMethodType = 'bank_transfer' | 'cash'
+export type AdminDeliveryMethodType = 'pickup' | 'shipping'
 export type AdminPaymentStatusType = 'paid' | 'pending' | 'rejected'
 export type AdminOrderActionType =
   | 'confirmPayment'
@@ -26,6 +27,7 @@ export interface IAdminOrderListItem {
     lastName: string
     phone: string
   }
+  deliveryMethod: AdminDeliveryMethodType
   id: string
   itemCount: number
   orderNumber: string
@@ -67,6 +69,7 @@ export interface IAdminOrderDetail extends IAdminOrderListItem {
   notes: string
   pickedUpAt: string | null
   requiresManualRefundOnCancel: boolean
+  shippingAddress: string | null
   subtotal: number
   whatsappPhone: string
 }

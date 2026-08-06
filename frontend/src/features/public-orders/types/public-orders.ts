@@ -1,4 +1,5 @@
 export type PaymentMethodType = 'cash' | 'transfer'
+export type DeliveryMethodType = 'pickup' | 'shipping'
 export type OrderStatusType =
   | 'cancelled'
   | 'paid'
@@ -22,6 +23,10 @@ export interface IOrderConfirmation {
     cbu: string
   } | null
   createdAt: string
+  delivery: {
+    method: DeliveryMethodType
+    shippingAddress: string | null
+  }
   items: {
     lineTotal: number
     name: string

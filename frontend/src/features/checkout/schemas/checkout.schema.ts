@@ -8,6 +8,7 @@ export const checkoutSchema = z.object({
   acceptTerms: z.boolean().refine((value) => value, {
     message: 'Debes aceptar los Términos y Condiciones y la Política de Privacidad para continuar.',
   }),
+  deliveryMethod: z.enum(['pickup', 'shipping']),
   firstName: z
     .string()
     .trim()
@@ -32,4 +33,13 @@ export const checkoutSchema = z.object({
     }, 'Ingresá un celular válido, incluyendo el código de área.'),
   notes: z.string().trim().max(500, 'Las observaciones pueden tener hasta 500 caracteres.'),
   paymentMethod: z.enum(['cash', 'transfer']),
+  shippingAddress: z.string().trim().max(300, 'La dirección puede tener hasta 300 caracteres.'),
+}).superRefine((values, context) => {
+  if (values.deliveryMethod === 'shipping' && values.shippingAddress.trim().length < 10) {
+    context.addIssue({
+      code: 'custom',
+      message: 'Ingresá una dirección de entrega válida.',
+      path: ['shippingAddress'],
+    })
+  }
 })

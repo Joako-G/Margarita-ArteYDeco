@@ -9,10 +9,12 @@ export interface ICustomer {
 
 export interface IOrder {
   customerId: string
+  deliveryMethod: 'pickup' | 'shipping'
   discount: number
   id: string
   orderNumber: string
   paymentMethod: 'cash' | 'transfer'
+  shippingAddress: string | null
   status: 'cancelled' | 'paid' | 'payment_pending' | 'pending' | 'picked_up' | 'preparing' | 'ready'
   subtotal: number
   total: number

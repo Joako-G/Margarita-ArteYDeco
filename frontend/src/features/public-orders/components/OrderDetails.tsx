@@ -5,6 +5,7 @@ import {
   MapPin,
   MessageCircle,
   ShieldCheck,
+  Truck,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
@@ -136,35 +137,49 @@ export function OrderDetails({ isForgetting, onForget, order }: IOrderDetailsPro
 
         <Divider />
 
-        <section aria-labelledby="order-pickup-title" className="public-order__section">
-          <Typography as="h2" id="order-pickup-title" variant="h3">
-            Retiro en el local
+        <section aria-labelledby="order-delivery-title" className="public-order__section">
+          <Typography as="h2" id="order-delivery-title" variant="h3">
+            {order.delivery.method === 'pickup' ? 'Retiro en el local' : 'Envío a coordinar'}
           </Typography>
-          <dl className="public-order__pickup">
-            <div>
-              <dt>
-                <MapPin aria-hidden="true" size={18} strokeWidth={2} />
-                Dirección
-              </dt>
-              <dd>{order.pickup.address}</dd>
-            </div>
-            <div>
-              <dt>
-                <Clock3 aria-hidden="true" size={18} strokeWidth={2} />
-                Horarios
-              </dt>
-              <dd>{order.pickup.businessHours}</dd>
-            </div>
-          </dl>
-          <a
-            className="public-order__button public-order__button--secondary"
-            href={order.pickup.mapsUrl}
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            Ver ubicación
-            <ExternalLink aria-hidden="true" size={18} strokeWidth={2} />
-          </a>
+          {order.delivery.method === 'shipping' ? (
+            <dl className="public-order__pickup">
+              <div>
+                <dt>
+                  <Truck aria-hidden="true" size={18} strokeWidth={2} />
+                  Dirección de entrega
+                </dt>
+                <dd>{order.delivery.shippingAddress}</dd>
+              </div>
+            </dl>
+          ) : (
+            <>
+              <dl className="public-order__pickup">
+                <div>
+                  <dt>
+                    <MapPin aria-hidden="true" size={18} strokeWidth={2} />
+                    Dirección
+                  </dt>
+                  <dd>{order.pickup.address}</dd>
+                </div>
+                <div>
+                  <dt>
+                    <Clock3 aria-hidden="true" size={18} strokeWidth={2} />
+                    Horarios
+                  </dt>
+                  <dd>{order.pickup.businessHours}</dd>
+                </div>
+              </dl>
+              <a
+                className="public-order__button public-order__button--secondary"
+                href={order.pickup.mapsUrl}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                Ver ubicación
+                <ExternalLink aria-hidden="true" size={18} strokeWidth={2} />
+              </a>
+            </>
+          )}
         </section>
 
         <nav aria-label="Acciones del pedido" className="public-order__actions">

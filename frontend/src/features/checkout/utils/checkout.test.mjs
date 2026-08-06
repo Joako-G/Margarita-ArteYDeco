@@ -18,11 +18,13 @@ function createApiError(error) {
 test('valida y normaliza los datos obligatorios del checkout', () => {
   const result = checkoutSchema.safeParse({
     acceptTerms: true,
+    deliveryMethod: 'pickup',
     firstName: '  Ana ',
     lastName: ' Pérez ',
     notes: '  Preparar para regalo. ',
     paymentMethod: 'transfer',
     phone: '5491123456789',
+    shippingAddress: '',
   })
 
   assert.equal(result.success, true)
@@ -32,13 +34,37 @@ test('valida y normaliza los datos obligatorios del checkout', () => {
     assert.equal(result.data.notes, 'Preparar para regalo.')
   }
 
-  const withoutAcceptance = checkoutSchema.safeParse({
-    acceptTerms: false,
+  assert.equal(checkoutSchema.safeParse({
+    acceptTerms: true,
+    deliveryMethod: 'shipping',
     firstName: 'Ana',
     lastName: 'Pérez',
     notes: '',
     paymentMethod: 'cash',
     phone: '5491123456789',
+    shippingAddress: 'Belgrano 607, Jujuy',
+  }).success, true)
+
+  assert.equal(checkoutSchema.safeParse({
+    acceptTerms: true,
+    deliveryMethod: 'shipping',
+    firstName: 'Ana',
+    lastName: 'Pérez',
+    notes: '',
+    paymentMethod: 'cash',
+    phone: '5491123456789',
+    shippingAddress: '',
+  }).success, false)
+
+  const withoutAcceptance = checkoutSchema.safeParse({
+    acceptTerms: false,
+    deliveryMethod: 'pickup',
+    firstName: 'Ana',
+    lastName: 'Pérez',
+    notes: '',
+    paymentMethod: 'cash',
+    phone: '5491123456789',
+    shippingAddress: '',
   })
 
   assert.equal(withoutAcceptance.success, false)
@@ -52,10 +78,12 @@ test('valida y normaliza los datos obligatorios del checkout', () => {
   assert.equal(
     checkoutSchema.safeParse({
       firstName: '',
+      deliveryMethod: 'pickup',
       lastName: '',
       notes: '',
       paymentMethod: 'cash',
       phone: '123',
+      shippingAddress: '',
     }).success,
     false,
   )
@@ -63,10 +91,12 @@ test('valida y normaliza los datos obligatorios del checkout', () => {
   assert.equal(
     checkoutSchema.safeParse({
       firstName: 'Ana',
+      deliveryMethod: 'pickup',
       lastName: 'Pérez',
       notes: '',
       paymentMethod: 'cash',
       phone: '11abc23456789',
+      shippingAddress: '',
     }).success,
     false,
   )

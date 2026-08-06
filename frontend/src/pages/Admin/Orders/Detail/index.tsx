@@ -7,6 +7,7 @@ import {
   PackageCheck,
   Phone,
   Trash2,
+  Truck,
   User,
 } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
@@ -226,6 +227,34 @@ function AdminOrderContent({ order }: IAdminOrderContentProps) {
               <p>{order.notes}</p>
             </div>
           ) : null}
+        </section>
+
+        <section aria-labelledby="order-delivery-title" className="admin-order-detail__panel">
+          <div className="admin-order-detail__panel-heading">
+            <p className="admin-order-detail__section-label">Entrega</p>
+            <h2 id="order-delivery-title">Cómo recibe el pedido</h2>
+          </div>
+          <div className="admin-order-customer">
+            <div className="admin-order-customer__row">
+              <div className="admin-order-customer__icon">
+                <Truck aria-hidden="true" size={20} />
+              </div>
+              <div className="admin-order-customer__info">
+                <span className="admin-order-detail__section-label">Tipo</span>
+                <span className="admin-order-customer__value">
+                  {order.deliveryMethod === 'pickup' ? 'Retiro en el local' : 'Envío'}
+                </span>
+              </div>
+            </div>
+            {order.deliveryMethod === 'shipping' ? (
+              <div className="admin-order-customer__row">
+                <div className="admin-order-customer__info">
+                  <span className="admin-order-detail__section-label">Dirección</span>
+                  <span className="admin-order-customer__value">{order.shippingAddress}</span>
+                </div>
+              </div>
+            ) : null}
+          </div>
         </section>
       </div>
 

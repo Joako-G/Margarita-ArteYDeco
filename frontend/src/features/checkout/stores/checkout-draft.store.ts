@@ -4,11 +4,13 @@ import type { ICheckoutFormValues } from '../types/checkout'
 
 const EMPTY_CHECKOUT_DRAFT: ICheckoutFormValues = {
   acceptTerms: false,
+  deliveryMethod: 'pickup',
   firstName: '',
   lastName: '',
   notes: '',
   paymentMethod: 'cash',
   phone: '',
+  shippingAddress: '',
 }
 
 interface ICheckoutDraftStore {

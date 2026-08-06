@@ -34,11 +34,13 @@ import './checkout.css'
 
 const DEFAULT_FORM_VALUES: ICheckoutFormValues = {
   acceptTerms: false,
+  deliveryMethod: 'pickup',
   firstName: '',
   lastName: '',
   notes: '',
   paymentMethod: 'cash',
   phone: '',
+  shippingAddress: '',
 }
 
 export function CheckoutPage() {
@@ -60,39 +62,57 @@ export function CheckoutPage() {
     mode: 'onBlur',
     resolver: zodResolver(checkoutSchema),
   })
+  const { setValue } = form
   const paymentMethod = useWatch({
     control: form.control,
     defaultValue: DEFAULT_FORM_VALUES.paymentMethod,
     name: 'paymentMethod',
   })
+  const deliveryMethod = useWatch({
+    control: form.control,
+    defaultValue: DEFAULT_FORM_VALUES.deliveryMethod,
+    name: 'deliveryMethod',
+  })
   const watchedValues = useWatch({ control: form.control })
   const watchedAcceptTerms = watchedValues.acceptTerms
+  const watchedDeliveryMethod = watchedValues.deliveryMethod
   const watchedFirstName = watchedValues.firstName
   const watchedLastName = watchedValues.lastName
   const watchedNotes = watchedValues.notes
   const watchedPaymentMethod = watchedValues.paymentMethod
   const watchedPhone = watchedValues.phone
+  const watchedShippingAddress = watchedValues.shippingAddress
   const totals = calculateCheckoutTotals(items, paymentMethod, settings?.transferDiscount ?? 0)
   const validationErrorCount = Object.keys(form.formState.errors).length
   const shouldShowValidationSummary = form.formState.submitCount > 0 && validationErrorCount > 0
 
   useEffect(() => {
+    if (deliveryMethod === 'shipping' && form.getValues('paymentMethod') !== 'transfer') {
+      setValue('paymentMethod', 'transfer', { shouldValidate: true })
+    }
+  }, [deliveryMethod, form, setValue])
+
+  useEffect(() => {
     setCheckoutDraft({
       acceptTerms: watchedAcceptTerms ?? false,
+      deliveryMethod: watchedDeliveryMethod ?? DEFAULT_FORM_VALUES.deliveryMethod,
       firstName: watchedFirstName ?? '',
       lastName: watchedLastName ?? '',
       notes: watchedNotes ?? '',
       paymentMethod: watchedPaymentMethod ?? DEFAULT_FORM_VALUES.paymentMethod,
       phone: watchedPhone ?? '',
+      shippingAddress: watchedShippingAddress ?? '',
     })
   }, [
     setCheckoutDraft,
     watchedAcceptTerms,
+    watchedDeliveryMethod,
     watchedFirstName,
     watchedLastName,
     watchedNotes,
     watchedPaymentMethod,
     watchedPhone,
+    watchedShippingAddress,
   ])
 
   useEffect(() => {
@@ -123,11 +143,13 @@ export function CheckoutPage() {
           notes: values.notes,
           phone: values.phone,
         },
+        deliveryMethod: values.deliveryMethod,
         items: items.map((item) => ({
           productId: item.id,
           quantity: item.quantity,
         })),
         paymentMethod: values.paymentMethod,
+        shippingAddress: values.shippingAddress,
       })
 
       completeOrder(confirmation)
@@ -250,6 +272,7 @@ export function CheckoutPage() {
               ) : null}
               <CheckoutForm
                 errors={form.formState.errors}
+                deliveryMethod={deliveryMethod}
                 register={form.register}
                 settings={settings}
               />

@@ -7,9 +7,11 @@ import type { ICreateOrderRequest, IOrderConfirmation } from '../types/checkout'
 async function submitOrder(
   request: ICreateOrderRequest,
   csrfToken: string,
+  idempotencyKey: string,
 ): Promise<IOrderConfirmation> {
   const response = await apiClient.post<IApiResponse<IOrderConfirmation>>('/orders', request, {
     headers: {
+      'Idempotency-Key': idempotencyKey,
       'X-CSRF-Token': csrfToken,
     },
   })
@@ -18,7 +20,7 @@ async function submitOrder(
 }
 
 async function createOrder(request: ICreateOrderRequest): Promise<IOrderConfirmation> {
-  return executeWithCsrf((csrfToken) => submitOrder(request, csrfToken))
+  return executeWithCsrf((csrfToken) => submitOrder(request, csrfToken, crypto.randomUUID()))
 }
 
 export const checkoutService = {
