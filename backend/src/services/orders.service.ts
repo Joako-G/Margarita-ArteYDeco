@@ -1,4 +1,5 @@
 import type { Logger } from 'pino'
+import { createHash } from 'node:crypto'
 
 import type { IOrderRepository } from '../repositories/orders.repository.js'
 import { normalizePhone } from '../schemas/orders.schema.js'
@@ -19,11 +20,28 @@ export interface ICreateOrderRequest {
     notes: string
     phone: string
   }
+  deliveryMethod: 'pickup' | 'shipping'
   items: readonly {
     productId: string
     quantity: number
   }[]
   paymentMethod: PublicPaymentMethodType
+  shippingAddress: string
+}
+
+function createRequestFingerprint(request: ICreateOrderRequest): string {
+  return createHash('sha256').update(JSON.stringify({
+    customer: {
+      firstName: request.customer.firstName,
+      lastName: request.customer.lastName,
+      notes: request.customer.notes,
+      phone: normalizePhone(request.customer.phone),
+    },
+    deliveryMethod: request.deliveryMethod,
+    items: [...request.items].sort((left, right) => left.productId.localeCompare(right.productId)),
+    paymentMethod: request.paymentMethod,
+    shippingAddress: request.shippingAddress,
+  })).digest('hex')
 }
 
 export interface ICreatedOrderResult {
@@ -33,7 +51,11 @@ export interface ICreatedOrderResult {
 }
 
 export interface IOrderService {
-  create(request: ICreateOrderRequest, currentSessionToken: string | null): Promise<ICreatedOrderResult>
+  create(
+    request: ICreateOrderRequest,
+    currentSessionToken: string | null,
+    idempotencyKey: string,
+  ): Promise<ICreatedOrderResult>
 }
 
 export class OrderConfirmationUnavailableError extends AppError {
@@ -58,6 +80,7 @@ export class OrderService implements IOrderService {
   public async create(
     request: ICreateOrderRequest,
     currentSessionToken: string | null,
+    idempotencyKey: string,
   ): Promise<ICreatedOrderResult> {
     const session = await this.guestSessionService.getOrCreate(currentSessionToken)
     const input: ICreateOrderInput = {
@@ -68,8 +91,14 @@ export class OrderService implements IOrderService {
         phone: request.customer.phone,
         phoneNormalized: normalizePhone(request.customer.phone),
       },
+      deliveryMethod: request.deliveryMethod,
       items: request.items,
+      idempotencyKey,
+      requestFingerprint: createRequestFingerprint(request),
       paymentMethod: request.paymentMethod === 'transfer' ? 'bank_transfer' : 'cash',
+      shippingAddress: request.deliveryMethod === 'shipping' && request.shippingAddress.length > 0
+        ? request.shippingAddress
+        : null,
     }
 
     let created

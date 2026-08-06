@@ -20,6 +20,7 @@ const emptySettingsService: ISettingsService = {
 const confirmation = {
   bankDetails: null,
   createdAt: '2026-08-02T15:00:00.000Z',
+  delivery: { method: 'pickup' as const, shippingAddress: null },
   items: [{ lineTotal: 1200, name: 'Caja decorada', quantity: 2, unitPrice: 600 }],
   orderNumber: 'MAD-20260802-000001',
   paymentMethod: 'cash' as const,
@@ -65,9 +66,13 @@ const validBody = {
     notes: '',
     phone: '+54 9 11 2345-6789',
   },
+  deliveryMethod: 'pickup',
   items: [{ productId: 'ad0047db-6715-4cc0-a559-6a72649063bb', quantity: 2 }],
   paymentMethod: 'cash',
+  shippingAddress: '',
 }
+
+const IDEMPOTENCY_KEY = 'checkout-attempt-0001'
 
 describe('order API', () => {
   it('issues a signed CSRF token in a host-only secure cookie', async () => {
@@ -93,6 +98,7 @@ describe('order API', () => {
       .post('/api/orders')
       .set('Cookie', `${CSRF_COOKIE_NAME}=${token}`)
       .set('X-CSRF-Token', token)
+      .set('Idempotency-Key', IDEMPOTENCY_KEY)
       .send(validBody)
       .expect(403)
 
@@ -101,6 +107,7 @@ describe('order API', () => {
       .set('Origin', TEST_ENV.corsAllowedOrigins[0] ?? '')
       .set('Cookie', `${CSRF_COOKIE_NAME}=${token}`)
       .set('X-CSRF-Token', `${token}tampered`)
+      .set('Idempotency-Key', IDEMPOTENCY_KEY)
       .send(validBody)
       .expect(403)
   })
@@ -114,6 +121,7 @@ describe('order API', () => {
       .set('Origin', TEST_ENV.corsAllowedOrigins[0] ?? '')
       .set('Cookie', `${CSRF_COOKIE_NAME}=${token}`)
       .set('X-CSRF-Token', token)
+      .set('Idempotency-Key', IDEMPOTENCY_KEY)
       .send(validBody)
       .expect(201)
 
@@ -143,6 +151,7 @@ describe('order API', () => {
       .set('Origin', TEST_ENV.corsAllowedOrigins[0] ?? '')
       .set('Cookie', `${CSRF_COOKIE_NAME}=${token}`)
       .set('X-CSRF-Token', token)
+      .set('Idempotency-Key', IDEMPOTENCY_KEY)
       .send({ ...validBody, unexpected: true, items: [{ ...validBody.items[0], quantity: 0 }] })
       .expect(400)
 

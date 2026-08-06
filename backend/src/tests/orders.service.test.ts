@@ -127,7 +127,7 @@ describe('OrderService', () => {
       createLogger(TEST_ENV),
     )
 
-    const result = await service.create(REQUEST, null)
+    const result = await service.create(REQUEST, null, 'checkout-attempt-0001')
 
     expect(repository.createWithStock).toHaveBeenCalledWith(SESSION.id, expect.objectContaining({
       customer: expect.objectContaining({ phoneNormalized: '5491123456789' }),
@@ -152,7 +152,7 @@ describe('OrderService', () => {
       createLogger(TEST_ENV),
     )
 
-    await expect(service.create(REQUEST, null)).rejects.toThrow('RPC failed')
+    await expect(service.create(REQUEST, null, 'checkout-attempt-0001')).rejects.toThrow('RPC failed')
     expect(sessionService.revokeCreatedSession).toHaveBeenCalledWith(SESSION)
   })
 
@@ -169,7 +169,9 @@ describe('OrderService', () => {
       createLogger(TEST_ENV),
     )
 
-    const error = await service.create(REQUEST, null).catch((caught: unknown) => caught)
+    const error = await service
+      .create(REQUEST, null, 'checkout-attempt-0001')
+      .catch((caught: unknown) => caught)
 
     expect(error).toBeInstanceOf(OrderConfirmationUnavailableError)
     expect((error as OrderConfirmationUnavailableError).session).toEqual(SESSION)

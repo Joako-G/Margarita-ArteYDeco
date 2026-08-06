@@ -8,6 +8,7 @@ import {
   setAdminPrivateHeaders,
 } from '../middlewares/admin-auth.middleware.js'
 import {
+  createAdminOperationRateLimitMiddleware,
   createCsrfValidationMiddleware,
   createOriginValidationMiddleware,
 } from '../middlewares/security.middleware.js'
@@ -18,7 +19,7 @@ export function createAdminProductRouter(
     IApplicationDependencies,
     'adminAuthService' | 'adminInventoryController' | 'adminProductController' | 'csrfService'
   >,
-  env: Pick<IEnv, 'adminSessionMaxAgeMs' | 'corsAllowedOrigins'>,
+  env: Pick<IEnv, 'adminSessionMaxAgeMs' | 'adminOperationRateLimitMax' | 'adminOperationRateLimitWindowMs' | 'corsAllowedOrigins' | 'redisUrl'>,
 ): Router {
   const router = Router()
   const authenticate = createAdminAuthenticationMiddleware(
@@ -30,7 +31,7 @@ export function createAdminProductRouter(
   const protectWrite = [verifyOrigin, verifyCsrf]
 
   router.use(setAdminPrivateHeaders)
-  router.use(authenticate, requireAdministratorRole)
+  router.use(authenticate, requireAdministratorRole, createAdminOperationRateLimitMiddleware(env))
   router.get('/', dependencies.adminProductController.list)
   router.get('/form-options', dependencies.adminProductController.getCategoryOptions)
   router.post('/', ...protectWrite, dependencies.adminProductController.create)

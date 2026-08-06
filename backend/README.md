@@ -105,11 +105,23 @@ elimina físicamente el producto ni su objeto de Storage.
 3. Configurar `CORS_ALLOWED_ORIGINS` como una lista separada por comas, sin `/`
    final.
 4. Configurar `SECURITY_HMAC_SECRET` con al menos 32 caracteres aleatorios. Es
-   obligatorio en producción; el fallback de desarrollo existe solo para no
-   bloquear el arranque local.
+   obligatorio en todos los entornos y debe ser independiente de la clave de
+   Supabase.
 5. Configurar `TURNSTILE_SECRET_KEY` exclusivamente en el Backend y
    `TURNSTILE_ALLOWED_HOSTNAMES` como una lista de hostnames sin esquema ni puerto.
 6. Ejecutar `pnpm install` y `pnpm dev`.
+
+Si `REDIS_URL` está configurada, el rate limiting utiliza Redis y se comparte
+entre réplicas. Si no está configurada, el backend inicia con el Memory Store de
+`express-rate-limit` y registra un warning indicando que el límite es local y no
+distribuido. La creación de pedidos también exige un header `Idempotency-Key` único
+por intento; los reintentos con la misma clave y sesión devuelven el pedido
+original sin descontar stock nuevamente.
+
+Las cookies del Backend conservan `Secure=true` en todos los entornos para
+proteger el prefijo `__Host-`. Para desarrollo local se debe utilizar HTTPS
+(por ejemplo, mediante un proxy HTTPS local); no se habilita una excepcion HTTP
+que pueda llegar accidentalmente a produccion.
 
 Para verificar la conexión real, los permisos de lectura y las URLs firmadas sin
 mostrar credenciales:

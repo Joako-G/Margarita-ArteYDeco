@@ -2,6 +2,7 @@ import { Router } from 'express'
 
 import type { IApplicationDependencies } from '../config/dependencies.js'
 import type { IEnv } from '../config/env.js'
+import { createAdminOperationRateLimitMiddleware } from '../middlewares/security.middleware.js'
 import {
   createAdminAuthenticationMiddleware,
   requireAdministratorRole,
@@ -13,7 +14,7 @@ export function createAdminDashboardRouter(
     IApplicationDependencies,
     'adminAuthService' | 'adminDashboardController'
   >,
-  env: Pick<IEnv, 'adminSessionMaxAgeMs'>,
+  env: Pick<IEnv, 'adminSessionMaxAgeMs' | 'adminOperationRateLimitMax' | 'adminOperationRateLimitWindowMs' | 'redisUrl'>,
 ): Router {
   const router = Router()
   const authenticate = createAdminAuthenticationMiddleware(
@@ -22,7 +23,7 @@ export function createAdminDashboardRouter(
   )
 
   router.use(setAdminPrivateHeaders)
-  router.use(authenticate, requireAdministratorRole)
+  router.use(authenticate, requireAdministratorRole, createAdminOperationRateLimitMiddleware(env))
   router.get('/', dependencies.adminDashboardController.getSummary)
 
   return router

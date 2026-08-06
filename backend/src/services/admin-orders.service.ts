@@ -85,6 +85,7 @@ function mapListItem(order: IAdminOrderRecord): IAdminOrderListItemDto {
       lastName: order.customerLastName,
       phone: order.customerPhone,
     },
+    deliveryMethod: order.deliveryMethod,
     id: order.id,
     itemCount: order.itemCount,
     orderNumber: order.orderNumber,
@@ -144,6 +145,7 @@ export class AdminOrderService implements IAdminOrderService {
       notes: order.notes ?? '',
       pickedUpAt: order.pickedUpAt,
       requiresManualRefundOnCancel: order.paymentStatus === 'paid',
+      shippingAddress: order.shippingAddress,
       subtotal: order.subtotal,
       whatsappPhone: normalizePhone(settings.whatsapp),
     }

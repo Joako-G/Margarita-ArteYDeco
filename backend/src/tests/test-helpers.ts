@@ -36,6 +36,8 @@ export const TEST_ADMIN_ORIGIN = 'http://localhost:5173'
 export const TEST_ENV: IEnv = {
   adminLoginRateLimitMax: 5,
   adminLoginRateLimitWindowMs: 900_000,
+  adminOperationRateLimitMax: 60,
+  adminOperationRateLimitWindowMs: 60_000,
   adminSessionMaxAgeMs: 604_800_000,
   corsAllowedOrigins: [TEST_ADMIN_ORIGIN],
   nodeEnv: 'test',
@@ -45,6 +47,7 @@ export const TEST_ENV: IEnv = {
   publicCacheMaxAgeSeconds: 60,
   publicRateLimitMax: 120,
   publicRateLimitWindowMs: 60_000,
+  redisUrl: null,
   recoveryBlockDurationMs: 1_800_000,
   recoveryCaptchaThreshold: 3,
   recoveryMaxAttempts: 5,
@@ -54,9 +57,10 @@ export const TEST_ENV: IEnv = {
   storageSignedUrlTtlSeconds: 3_600,
   supabaseSecretKey: 'test-only-server-key-not-for-production',
   supabaseUrl: 'https://test-project.supabase.co',
-  trustProxy: false,
+  trustedProxyIps: [],
   turnstileAllowedHostnames: ['localhost'],
   turnstileSecretKey: 'test-turnstile-secret',
+  isVercel: false,
 }
 
 export function createTestDependencies(

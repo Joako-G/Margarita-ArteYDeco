@@ -1,4 +1,4 @@
-import type { PaymentMethodType } from './orders.js'
+import type { DeliveryMethodType, PaymentMethodType } from './orders.js'
 
 export type AdminOrderStatusType =
   | 'cancelled'
@@ -32,6 +32,7 @@ export interface IAdminOrderRecord {
   customerLastName: string
   customerPhone: string
   customerPhoneNormalized: string
+  deliveryMethod: DeliveryMethodType
   discount: number
   id: string
   itemCount: number
@@ -40,6 +41,7 @@ export interface IAdminOrderRecord {
   paymentMethod: PaymentMethodType
   paymentStatus: AdminPaymentStatusType
   pickedUpAt: string | null
+  shippingAddress: string | null
   status: AdminOrderStatusType
   subtotal: number
   total: number
@@ -65,6 +67,7 @@ export interface IAdminOrderListItemDto {
     lastName: string
     phone: string
   }
+  deliveryMethod: DeliveryMethodType
   id: string
   itemCount: number
   orderNumber: string
@@ -101,6 +104,7 @@ export interface IAdminOrderDetailDto extends IAdminOrderListItemDto {
   notes: string
   pickedUpAt: string | null
   requiresManualRefundOnCancel: boolean
+  shippingAddress: string | null
   subtotal: number
   whatsappPhone: string
 }

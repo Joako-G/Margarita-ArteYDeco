@@ -30,6 +30,10 @@ export class OrderConfirmationService implements IOrderConfirmationService {
           }
         : null,
       createdAt: order.createdAt,
+      delivery: {
+        method: order.deliveryMethod,
+        shippingAddress: order.shippingAddress,
+      },
       items: order.items.map((item) => ({
         lineTotal: item.subtotal,
         name: item.productName,

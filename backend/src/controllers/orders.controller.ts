@@ -1,6 +1,5 @@
 import type { NextFunction, Request, Response } from 'express'
 
-import { createOrderBodySchema } from '../schemas/orders.schema.js'
 import {
   type IOrderService,
   OrderConfirmationUnavailableError,
@@ -20,12 +19,13 @@ export class OrderController {
     next: NextFunction,
   ): Promise<void> => {
     try {
-      const body = createOrderBodySchema.parse(request.body)
+      const body = response.locals.validatedBody as Parameters<IOrderService['create']>[0]
+      const idempotencyKey = response.locals.idempotencyKey as string
       const sessionToken = parseCookieValue(
         request.get('cookie'),
         GUEST_SESSION_COOKIE_NAME,
       )
-      const result = await this.service.create(body, sessionToken)
+      const result = await this.service.create(body, sessionToken, idempotencyKey)
 
       if (result.sessionTokenToSet !== null) {
         setGuestSessionCookie(

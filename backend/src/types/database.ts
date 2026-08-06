@@ -98,6 +98,7 @@ type IOrderDatabaseRow = {
   customer_last_name: string
   customer_phone: string
   customer_phone_normalized: string
+  delivery_method: 'pickup' | 'shipping'
   discount: number
   id: string
   notes: string | null
@@ -105,6 +106,7 @@ type IOrderDatabaseRow = {
   payment_method: 'bank_transfer' | 'cash'
   payment_status: 'paid' | 'pending' | 'rejected'
   picked_up_at: string | null
+  shipping_address: string | null
   status: 'cancelled' | 'paid' | 'payment_pending' | 'pending' | 'picked_up' | 'preparing' | 'ready'
   subtotal: number
   total: number
@@ -169,6 +171,8 @@ export interface IDatabase {
   public: {
     CompositeTypes: Record<string, never>
     Enums: {
+      delivery_method: 'pickup' | 'shipping'
+      order_status: 'cancelled' | 'paid' | 'payment_pending' | 'pending' | 'picked_up' | 'preparing' | 'ready'
       payment_method: 'bank_transfer' | 'cash'
       recovery_limit_scope: 'ip' | 'order_phone'
     }
@@ -205,10 +209,12 @@ export interface IDatabase {
           p_customer_last_name: string
           p_customer_phone: string
           p_customer_phone_normalized: string
+          p_delivery_method: 'pickup' | 'shipping'
           p_guest_session_id: string
           p_items: JsonType
           p_notes: string | null
           p_payment_method: 'bank_transfer' | 'cash'
+          p_shipping_address: string | null
         }
         Returns: {
           order_id: string

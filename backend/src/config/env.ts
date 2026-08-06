@@ -1,47 +1,39 @@
 import { z } from 'zod'
 
-const booleanSchema = z
-  .enum(['true', 'false'])
-  .transform((value) => value === 'true')
-
 const envSchema = z
   .object({
     CORS_ALLOWED_ORIGINS: z.string().default('http://localhost:5173'),
     ADMIN_LOGIN_RATE_LIMIT_MAX: z.coerce.number().int().min(1).max(100).default(5),
     ADMIN_LOGIN_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().min(60_000).default(900_000),
+    ADMIN_OPERATION_RATE_LIMIT_MAX: z.coerce.number().int().min(1).max(10_000).default(60),
+    ADMIN_OPERATION_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().min(1_000).default(60_000),
     ADMIN_SESSION_MAX_AGE_MS: z.coerce.number().int()
       .min(900_000)
       .max(2_592_000_000)
       .default(604_800_000),
-    NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+    NODE_ENV: z.enum(['development', 'test', 'production']),
     PORT: z.coerce.number().int().min(1).max(65_535).default(3000),
     PUBLIC_CACHE_MAX_AGE_SECONDS: z.coerce.number().int().min(0).max(300).default(60),
     PUBLIC_RATE_LIMIT_MAX: z.coerce.number().int().min(1).max(10_000).default(120),
     PUBLIC_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().min(1_000).default(60_000),
+    REDIS_URL: z.url().optional(),
     ORDER_RATE_LIMIT_MAX: z.coerce.number().int().min(1).max(1_000).default(10),
     ORDER_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().min(1_000).default(60_000),
     RECOVERY_BLOCK_DURATION_MS: z.coerce.number().int().min(1_800_000).default(1_800_000),
     RECOVERY_CAPTCHA_THRESHOLD: z.coerce.number().int().min(1).max(5).default(3),
     RECOVERY_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(5).default(5),
     RECOVERY_WINDOW_MS: z.coerce.number().int().min(60_000).default(900_000),
-    SECURITY_HMAC_SECRET: z.string().min(32).optional(),
+    SECURITY_HMAC_SECRET: z.string().min(32),
     STORAGE_SIGNED_URL_REFRESH_SKEW_SECONDS: z.coerce.number().int().min(1).default(60),
     STORAGE_SIGNED_URL_TTL_SECONDS: z.coerce.number().int().min(60).max(86_400).default(3_600),
     SUPABASE_SECRET_KEY: z.string().min(20),
     SUPABASE_URL: z.url(),
-    TRUST_PROXY: booleanSchema.default(false),
+    TRUSTED_PROXY_IPS: z.string().default(''),
     TURNSTILE_ALLOWED_HOSTNAMES: z.string().min(1).default('localhost'),
     TURNSTILE_SECRET_KEY: z.string().min(1).max(1_024),
+    VERCEL: z.enum(['0', '1']).default('0'),
   })
   .superRefine((value, context) => {
-    if (value.NODE_ENV === 'production' && value.SECURITY_HMAC_SECRET === undefined) {
-      context.addIssue({
-        code: 'custom',
-        message: 'SECURITY_HMAC_SECRET es obligatorio en producción',
-        path: ['SECURITY_HMAC_SECRET'],
-      })
-    }
-
     if (value.RECOVERY_CAPTCHA_THRESHOLD > value.RECOVERY_MAX_ATTEMPTS) {
       context.addIssue({
         code: 'custom',
@@ -76,6 +68,8 @@ const envSchema = z
 export interface IEnv {
   adminLoginRateLimitMax: number
   adminLoginRateLimitWindowMs: number
+  adminOperationRateLimitMax: number
+  adminOperationRateLimitWindowMs: number
   adminSessionMaxAgeMs: number
   corsAllowedOrigins: readonly string[]
   nodeEnv: 'development' | 'production' | 'test'
@@ -85,6 +79,7 @@ export interface IEnv {
   publicCacheMaxAgeSeconds: number
   publicRateLimitMax: number
   publicRateLimitWindowMs: number
+  redisUrl: string | null
   recoveryBlockDurationMs: number
   recoveryCaptchaThreshold: number
   recoveryMaxAttempts: number
@@ -94,9 +89,10 @@ export interface IEnv {
   storageSignedUrlTtlSeconds: number
   supabaseSecretKey: string
   supabaseUrl: string
-  trustProxy: boolean
+  trustedProxyIps: readonly string[]
   turnstileAllowedHostnames: readonly string[]
   turnstileSecretKey: string
+  isVercel: boolean
 }
 
 function parseAllowedOrigins(value: string): readonly string[] {
@@ -129,12 +125,18 @@ function parseAllowedHostnames(value: string): readonly string[] {
   return hostnames
 }
 
+function parseTrustedProxyIps(value: string): readonly string[] {
+  return [...new Set(value.split(',').map((ip) => ip.trim()).filter(Boolean))]
+}
+
 export function loadEnv(source: NodeJS.ProcessEnv = process.env): IEnv {
   const value = envSchema.parse(source)
 
   return {
     adminLoginRateLimitMax: value.ADMIN_LOGIN_RATE_LIMIT_MAX,
     adminLoginRateLimitWindowMs: value.ADMIN_LOGIN_RATE_LIMIT_WINDOW_MS,
+    adminOperationRateLimitMax: value.ADMIN_OPERATION_RATE_LIMIT_MAX,
+    adminOperationRateLimitWindowMs: value.ADMIN_OPERATION_RATE_LIMIT_WINDOW_MS,
     adminSessionMaxAgeMs: value.ADMIN_SESSION_MAX_AGE_MS,
     corsAllowedOrigins: parseAllowedOrigins(value.CORS_ALLOWED_ORIGINS),
     nodeEnv: value.NODE_ENV,
@@ -144,17 +146,19 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): IEnv {
     publicCacheMaxAgeSeconds: value.PUBLIC_CACHE_MAX_AGE_SECONDS,
     publicRateLimitMax: value.PUBLIC_RATE_LIMIT_MAX,
     publicRateLimitWindowMs: value.PUBLIC_RATE_LIMIT_WINDOW_MS,
+    redisUrl: value.REDIS_URL ?? null,
     recoveryBlockDurationMs: value.RECOVERY_BLOCK_DURATION_MS,
     recoveryCaptchaThreshold: value.RECOVERY_CAPTCHA_THRESHOLD,
     recoveryMaxAttempts: value.RECOVERY_MAX_ATTEMPTS,
     recoveryWindowMs: value.RECOVERY_WINDOW_MS,
-    securityHmacSecret: value.SECURITY_HMAC_SECRET ?? value.SUPABASE_SECRET_KEY,
+    securityHmacSecret: value.SECURITY_HMAC_SECRET,
     storageSignedUrlRefreshSkewSeconds: value.STORAGE_SIGNED_URL_REFRESH_SKEW_SECONDS,
     storageSignedUrlTtlSeconds: value.STORAGE_SIGNED_URL_TTL_SECONDS,
     supabaseSecretKey: value.SUPABASE_SECRET_KEY,
     supabaseUrl: value.SUPABASE_URL,
-    trustProxy: value.TRUST_PROXY,
+    trustedProxyIps: parseTrustedProxyIps(value.TRUSTED_PROXY_IPS),
     turnstileAllowedHostnames: parseAllowedHostnames(value.TURNSTILE_ALLOWED_HOSTNAMES),
     turnstileSecretKey: value.TURNSTILE_SECRET_KEY,
+    isVercel: value.VERCEL === '1',
   }
 }

@@ -1,10 +1,6 @@
 import type { NextFunction, Request, Response } from 'express'
 
 import {
-  publicOrderParamsSchema,
-  recoverOrderBodySchema,
-} from '../schemas/orders.schema.js'
-import {
   GuestSessionRequiredError,
   type IPublicOrderService,
   RecoveryBlockedError,
@@ -15,6 +11,7 @@ import {
   parseCookieValue,
   setGuestSessionCookie,
 } from '../utils/cookies.js'
+import { AppError } from '../utils/app-error.js'
 
 export class PublicOrderController {
   public constructor(private readonly service: IPublicOrderService) {}
@@ -41,7 +38,7 @@ export class PublicOrderController {
     next: NextFunction,
   ): Promise<void> => {
     try {
-      const params = publicOrderParamsSchema.parse(request.params)
+      const params = response.locals.validatedParams as { orderNumber: string }
       const confirmation = await this.service.getByNumber(
         params.orderNumber,
         this.getSessionToken(request),
@@ -79,11 +76,15 @@ export class PublicOrderController {
     next: NextFunction,
   ): Promise<void> => {
     try {
-      const body = recoverOrderBodySchema.parse(request.body)
+      const body = response.locals.validatedBody as Parameters<IPublicOrderService['recover']>[0]
+      if (request.ip === undefined) {
+        throw new AppError(500, 'No se pudo determinar la IP del cliente', 'CLIENT_IP_UNAVAILABLE')
+      }
+
       const result = await this.service.recover(
         body,
         this.getSessionToken(request),
-        request.ip ?? request.socket.remoteAddress ?? 'unknown',
+        request.ip,
       )
 
       setGuestSessionCookie(response, result.sessionToken, result.sessionExpiresAt)

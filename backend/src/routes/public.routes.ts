@@ -11,6 +11,8 @@ import {
   createOriginValidationMiddleware,
   createPublicRateLimitMiddleware,
 } from '../middlewares/security.middleware.js'
+import { validateBody, validateParams } from '../middlewares/validation.middleware.js'
+import { publicOrderParamsSchema, recoverOrderBodySchema } from '../schemas/orders.schema.js'
 import type { ICsrfService } from '../services/csrf.service.js'
 
 export interface IPublicRouteControllers {
@@ -26,7 +28,7 @@ export function createPublicRouter(
   controllers: IPublicRouteControllers,
   env: Pick<
     IEnv,
-    'corsAllowedOrigins' | 'publicRateLimitMax' | 'publicRateLimitWindowMs'
+    'corsAllowedOrigins' | 'publicRateLimitMax' | 'publicRateLimitWindowMs' | 'redisUrl'
   >,
 ): Router {
   const router = Router()
@@ -37,11 +39,16 @@ export function createPublicRouter(
   router.get('/products', controllers.productController.listPublic)
   router.get('/settings', controllers.settingsController.getPublic)
   router.get('/orders/recent', controllers.publicOrderController.getRecent)
-  router.get('/orders/:orderNumber', controllers.publicOrderController.getByNumber)
+  router.get(
+    '/orders/:orderNumber',
+    validateParams(publicOrderParamsSchema),
+    controllers.publicOrderController.getByNumber,
+  )
   router.post(
     '/orders/recover',
     createOriginValidationMiddleware(env.corsAllowedOrigins),
     createCsrfValidationMiddleware(controllers.csrfService),
+    validateBody(recoverOrderBodySchema),
     controllers.publicOrderController.recover,
   )
   router.delete(

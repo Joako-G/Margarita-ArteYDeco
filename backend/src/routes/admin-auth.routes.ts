@@ -23,7 +23,8 @@ export function createAdminAuthRouter(
     | 'adminLoginRateLimitMax'
     | 'adminLoginRateLimitWindowMs'
     | 'adminSessionMaxAgeMs'
-    | 'corsAllowedOrigins'
+     | 'corsAllowedOrigins'
+     | 'redisUrl'
   >,
 ): Router {
   const router = Router()

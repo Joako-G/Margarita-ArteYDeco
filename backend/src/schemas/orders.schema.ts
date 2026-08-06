@@ -15,11 +15,19 @@ const itemSchema = z.strictObject({
   quantity: z.number().int().min(1).max(10_000),
 })
 
+export const deliveryMethodSchema = z.enum(['pickup', 'shipping'])
+
 export const createOrderBodySchema = z.strictObject({
   customer: customerSchema,
+  deliveryMethod: deliveryMethodSchema,
   items: z.array(itemSchema).min(1).max(100),
   paymentMethod: z.enum(['cash', 'transfer']),
+  shippingAddress: z.string().trim().max(500).optional().default(''),
 })
+
+export const idempotencyKeySchema = z.string().trim().min(16).max(128).regex(
+  /^[A-Za-z0-9._:-]+$/,
+)
 
 export const publicOrderParamsSchema = z.strictObject({
   orderNumber: z.string().trim().toUpperCase().regex(/^MAD-[0-9]{8}-[0-9]{6,}$/),
@@ -65,9 +73,11 @@ export const orderRowSchema = z.strictObject({
   created_at: z.iso.datetime({ offset: true }),
   customer_first_name: z.string().min(1),
   customer_last_name: z.string().min(1),
+  delivery_method: deliveryMethodSchema,
   discount: z.coerce.number().nonnegative(),
   order_number: z.string().regex(/^MAD-[0-9]{8}-[0-9]{6,}$/),
   payment_method: z.enum(['bank_transfer', 'cash']),
+  shipping_address: z.string().nullable(),
   status: z.enum(['cancelled', 'paid', 'payment_pending', 'pending', 'picked_up', 'preparing', 'ready']),
   subtotal: z.coerce.number().positive(),
   total: z.coerce.number().positive(),

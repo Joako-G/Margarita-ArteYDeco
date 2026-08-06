@@ -1,5 +1,6 @@
 export type PaymentMethodType = 'bank_transfer' | 'cash'
 export type PublicPaymentMethodType = 'cash' | 'transfer'
+export type DeliveryMethodType = 'pickup' | 'shipping'
 
 export interface ICreateOrderInput {
   customer: {
@@ -9,11 +10,15 @@ export interface ICreateOrderInput {
     phone: string
     phoneNormalized: string
   }
+  deliveryMethod: DeliveryMethodType
   items: readonly {
     productId: string
     quantity: number
   }[]
+  idempotencyKey: string
+  requestFingerprint: string
   paymentMethod: PaymentMethodType
+  shippingAddress: string | null
 }
 
 export interface ICreatedOrderReference {
@@ -43,6 +48,7 @@ export interface IOrderConfirmationRow {
   createdAt: string
   customerFirstName: string
   customerLastName: string
+  deliveryMethod: DeliveryMethodType
   discount: number
   items: readonly {
     productName: string
@@ -52,6 +58,7 @@ export interface IOrderConfirmationRow {
   }[]
   orderNumber: string
   paymentMethod: PaymentMethodType
+  shippingAddress: string | null
   status: 'cancelled' | 'paid' | 'payment_pending' | 'pending' | 'picked_up' | 'preparing' | 'ready'
   subtotal: number
   total: number
@@ -75,6 +82,10 @@ export interface IPublicOrderConfirmationDto {
     cbu: string
   } | null
   createdAt: string
+  delivery: {
+    method: DeliveryMethodType
+    shippingAddress: string | null
+  }
   items: readonly {
     lineTotal: number
     name: string

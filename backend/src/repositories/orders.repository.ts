@@ -45,7 +45,7 @@ function mapOrderRpcError(error: PostgrestError): AppError {
 }
 
 export class OrderRepository implements IOrderRepository {
-  public constructor(private readonly client: ServerSupabaseClient) {}
+  public constructor(private readonly client: ServerSupabaseClient) { }
 
   public async createWithStock(
     sessionId: string,
@@ -56,18 +56,33 @@ export class OrderRepository implements IOrderRepository {
       p_customer_last_name: input.customer.lastName,
       p_customer_phone: input.customer.phone,
       p_customer_phone_normalized: input.customer.phoneNormalized,
+      p_delivery_method: input.deliveryMethod,
       p_guest_session_id: sessionId,
       p_items: input.items.map((item) => ({
         product_id: item.productId,
         quantity: item.quantity,
       })),
       p_notes: input.customer.notes,
+      p_idempotency_key: input.idempotencyKey,
+      p_request_fingerprint: input.requestFingerprint,
       p_payment_method: input.paymentMethod,
+      p_shipping_address: input.shippingAddress,
     })
+
+
+    if (error !== null) {
+      console.error('========== SUPABASE RPC ERROR ==========');
+      console.dir(error, { depth: null });
+      console.error('========================================');
+
+      throw mapOrderRpcError(error);
+    }
 
     if (error !== null) {
       throw mapOrderRpcError(error)
     }
+
+    
 
     const parsed = createdOrderReferenceSchema.safeParse(data?.[0])
 
@@ -105,6 +120,8 @@ export class OrderRepository implements IOrderRepository {
           created_at,
           status,
           payment_method,
+          delivery_method,
+          shipping_address,
           customer_first_name,
           customer_last_name,
           subtotal,
@@ -139,6 +156,7 @@ export class OrderRepository implements IOrderRepository {
       createdAt: parsedOrder.data.created_at,
       customerFirstName: parsedOrder.data.customer_first_name,
       customerLastName: parsedOrder.data.customer_last_name,
+      deliveryMethod: parsedOrder.data.delivery_method,
       discount: parsedOrder.data.discount,
       items: parsedItems.data.map((item) => ({
         productName: item.product_name,
@@ -148,6 +166,7 @@ export class OrderRepository implements IOrderRepository {
       })),
       orderNumber: parsedOrder.data.order_number,
       paymentMethod: parsedOrder.data.payment_method,
+      shippingAddress: parsedOrder.data.shipping_address,
       status: parsedOrder.data.status,
       subtotal: parsedOrder.data.subtotal,
       total: parsedOrder.data.total,

@@ -32,7 +32,12 @@ export function createApp(
   const app = express()
 
   app.disable('x-powered-by')
-  app.set('trust proxy', env.trustProxy ? 1 : false)
+  if (env.isVercel) {
+    app.set('trust proxy', true)
+  } else {
+    const trustedProxyIps = new Set(env.trustedProxyIps)
+    app.set('trust proxy', (ip: string) => trustedProxyIps.has(ip))
+  }
   app.use(createRequestLoggerMiddleware(logger))
   app.use(createHelmetMiddleware())
   app.use(createCorsMiddleware(env.corsAllowedOrigins))

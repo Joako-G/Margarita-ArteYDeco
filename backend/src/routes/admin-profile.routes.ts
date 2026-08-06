@@ -8,6 +8,7 @@ import {
   setAdminPrivateHeaders,
 } from '../middlewares/admin-auth.middleware.js'
 import {
+  createAdminOperationRateLimitMiddleware,
   createCsrfValidationMiddleware,
   createOriginValidationMiddleware,
 } from '../middlewares/security.middleware.js'
@@ -17,7 +18,7 @@ export function createAdminProfileRouter(
     IApplicationDependencies,
     'adminAuthService' | 'adminProfileController' | 'csrfService'
   >,
-  env: Pick<IEnv, 'adminSessionMaxAgeMs' | 'corsAllowedOrigins'>,
+  env: Pick<IEnv, 'adminSessionMaxAgeMs' | 'adminOperationRateLimitMax' | 'adminOperationRateLimitWindowMs' | 'corsAllowedOrigins' | 'redisUrl'>,
 ): Router {
   const router = Router()
   const protectWrite = [
@@ -29,6 +30,7 @@ export function createAdminProfileRouter(
   router.use(
     createAdminAuthenticationMiddleware(dependencies.adminAuthService, env.adminSessionMaxAgeMs),
     requireAdministratorRole,
+    createAdminOperationRateLimitMiddleware(env),
   )
   router.get('/', dependencies.adminProfileController.get)
   router.put('/name', ...protectWrite, dependencies.adminProfileController.updateFullName)

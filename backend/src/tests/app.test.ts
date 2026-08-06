@@ -118,4 +118,16 @@ describe('public API', () => {
       message: 'Recurso no encontrado',
     })
   })
+
+  it('trusts the Vercel proxy chain only when running on Vercel', () => {
+    const localApp = getApp()
+    const vercelApp = createApp(
+      { ...TEST_ENV, isVercel: true },
+      createLogger(TEST_ENV),
+      createTestDependencies(categoryService, productService, settingsService),
+    )
+
+    expect((localApp.get('trust proxy') as (ip: string) => boolean)('10.0.0.1')).toBe(false)
+    expect(vercelApp.get('trust proxy')).toBe(true)
+  })
 })

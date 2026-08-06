@@ -7,12 +7,14 @@ import {
   createOrderRateLimitMiddleware,
   createOriginValidationMiddleware,
 } from '../middlewares/security.middleware.js'
+import { validateBody, validateHeader } from '../middlewares/validation.middleware.js'
+import { createOrderBodySchema, idempotencyKeySchema } from '../schemas/orders.schema.js'
 
 export function createOrderRouter(
   dependencies: Pick<IApplicationDependencies, 'csrfService' | 'orderController'>,
   env: Pick<
     IEnv,
-    'corsAllowedOrigins' | 'orderRateLimitMax' | 'orderRateLimitWindowMs'
+    'corsAllowedOrigins' | 'orderRateLimitMax' | 'orderRateLimitWindowMs' | 'redisUrl'
   >,
 ): Router {
   const router = Router()
@@ -22,6 +24,8 @@ export function createOrderRouter(
     createOriginValidationMiddleware(env.corsAllowedOrigins),
     createOrderRateLimitMiddleware(env),
     createCsrfValidationMiddleware(dependencies.csrfService),
+    validateBody(createOrderBodySchema),
+    validateHeader(idempotencyKeySchema, 'idempotency-key', 'idempotencyKey'),
     dependencies.orderController.create,
   )
 
