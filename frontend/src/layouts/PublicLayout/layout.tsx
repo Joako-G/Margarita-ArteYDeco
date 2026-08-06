@@ -4,6 +4,7 @@ import { Outlet } from 'react-router-dom'
 import { CartToast } from '@/features/cart/components/CartToast'
 import { CartAvailabilitySync } from '@/features/cart'
 import { useCartStore } from '@/features/cart'
+import { FloatingWhatsApp } from '@/features/contact'
 import { SiteFooter } from './components/SiteFooter'
 import { SiteHeader } from './components/SiteHeader'
 import './styles.css'
@@ -27,6 +28,7 @@ export function PublicLayout() {
       <Outlet />
       <SiteFooter />
       <CartToast />
+      <FloatingWhatsApp />
       {isCartOpen ? (
         <Suspense fallback={null}>
           <CartDrawer />

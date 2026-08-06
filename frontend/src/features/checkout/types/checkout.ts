@@ -7,6 +7,7 @@ import type {
 export type { IOrderConfirmation, PaymentMethodType }
 
 export interface ICheckoutFormValues {
+  acceptTerms: boolean
   firstName: string
   lastName: string
   notes: string
@@ -27,7 +28,7 @@ export interface ICreateOrderItem {
 }
 
 export interface ICreateOrderRequest {
-  customer: Omit<ICheckoutFormValues, 'paymentMethod'>
+  customer: Omit<ICheckoutFormValues, 'acceptTerms' | 'paymentMethod'>
   items: ICreateOrderItem[]
   paymentMethod: PaymentMethodType
 }

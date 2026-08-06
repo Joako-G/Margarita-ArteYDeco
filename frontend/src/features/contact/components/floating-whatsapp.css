@@ -1,0 +1,18 @@
+.ui-floating-button.floating-whatsapp {
+  right: max(var(--space-3), env(safe-area-inset-right));
+  bottom: max(var(--space-3), env(safe-area-inset-bottom));
+  color: var(--color-surface);
+  background: var(--color-whatsapp);
+  z-index: var(--z-header);
+}
+
+.ui-floating-button.floating-whatsapp:hover:not(:disabled) {
+  background: var(--color-whatsapp);
+  transform: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ui-floating-button.floating-whatsapp:hover:not(:disabled) {
+    transform: scale(1.04);
+  }
+}

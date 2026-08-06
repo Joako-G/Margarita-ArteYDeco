@@ -7,6 +7,21 @@ test('permite indexar únicamente las páginas públicas de descubrimiento', () 
   assert.equal(getRouteMetadata('/').robots, 'index, follow')
   assert.equal(getRouteMetadata('/productos').robots, 'index, follow')
   assert.equal(getRouteMetadata('/categoria/pinceles').robots, 'index, follow')
+  assert.equal(getRouteMetadata('/politica-de-privacidad').robots, 'index, follow')
+})
+
+test('genera título y descripción para la política de privacidad', () => {
+  const metadata = getRouteMetadata('/politica-de-privacidad')
+
+  assert.match(metadata.title, /^Política de Privacidad/)
+  assert.match(metadata.description, /datos personales/)
+})
+
+test('genera título y descripción para los términos y condiciones', () => {
+  const metadata = getRouteMetadata('/terminos-y-condiciones')
+
+  assert.match(metadata.title, /^Términos y Condiciones/)
+  assert.match(metadata.description, /condiciones/)
 })
 
 test('evita indexar rutas transaccionales y administrativas', () => {

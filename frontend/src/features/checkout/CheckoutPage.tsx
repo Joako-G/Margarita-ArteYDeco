@@ -12,21 +12,28 @@ import { usePublicSettings } from '@/features/settings'
 import { publicOrdersService } from '@/features/public-orders/services/public-orders.service'
 import { PUBLIC_ORDERS_QUERY_KEY } from '@/features/public-orders/hooks/usePublicOrders'
 import { setLastOrderNumber } from '@/features/public-orders/utils/last-order'
-import { Button, Card, Container, EmptyState, Section, Spinner, Typography } from '@/shared/components'
+import {
+  Button,
+  Card,
+  Container,
+  EmptyState,
+  Section,
+  Spinner,
+  Typography,
+} from '@/shared/components'
 
 import { CheckoutForm } from './components/CheckoutForm'
 import { OrderSummary } from './components/OrderSummary'
 import { checkoutSchema } from './schemas/checkout.schema'
 import { checkoutService } from './services/checkout.service'
+import { useCheckoutDraftStore } from './stores/checkout-draft.store'
 import type { ICheckoutFormValues, IOrderConfirmation } from './types/checkout'
 import { calculateCheckoutTotals } from './utils/checkout-calculations'
-import {
-  getCheckoutErrorFeedback,
-  type ICheckoutErrorFeedback,
-} from './utils/checkout-errors'
+import { getCheckoutErrorFeedback, type ICheckoutErrorFeedback } from './utils/checkout-errors'
 import './checkout.css'
 
 const DEFAULT_FORM_VALUES: ICheckoutFormValues = {
+  acceptTerms: false,
   firstName: '',
   lastName: '',
   notes: '',
@@ -38,6 +45,9 @@ export function CheckoutPage() {
   const navigate = useNavigate()
   const { items } = useCart()
   const clearCart = useCartStore((state) => state.clearCart)
+  const checkoutDraft = useCheckoutDraftStore((state) => state.draft)
+  const clearCheckoutDraft = useCheckoutDraftStore((state) => state.clearDraft)
+  const setCheckoutDraft = useCheckoutDraftStore((state) => state.setDraft)
   const {
     data: settings,
     isError: isSettingsError,
@@ -46,7 +56,7 @@ export function CheckoutPage() {
   } = usePublicSettings()
   const [orderError, setOrderError] = useState<ICheckoutErrorFeedback | null>(null)
   const form = useForm<ICheckoutFormValues>({
-    defaultValues: DEFAULT_FORM_VALUES,
+    defaultValues: checkoutDraft ?? DEFAULT_FORM_VALUES,
     mode: 'onBlur',
     resolver: zodResolver(checkoutSchema),
   })
@@ -55,9 +65,35 @@ export function CheckoutPage() {
     defaultValue: DEFAULT_FORM_VALUES.paymentMethod,
     name: 'paymentMethod',
   })
+  const watchedValues = useWatch({ control: form.control })
+  const watchedAcceptTerms = watchedValues.acceptTerms
+  const watchedFirstName = watchedValues.firstName
+  const watchedLastName = watchedValues.lastName
+  const watchedNotes = watchedValues.notes
+  const watchedPaymentMethod = watchedValues.paymentMethod
+  const watchedPhone = watchedValues.phone
   const totals = calculateCheckoutTotals(items, paymentMethod, settings?.transferDiscount ?? 0)
   const validationErrorCount = Object.keys(form.formState.errors).length
   const shouldShowValidationSummary = form.formState.submitCount > 0 && validationErrorCount > 0
+
+  useEffect(() => {
+    setCheckoutDraft({
+      acceptTerms: watchedAcceptTerms ?? false,
+      firstName: watchedFirstName ?? '',
+      lastName: watchedLastName ?? '',
+      notes: watchedNotes ?? '',
+      paymentMethod: watchedPaymentMethod ?? DEFAULT_FORM_VALUES.paymentMethod,
+      phone: watchedPhone ?? '',
+    })
+  }, [
+    setCheckoutDraft,
+    watchedAcceptTerms,
+    watchedFirstName,
+    watchedLastName,
+    watchedNotes,
+    watchedPaymentMethod,
+    watchedPhone,
+  ])
 
   useEffect(() => {
     document.title = 'Finalizar compra | Margaritas Arte & Deco'
@@ -70,6 +106,7 @@ export function CheckoutPage() {
   function completeOrder(confirmation: IOrderConfirmation) {
     setLastOrderNumber(confirmation.orderNumber)
     clearCart()
+    clearCheckoutDraft()
     void queryClient.invalidateQueries({ queryKey: CATALOG_QUERY_KEY })
     void queryClient.invalidateQueries({ queryKey: PUBLIC_ORDERS_QUERY_KEY })
     navigate(routes.orderPath(confirmation.orderNumber), { replace: true })
@@ -219,10 +256,12 @@ export function CheckoutPage() {
             </Card>
             <Card className="checkout__summary-card">
               <OrderSummary
+                errors={form.formState.errors}
                 isSubmissionBlocked={orderError?.blocksResubmission ?? false}
                 isSubmitting={form.formState.isSubmitting}
                 items={items}
                 paymentMethod={paymentMethod}
+                register={form.register}
                 totals={totals}
               />
             </Card>

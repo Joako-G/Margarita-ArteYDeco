@@ -5,7 +5,8 @@ export interface IRouteMetadata {
 }
 
 const BRAND_NAME = 'Margaritas Arte & Deco'
-const DEFAULT_DESCRIPTION = 'Materiales, herramientas y accesorios para manualidades, decoración y proyectos creativos.'
+const DEFAULT_DESCRIPTION =
+  'Materiales, herramientas y accesorios para manualidades, decoración y proyectos creativos.'
 
 const ADMIN_TITLES: Array<[pathPrefix: string, label: string]> = [
   ['/admin/configuracion', 'Configuración'],
@@ -27,7 +28,8 @@ export function getRouteMetadata(pathname: string): IRouteMetadata {
 
   if (pathname === '/productos' || pathname.startsWith('/categoria/')) {
     return {
-      description: 'Explorá materiales para crear y decoraciones artesanales listas para regalar o transformar tus espacios.',
+      description:
+        'Explorá materiales para crear y decoraciones artesanales listas para regalar o transformar tus espacios.',
       robots: 'index, follow',
       title: `Productos | ${BRAND_NAME}`,
     }
@@ -54,6 +56,22 @@ export function getRouteMetadata(pathname: string): IRouteMetadata {
       description: DEFAULT_DESCRIPTION,
       robots: 'noindex, nofollow',
       title: `Estado del pedido | ${BRAND_NAME}`,
+    }
+  }
+
+  if (pathname === '/politica-de-privacidad') {
+    return {
+      description: `Conocé cómo ${BRAND_NAME} recopila, utiliza y protege los datos personales de quienes compran en nuestro sitio.`,
+      robots: 'index, follow',
+      title: `Política de Privacidad | ${BRAND_NAME}`,
+    }
+  }
+
+  if (pathname === '/terminos-y-condiciones') {
+    return {
+      description: `Conocé las condiciones para utilizar el sitio y enviar pedidos a ${BRAND_NAME}.`,
+      robots: 'index, follow',
+      title: `Términos y Condiciones | ${BRAND_NAME}`,
     }
   }
 

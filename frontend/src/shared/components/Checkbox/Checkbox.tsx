@@ -1,10 +1,10 @@
-import type { InputHTMLAttributes } from 'react'
+import type { InputHTMLAttributes, ReactNode } from 'react'
 import { Check } from 'lucide-react'
 
 import { mergeClassNames } from '@/shared/utils/class-names'
 
 interface ICheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
-  label: string
+  label: ReactNode
 }
 
 export function Checkbox({ className, label, ...props }: ICheckboxProps) {

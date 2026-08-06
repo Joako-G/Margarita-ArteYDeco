@@ -17,6 +17,7 @@ function createApiError(error) {
 
 test('valida y normaliza los datos obligatorios del checkout', () => {
   const result = checkoutSchema.safeParse({
+    acceptTerms: true,
     firstName: '  Ana ',
     lastName: ' Pérez ',
     notes: '  Preparar para regalo. ',
@@ -29,6 +30,23 @@ test('valida y normaliza los datos obligatorios del checkout', () => {
   if (result.success) {
     assert.equal(result.data.firstName, 'Ana')
     assert.equal(result.data.notes, 'Preparar para regalo.')
+  }
+
+  const withoutAcceptance = checkoutSchema.safeParse({
+    acceptTerms: false,
+    firstName: 'Ana',
+    lastName: 'Pérez',
+    notes: '',
+    paymentMethod: 'cash',
+    phone: '5491123456789',
+  })
+
+  assert.equal(withoutAcceptance.success, false)
+  if (!withoutAcceptance.success) {
+    assert.equal(
+      withoutAcceptance.error.issues[0]?.message,
+      'Debes aceptar los Términos y Condiciones y la Política de Privacidad para continuar.',
+    )
   }
 
   assert.equal(

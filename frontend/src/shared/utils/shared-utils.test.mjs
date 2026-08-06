@@ -5,6 +5,7 @@ import { mergeClassNames } from './class-names.ts'
 import { createSlug } from './create-slug.ts'
 import { formatPrice } from './format-price.ts'
 import { ORDER_STATUS_DETAILS } from './order-status.ts'
+import { buildWhatsAppUrl, DEFAULT_WHATSAPP_MESSAGE } from './whatsapp.ts'
 
 test('combina clases ignorando valores vacíos o falsos', () => {
   assert.equal(mergeClassNames('a', 'b', '', null, false, undefined, 'c'), 'a b c')
@@ -39,4 +40,15 @@ test('describe todos los estados oficiales de pedido con variantes tipadas', () 
   assert.equal(ORDER_STATUS_DETAILS.paid.variant, 'success')
   assert.equal(ORDER_STATUS_DETAILS.cancelled.variant, 'error')
   assert.equal(ORDER_STATUS_DETAILS.payment_pending.label, 'Pendiente de pago')
+})
+
+test('construye enlaces públicos de WhatsApp con mensaje centralizado', () => {
+  assert.equal(
+    buildWhatsAppUrl('+54 9 11 5555-1234'),
+    `https://wa.me/5491155551234?text=${encodeURIComponent(DEFAULT_WHATSAPP_MESSAGE)}`,
+  )
+  assert.equal(
+    buildWhatsAppUrl('5491100000000', ' Hola, necesito ayuda. '),
+    'https://wa.me/5491100000000?text=Hola%2C%20necesito%20ayuda.',
+  )
 })

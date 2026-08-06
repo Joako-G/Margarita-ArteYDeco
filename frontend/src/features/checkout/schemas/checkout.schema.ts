@@ -5,6 +5,9 @@ import { normalizePhone } from '../utils/checkout-links.ts'
 const NAME_PATTERN = /^[\p{L}\s'-]+$/u
 
 export const checkoutSchema = z.object({
+  acceptTerms: z.boolean().refine((value) => value, {
+    message: 'Debes aceptar los Términos y Condiciones y la Política de Privacidad para continuar.',
+  }),
   firstName: z
     .string()
     .trim()

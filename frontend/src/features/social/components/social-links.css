@@ -1,0 +1,39 @@
+.social-links {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+}
+
+.social-links__link {
+  display: inline-flex;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-surface);
+  text-decoration: none;
+  transition:
+    color var(--duration-fast),
+    transform var(--duration-fast);
+}
+
+.social-links__link:hover {
+  color: var(--color-gold);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .social-links__link:hover {
+    transform: scale(1.08);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .social-links__link {
+    transition: color var(--duration-fast);
+  }
+
+  .social-links__link:hover {
+    transform: none;
+  }
+}

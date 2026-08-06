@@ -3,8 +3,10 @@ import { Clock3, MapPin } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import logoImage from '@/assets/images/logo-header-optimized.webp'
+import { createSocialLinks, SocialLinks } from '@/features/social'
 import { usePublicSettings } from '@/features/settings'
 import { Container, DeferredImage } from '@/shared/components'
+import { buildWhatsAppUrl } from '@/shared/utils/whatsapp'
 
 const FOOTER_LINKS = [
   { href: '/#categorias', label: 'Categorías' },
@@ -13,6 +15,11 @@ const FOOTER_LINKS = [
   { href: '/productos?area=decoraciones', label: 'Decoraciones' },
   { href: '/#preguntas', label: 'Preguntas frecuentes' },
   { href: '/recuperar-pedido', label: 'Recuperar pedido' },
+]
+
+const LEGAL_LINKS = [
+  { href: '/politica-de-privacidad', label: 'Política de Privacidad' },
+  { href: '/terminos-y-condiciones', label: 'Términos y Condiciones' },
 ]
 
 function handleLogoError(event: SyntheticEvent<HTMLImageElement>) {
@@ -34,6 +41,7 @@ export function SiteFooter() {
     : isError
       ? 'Consultanos los horarios de atención.'
       : (settings?.businessHours ?? 'Consultanos los horarios de atención.')
+  const socialLinks = createSocialLinks(settings)
 
   return (
     <footer className="landing-footer" id="contacto">
@@ -47,6 +55,7 @@ export function SiteFooter() {
             width="1097"
           />
           <p>Materiales para crear y decoraciones terminadas a mano.</p>
+          <SocialLinks links={socialLinks} />
         </div>
 
         <nav aria-label="Navegación del pie" className="landing-footer__links">
@@ -56,6 +65,22 @@ export function SiteFooter() {
               {item.label}
             </Link>
           ))}
+        </nav>
+
+        <nav aria-label="Información legal" className="landing-footer__legal">
+          <strong>Información</strong>
+          {LEGAL_LINKS.map((item) => (
+            <Link key={item.href} to={item.href}>
+              {item.label}
+            </Link>
+          ))}
+          {settings?.whatsapp ? (
+            <a href={buildWhatsAppUrl(settings.whatsapp)} rel="noopener noreferrer" target="_blank">
+              Contacto
+            </a>
+          ) : (
+            <span>Contacto</span>
+          )}
         </nav>
 
         <div className="landing-footer__pickup">

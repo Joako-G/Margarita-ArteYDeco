@@ -4,6 +4,7 @@ import { IconButton } from '@/shared/components'
 
 import { useCart } from '../hooks/useCart'
 import { useCartStore } from '../stores/cart.store'
+import './cart.css'
 
 export function CartButton() {
   const { itemCount } = useCart()

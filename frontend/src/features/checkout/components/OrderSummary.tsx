@@ -1,4 +1,5 @@
 import { LockKeyhole } from 'lucide-react'
+import type { FieldErrors, UseFormRegister } from 'react-hook-form'
 
 import productPlaceholderImage from '@/assets/images/product-placeholder.webp'
 import { useCartStore } from '@/features/cart'
@@ -6,20 +7,26 @@ import { Button, DeferredImage, Divider, Typography } from '@/shared/components'
 import { formatPrice } from '@/shared/utils/format-price'
 
 import type { CheckoutCartItemType, ICheckoutTotals, PaymentMethodType } from '../types/checkout'
+import type { ICheckoutFormValues } from '../types/checkout'
+import { CheckoutTermsAcceptance } from './CheckoutTermsAcceptance'
 
 interface IOrderSummaryProps {
+  errors: FieldErrors<ICheckoutFormValues>
   isSubmissionBlocked: boolean
   isSubmitting: boolean
   items: CheckoutCartItemType[]
   paymentMethod: PaymentMethodType
+  register: UseFormRegister<ICheckoutFormValues>
   totals: ICheckoutTotals
 }
 
 export function OrderSummary({
+  errors,
   isSubmissionBlocked,
   isSubmitting,
   items,
   paymentMethod,
+  register,
   totals,
 }: IOrderSummaryProps) {
   const openCart = useCartStore((state) => state.openCart)
@@ -81,6 +88,7 @@ export function OrderSummary({
       <Button onClick={openCart} variant="ghost">
         Editar carrito
       </Button>
+      <CheckoutTermsAcceptance errors={errors} register={register} />
       <Button
         className="checkout-summary__submit"
         disabled={isSubmissionBlocked}

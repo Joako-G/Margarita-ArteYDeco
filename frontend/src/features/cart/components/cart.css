@@ -10,8 +10,8 @@
 
 .cart-button__count {
   position: absolute;
-  top: 0;
-  right: 0;
+  top: -4px;
+  right: -4px;
   display: grid;
   min-width: 20px;
   min-height: 20px;
@@ -24,6 +24,7 @@
   font-variant-numeric: tabular-nums;
   font-weight: 700;
   line-height: 1;
+  z-index: 1;
 }
 
 .shopping-cart__availability {

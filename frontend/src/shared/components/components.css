@@ -555,8 +555,8 @@ button.ui-chip:hover {
   position: fixed;
   right: var(--space-3);
   bottom: var(--space-3);
-  width: 48px;
-  height: 48px;
+  width: 68px;
+  height: 68px;
   padding: 0;
   border-radius: var(--radius-round);
   box-shadow: var(--shadow-default);

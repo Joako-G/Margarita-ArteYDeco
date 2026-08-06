@@ -5,6 +5,8 @@ import type {
   IAdminOrderDetail,
 } from '../types/admin-orders'
 
+import { buildWhatsAppUrl } from '../../../shared/utils/whatsapp.ts'
+
 const dateTimeFormatter = new Intl.DateTimeFormat('es-AR', {
   dateStyle: 'medium',
   timeStyle: 'short',
@@ -40,7 +42,7 @@ export function getOrderDisplayNumber(orderNumber: string): string {
 }
 
 export function buildAdminWhatsAppUrl(phone: string, message: string): string {
-  return `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(message.trim())}`
+  return buildWhatsAppUrl(phone, message)
 }
 
 export type AdminWhatsAppTemplateType = 'contact' | 'ready' | 'transferReminder'

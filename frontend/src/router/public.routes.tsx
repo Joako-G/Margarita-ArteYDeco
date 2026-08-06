@@ -1,9 +1,7 @@
 import type { RouteObject } from 'react-router-dom'
 
 const shouldPreloadHome = window.location.pathname === '/'
-const publicLayoutPreload = shouldPreloadHome
-  ? import('@/layouts/PublicLayout/layout')
-  : undefined
+const publicLayoutPreload = shouldPreloadHome ? import('@/layouts/PublicLayout/layout') : undefined
 const homePagePreload = shouldPreloadHome ? import('@/pages/Home') : undefined
 
 const loadPublicLayout = async () => ({
@@ -23,6 +21,12 @@ const loadOrderRoute = async () => ({
 })
 const loadRecoverOrderRoute = async () => ({
   Component: (await import('@/router/PublicOrderRoutes')).RecoverOrderRoute,
+})
+const loadPrivacyPolicyPage = async () => ({
+  Component: (await import('@/pages/Legal/PrivacyPolicy')).PrivacyPolicyPage,
+})
+const loadTermsAndConditionsPage = async () => ({
+  Component: (await import('@/pages/Legal/TermsAndConditions')).TermsAndConditionsPage,
 })
 
 export const publicRoutes: RouteObject[] = [
@@ -52,6 +56,14 @@ export const publicRoutes: RouteObject[] = [
       {
         path: 'recuperar-pedido',
         lazy: loadRecoverOrderRoute,
+      },
+      {
+        path: 'politica-de-privacidad',
+        lazy: loadPrivacyPolicyPage,
+      },
+      {
+        path: 'terminos-y-condiciones',
+        lazy: loadTermsAndConditionsPage,
       },
     ],
   },

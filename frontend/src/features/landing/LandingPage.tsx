@@ -76,7 +76,7 @@ export function LandingPage() {
 
   return (
     <main id="main-content">
-      <HeroSection featuredProduct={featuredProductsByArea.decoration[0]} />
+      <HeroSection />
       {isPending ? (
         <Section aria-label="Cargando catálogo" background="muted">
           <Container>
