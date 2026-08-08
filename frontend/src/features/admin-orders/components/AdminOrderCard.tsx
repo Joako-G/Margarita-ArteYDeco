@@ -37,6 +37,9 @@ export function AdminOrderCard({ order }: IAdminOrderCardProps) {
             {order.customer.firstName} {order.customer.lastName}
           </span>
           <span className="admin-order-card__customer-phone">{order.customer.phone}</span>
+          <span className="admin-order-card__customer-phone">
+            {order.deliveryMethod === 'shipping' ? 'Envío' : 'Retiro'}
+          </span>
         </div>
 
         <div className="admin-order-card__meta">
@@ -62,7 +65,7 @@ export function AdminOrderCard({ order }: IAdminOrderCardProps) {
             className="admin-order-card__detail"
             to={routes.adminOrderDetail(order.id)}
           >
-            Ver detalle
+            Ver
             <ArrowRight aria-hidden="true" size={18} />
           </Link>
         </div>

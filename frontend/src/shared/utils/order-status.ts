@@ -1,7 +1,7 @@
 export type OrderStatusType =
   | 'cancelled'
-  | 'paid'
-  | 'payment_pending'
+  | 'confirmed'
+  | 'delivered'
   | 'pending'
   | 'picked_up'
   | 'preparing'
@@ -12,8 +12,8 @@ export const ORDER_STATUS_DETAILS: Record<
   { label: string; variant: 'error' | 'neutral' | 'success' | 'warning' }
 > = {
   cancelled: { label: 'Cancelado', variant: 'error' },
-  paid: { label: 'Pagado', variant: 'success' },
-  payment_pending: { label: 'Pendiente de pago', variant: 'warning' },
+  confirmed: { label: 'Confirmado', variant: 'neutral' },
+  delivered: { label: 'Entregado', variant: 'success' },
   pending: { label: 'Pendiente', variant: 'warning' },
   picked_up: { label: 'Retirado', variant: 'success' },
   preparing: { label: 'En preparación', variant: 'neutral' },

@@ -27,8 +27,8 @@ test('formatea precios en pesos sin decimales', () => {
 test('describe todos los estados oficiales de pedido con variantes tipadas', () => {
   const statuses = [
     'pending',
-    'payment_pending',
-    'paid',
+    'confirmed',
+    'delivered',
     'preparing',
     'ready',
     'picked_up',
@@ -37,9 +37,9 @@ test('describe todos los estados oficiales de pedido con variantes tipadas', () 
 
   assert.equal(Object.keys(ORDER_STATUS_DETAILS).sort().join(','), statuses.sort().join(','))
   assert.equal(ORDER_STATUS_DETAILS.picked_up.label, 'Retirado')
-  assert.equal(ORDER_STATUS_DETAILS.paid.variant, 'success')
+  assert.equal(ORDER_STATUS_DETAILS.confirmed.label, 'Confirmado')
   assert.equal(ORDER_STATUS_DETAILS.cancelled.variant, 'error')
-  assert.equal(ORDER_STATUS_DETAILS.payment_pending.label, 'Pendiente de pago')
+  assert.equal(ORDER_STATUS_DETAILS.delivered.label, 'Entregado')
 })
 
 test('construye enlaces públicos de WhatsApp con mensaje centralizado', () => {

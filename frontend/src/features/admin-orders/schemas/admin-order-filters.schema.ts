@@ -9,8 +9,8 @@ export const adminOrderFiltersFormSchema = z.object({
   status: z.enum([
     'all',
     'cancelled',
-    'paid',
-    'payment_pending',
+    'confirmed',
+    'delivered',
     'pending',
     'picked_up',
     'preparing',

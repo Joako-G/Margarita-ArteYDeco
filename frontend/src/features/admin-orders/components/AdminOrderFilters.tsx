@@ -87,11 +87,11 @@ export function AdminOrderFilters({ filters, onApply, onClear }: IAdminOrderFilt
       <Select label="Estado del pedido" {...statusRegister}>
         <option value="all">Todos</option>
         <option value="pending">Pendientes</option>
-        <option value="payment_pending">Pendientes de pago</option>
-        <option value="paid">Pagados</option>
+        <option value="confirmed">Confirmados</option>
         <option value="preparing">En preparación</option>
         <option value="ready">Listos para retirar</option>
         <option value="picked_up">Retirados</option>
+        <option value="delivered">Entregados</option>
         <option value="cancelled">Cancelados</option>
       </Select>
       <Select label="Cómo pagó" {...paymentMethodRegister}>

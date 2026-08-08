@@ -23,7 +23,7 @@ test('usa filtros seguros frente a parámetros ausentes o inválidos', () => {
 
 test('normaliza filtros válidos de operación y pago', () => {
   const result = parseAdminOrderFilters(new URLSearchParams(
-    'page=2&pageSize=20&paymentMethod=bank_transfer&paymentStatus=pending&search= MAD-123 &sort=oldest&status=payment_pending',
+    'page=2&pageSize=20&paymentMethod=bank_transfer&paymentStatus=pending&search= MAD-123 &sort=oldest&status=confirmed',
   ))
 
   assert.deepEqual(result, {
@@ -33,7 +33,7 @@ test('normaliza filtros válidos de operación y pago', () => {
     paymentStatus: 'pending',
     search: 'MAD-123',
     sort: 'oldest',
-    status: 'payment_pending',
+    status: 'confirmed',
   })
 })
 

@@ -20,7 +20,7 @@ const PAYMENT_STATUSES: readonly ('all' | AdminPaymentStatusType)[] = [
   'all', 'paid', 'pending', 'rejected',
 ]
 const STATUSES: readonly ('all' | OrderStatusType)[] = [
-  'all', 'cancelled', 'paid', 'payment_pending', 'pending', 'picked_up', 'preparing', 'ready',
+  'all', 'cancelled', 'confirmed', 'delivered', 'pending', 'picked_up', 'preparing', 'ready',
 ]
 const SORTS: readonly AdminOrderSortType[] = ['newest', 'oldest', 'totalAsc', 'totalDesc']
 const PAGE_SIZES = [10, 20, 50] as const

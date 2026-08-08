@@ -5,6 +5,8 @@ export type AdminDeliveryMethodType = 'pickup' | 'shipping'
 export type AdminPaymentStatusType = 'paid' | 'pending' | 'rejected'
 export type AdminOrderActionType =
   | 'confirmPayment'
+  | 'confirmOrder'
+  | 'markDelivered'
   | 'markPickedUp'
   | 'markReady'
   | 'startPreparing'

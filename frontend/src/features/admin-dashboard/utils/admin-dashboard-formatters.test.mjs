@@ -10,7 +10,7 @@ import {
 test('traduce los métodos y estados operativos del Dashboard', () => {
   assert.equal(getPaymentMethodLabel('cash'), 'Efectivo')
   assert.equal(getPaymentMethodLabel('bank_transfer'), 'Transferencia')
-  assert.equal(ORDER_STATUS_DETAILS.payment_pending.label, 'Pendiente de pago')
+  assert.equal(ORDER_STATUS_DETAILS.confirmed.label, 'Confirmado')
   assert.equal(ORDER_STATUS_DETAILS.picked_up.label, 'Retirado')
 })
 

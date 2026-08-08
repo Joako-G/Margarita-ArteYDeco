@@ -16,14 +16,14 @@ test('explica por qué una categoría con productos no puede eliminarse', () => 
 test('explica la imagen requerida antes de publicar', () => {
   assert.equal(
     getAdminCategoryLifecycleErrorMessage('CATEGORY_IMAGE_REQUIRED_FOR_PUBLICATION'),
-    'Cargá una imagen antes de activar la categoría.',
+    'Cargá una imagen antes de mostrar la categoría en la tienda.',
   )
 })
 
 test('describe las acciones de publicación sin exponer detalles internos', () => {
   assert.equal(
     getAdminCategoryLifecycleSuccessMessage('Pinceles', 'publication', false),
-    'Desactivaste Pinceles.',
+    'Ocultaste Pinceles de la tienda.',
   )
   assert.equal(
     getAdminCategoryLifecycleSuccessMessage('Pinceles', 'delete'),

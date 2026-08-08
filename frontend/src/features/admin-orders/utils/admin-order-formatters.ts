@@ -28,6 +28,8 @@ export const PAYMENT_STATUS_DETAILS: Record<
 
 export const ORDER_ACTION_LABELS: Record<AdminOrderActionType, string> = {
   confirmPayment: 'Confirmar pago recibido',
+  confirmOrder: 'Confirmar pedido',
+  markDelivered: 'Marcar como entregado',
   markPickedUp: 'Marcar como retirado',
   markReady: 'Marcar como listo',
   startPreparing: 'Comenzar preparación',

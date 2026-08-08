@@ -67,7 +67,6 @@ function AdminOrderTableView({ orders }: { orders: readonly IAdminOrderListItem[
             <th scope="col">Pedido</th>
             <th scope="col">Cliente</th>
             <th scope="col">Estado</th>
-            <th scope="col">Pago</th>
             <th scope="col">Total</th>
             <th scope="col">Fecha</th>
             <th scope="col"><span className="sr-only">Acciones</span></th>
@@ -89,13 +88,13 @@ function AdminOrderTableView({ orders }: { orders: readonly IAdminOrderListItem[
                   <span className="admin-order-table__stacked">
                     <strong>{order.customer.firstName} {order.customer.lastName}</strong>
                     <span>{order.customer.phone}</span>
+                    <span>{order.deliveryMethod === 'shipping' ? 'Envío' : 'Retiro'}</span>
                   </span>
                 </td>
-                <td data-label="Estado"><Badge variant={status.variant}>{status.label}</Badge></td>
-                <td data-label="Pago">
+                <td data-label="Estado">
                   <span className="admin-order-table__payment">
-                    <Badge variant={payment.variant}>{payment.label}</Badge>
-                    <span>{PAYMENT_METHOD_LABELS[order.paymentMethod]}</span>
+                    <Badge variant={status.variant}>{status.label}</Badge>
+                    <span>{PAYMENT_METHOD_LABELS[order.paymentMethod]} · {payment.label}</span>
                   </span>
                 </td>
                 <td data-label="Total">
@@ -110,7 +109,7 @@ function AdminOrderTableView({ orders }: { orders: readonly IAdminOrderListItem[
                     className="admin-order-table__detail"
                     to={routes.adminOrderDetail(order.id)}
                   >
-                    Ver detalle
+                    Ver
                   </Link>
                 </td>
               </tr>

@@ -18,7 +18,7 @@ export const ordersMock: IOrder[] = [
     customerId: 'customer-laura',
     deliveryMethod: 'shipping',
     orderNumber: 'MAD-0002',
-    status: 'payment_pending',
+    status: 'pending',
     paymentMethod: 'transfer',
     shippingAddress: 'Belgrano 607, San Salvador de Jujuy',
     subtotal: 27800,
