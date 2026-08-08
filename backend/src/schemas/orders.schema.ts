@@ -78,7 +78,7 @@ export const orderRowSchema = z.strictObject({
   order_number: z.string().regex(/^MAD-[0-9]{8}-[0-9]{6,}$/),
   payment_method: z.enum(['bank_transfer', 'cash']),
   shipping_address: z.string().nullable(),
-  status: z.enum(['cancelled', 'paid', 'payment_pending', 'pending', 'picked_up', 'preparing', 'ready']),
+  status: z.enum(['cancelled', 'confirmed', 'delivered', 'pending', 'picked_up', 'preparing', 'ready']),
   subtotal: z.coerce.number().positive(),
   total: z.coerce.number().positive(),
 })

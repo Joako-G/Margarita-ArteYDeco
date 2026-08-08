@@ -31,6 +31,7 @@ const OPEN_LIMIT = { captchaRequired: false, isBlocked: false, retryAfterSeconds
 const confirmation: IPublicOrderConfirmationDto = {
   bankDetails: null,
   createdAt: '2026-08-02T15:00:00.000Z',
+  delivery: { method: 'pickup', shippingAddress: null },
   items: [{ lineTotal: 600, name: 'Caja decorada', quantity: 1, unitPrice: 600 }],
   orderNumber: ORDER_NUMBER,
   paymentMethod: 'cash',

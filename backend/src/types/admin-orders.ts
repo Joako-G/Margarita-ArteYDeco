@@ -2,8 +2,8 @@ import type { DeliveryMethodType, PaymentMethodType } from './orders.js'
 
 export type AdminOrderStatusType =
   | 'cancelled'
-  | 'paid'
-  | 'payment_pending'
+  | 'confirmed'
+  | 'delivered'
   | 'pending'
   | 'picked_up'
   | 'preparing'
@@ -12,6 +12,8 @@ export type AdminOrderStatusType =
 export type AdminPaymentStatusType = 'paid' | 'pending' | 'rejected'
 export type AdminOrderActionType =
   | 'confirmPayment'
+  | 'confirmOrder'
+  | 'markDelivered'
   | 'markPickedUp'
   | 'markReady'
   | 'startPreparing'

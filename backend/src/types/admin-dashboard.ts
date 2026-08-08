@@ -2,8 +2,8 @@ import type { PaymentMethodType } from './orders.js'
 
 export type AdminDashboardOrderStatusType =
   | 'cancelled'
-  | 'paid'
-  | 'payment_pending'
+  | 'confirmed'
+  | 'delivered'
   | 'pending'
   | 'picked_up'
   | 'preparing'

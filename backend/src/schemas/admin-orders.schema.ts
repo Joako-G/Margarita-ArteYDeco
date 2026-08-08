@@ -2,8 +2,8 @@ import { z } from 'zod'
 
 const orderStatusSchema = z.enum([
   'cancelled',
-  'paid',
-  'payment_pending',
+  'confirmed',
+  'delivered',
   'pending',
   'picked_up',
   'preparing',
@@ -22,8 +22,8 @@ export const adminOrderFiltersSchema = z.strictObject({
   status: z.enum([
     'all',
     'cancelled',
-    'paid',
-    'payment_pending',
+    'confirmed',
+    'delivered',
     'pending',
     'picked_up',
     'preparing',
@@ -69,7 +69,14 @@ export const adminOrderItemRowsSchema = z.array(z.strictObject({
 export const adminOrderIdParamsSchema = z.strictObject({ orderId: z.uuid() })
 
 export const adminOrderActionSchema = z.strictObject({
-  action: z.enum(['confirmPayment', 'markPickedUp', 'markReady', 'startPreparing']),
+  action: z.enum([
+    'confirmOrder',
+    'confirmPayment',
+    'markDelivered',
+    'markPickedUp',
+    'markReady',
+    'startPreparing',
+  ]),
   expectedUpdatedAt: z.iso.datetime({ offset: true }),
 })
 

@@ -25,6 +25,8 @@ const REQUEST = {
   },
   items: [{ productId: 'ad0047db-6715-4cc0-a559-6a72649063bb', quantity: 2 }],
   paymentMethod: 'transfer' as const,
+  deliveryMethod: 'pickup' as const,
+  shippingAddress: '',
 }
 
 function createGuestSessionService(): IGuestSessionService {
@@ -51,7 +53,7 @@ function createRepository(): IOrderRepository {
       items: [{ productName: 'Caja', quantity: 2, subtotal: 1200, unitPrice: 600 }],
       orderNumber: 'MAD-20260802-000001',
       paymentMethod: 'bank_transfer',
-      status: 'payment_pending',
+       status: 'pending',
       subtotal: 1200,
       total: 1080,
     }),

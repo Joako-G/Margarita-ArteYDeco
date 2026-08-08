@@ -107,7 +107,7 @@ type IOrderDatabaseRow = {
   payment_status: 'paid' | 'pending' | 'rejected'
   picked_up_at: string | null
   shipping_address: string | null
-  status: 'cancelled' | 'paid' | 'payment_pending' | 'pending' | 'picked_up' | 'preparing' | 'ready'
+  status: 'cancelled' | 'confirmed' | 'delivered' | 'pending' | 'picked_up' | 'preparing' | 'ready'
   subtotal: number
   total: number
   updated_at: string
@@ -172,7 +172,7 @@ export interface IDatabase {
     CompositeTypes: Record<string, never>
     Enums: {
       delivery_method: 'pickup' | 'shipping'
-      order_status: 'cancelled' | 'paid' | 'payment_pending' | 'pending' | 'picked_up' | 'preparing' | 'ready'
+      order_status: 'cancelled' | 'confirmed' | 'delivered' | 'pending' | 'picked_up' | 'preparing' | 'ready'
       payment_method: 'bank_transfer' | 'cash'
       recovery_limit_scope: 'ip' | 'order_phone'
     }
@@ -275,7 +275,7 @@ export interface IDatabase {
           p_expected_updated_at: string
           p_order_id: string
           p_payment_status: 'paid' | 'pending' | 'rejected'
-          p_status: 'cancelled' | 'paid' | 'payment_pending' | 'pending' | 'picked_up' | 'preparing' | 'ready'
+          p_status: 'cancelled' | 'confirmed' | 'delivered' | 'pending' | 'picked_up' | 'preparing' | 'ready'
         }
         Returns: boolean
       }

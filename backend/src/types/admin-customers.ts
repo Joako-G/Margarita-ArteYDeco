@@ -30,7 +30,7 @@ export interface IAdminCustomerOrderRecord {
   orderNumber: string
   paymentMethod: 'bank_transfer' | 'cash'
   paymentStatus: 'paid' | 'pending' | 'rejected'
-  status: 'cancelled' | 'paid' | 'payment_pending' | 'pending' | 'picked_up' | 'preparing' | 'ready'
+  status: 'cancelled' | 'confirmed' | 'delivered' | 'pending' | 'picked_up' | 'preparing' | 'ready'
   total: number
 }
 

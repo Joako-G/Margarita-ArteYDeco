@@ -18,8 +18,8 @@ export const adminDashboardRecentOrderRowsSchema = z.array(z.strictObject({
   payment_method: z.enum(['bank_transfer', 'cash']),
   status: z.enum([
     'cancelled',
-    'paid',
-    'payment_pending',
+    'confirmed',
+    'delivered',
     'pending',
     'picked_up',
     'preparing',

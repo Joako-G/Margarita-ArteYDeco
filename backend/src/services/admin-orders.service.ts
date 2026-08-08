@@ -43,23 +43,16 @@ export interface IAdminOrderService {
 }
 
 function getAvailableActions(order: IAdminOrderRecord): readonly AdminOrderActionType[] {
-  if (order.paymentMethod === 'bank_transfer') {
-    switch (order.status) {
-      case 'payment_pending': return ['confirmPayment']
-      case 'paid': return ['startPreparing']
-      case 'preparing': return ['markReady']
-      case 'ready': return ['markPickedUp']
-      default: return []
-    }
+  const actions: AdminOrderActionType[] = []
+  if (order.status === 'pending') actions.push('confirmOrder')
+  if (!['cancelled', 'picked_up', 'delivered'].includes(order.status)
+    && order.paymentStatus !== 'paid') actions.push('confirmPayment')
+  if (order.status === 'confirmed') actions.push('startPreparing')
+  if (order.status === 'preparing') actions.push('markReady')
+  if (order.status === 'ready' && order.paymentStatus === 'paid') {
+    actions.push(order.deliveryMethod === 'shipping' ? 'markDelivered' : 'markPickedUp')
   }
-
-  switch (order.status) {
-    case 'pending': return ['startPreparing']
-    case 'preparing': return ['markReady']
-    case 'ready': return ['confirmPayment']
-    case 'paid': return ['markPickedUp']
-    default: return []
-  }
+  return actions
 }
 
 function deriveTransition(
@@ -69,11 +62,13 @@ function deriveTransition(
   if (!getAvailableActions(order).includes(action)) return null
 
   switch (action) {
-    case 'confirmPayment': return { paymentStatus: 'paid', status: 'paid' }
+    case 'confirmOrder': return { paymentStatus: order.paymentStatus, status: 'confirmed' }
+    case 'confirmPayment': return { paymentStatus: 'paid', status: order.status }
     case 'startPreparing':
       return { paymentStatus: order.paymentStatus, status: 'preparing' }
     case 'markReady': return { paymentStatus: order.paymentStatus, status: 'ready' }
-    case 'markPickedUp': return { paymentStatus: 'paid', status: 'picked_up' }
+    case 'markPickedUp': return { paymentStatus: order.paymentStatus, status: 'picked_up' }
+    case 'markDelivered': return { paymentStatus: order.paymentStatus, status: 'delivered' }
   }
 }
 
@@ -139,7 +134,7 @@ export class AdminOrderService implements IAdminOrderService {
         businessName: settings.businessName,
         mapsUrl: settings.mapsUrl,
       },
-      canCancel: !['cancelled', 'picked_up'].includes(order.status),
+       canCancel: !['cancelled', 'delivered', 'picked_up'].includes(order.status),
       discount: order.discount,
       items,
       notes: order.notes ?? '',
@@ -186,7 +181,7 @@ export class AdminOrderService implements IAdminOrderService {
   ): Promise<IAdminOrderCancellationResult> {
     const order = await this.requireOrder(orderId)
     this.validateVersion(order, input.expectedUpdatedAt)
-    if (['cancelled', 'picked_up'].includes(order.status)) {
+    if (['cancelled', 'delivered', 'picked_up'].includes(order.status)) {
       throw new AppError(409, 'Este pedido ya no puede cancelarse', 'ORDER_CANCELLATION_NOT_ALLOWED')
     }
     if (order.paymentStatus === 'paid' && !input.confirmManualRefund) {

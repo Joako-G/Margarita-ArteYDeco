@@ -12,6 +12,7 @@ const ORDER: IAdminOrderRecord = {
   customerLastName: 'Pérez',
   customerPhone: '+54 9 11 5555-1234',
   customerPhoneNormalized: '5491155551234',
+  deliveryMethod: 'pickup',
   discount: 1200,
   id: '3a2b9148-7dbf-4b88-a47f-296205f5e4de',
   itemCount: 2,
@@ -20,7 +21,8 @@ const ORDER: IAdminOrderRecord = {
   paymentMethod: 'bank_transfer',
   paymentStatus: 'pending',
   pickedUpAt: null,
-  status: 'payment_pending',
+  status: 'pending',
+  shippingAddress: null,
   subtotal: 12000,
   total: 10800,
   updatedAt: '2026-08-03T12:00:00.000Z',
@@ -80,7 +82,7 @@ describe('AdminOrderService', () => {
     expect(JSON.stringify(result)).not.toContain('customerPhoneNormalized')
   })
 
-  it('confirms a transfer payment with the required paired statuses', async () => {
+  it('confirms a transfer payment without changing the order status', async () => {
     const repository = createRepository({ transition: vi.fn().mockResolvedValue(true) })
     const service = new AdminOrderService(repository, createSettingsRepository(), logger)
 
@@ -91,14 +93,14 @@ describe('AdminOrderService', () => {
 
     expect(repository.transition).toHaveBeenCalledWith(
       ORDER.id,
-      'paid',
+      'pending',
       'paid',
       ACTOR_ID,
       ORDER.updatedAt,
     )
   })
 
-  it('confirms cash only after the order is ready', async () => {
+  it('confirms cash payment independently from the order status', async () => {
     const readyCash = { ...ORDER, discount: 0, paymentMethod: 'cash' as const, status: 'ready' as const }
     const repository = createRepository({
       findById: vi.fn().mockResolvedValue(readyCash),
@@ -113,7 +115,7 @@ describe('AdminOrderService', () => {
 
     expect(repository.transition).toHaveBeenCalledWith(
       ORDER.id,
-      'paid',
+      'ready',
       'paid',
       ACTOR_ID,
       ORDER.updatedAt,

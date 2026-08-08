@@ -20,8 +20,7 @@ interface ICountResult {
 
 const OPEN_ORDER_STATUSES = [
   'pending',
-  'payment_pending',
-  'paid',
+  'confirmed',
   'preparing',
   'ready',
 ] as const

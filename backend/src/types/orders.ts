@@ -59,7 +59,7 @@ export interface IOrderConfirmationRow {
   orderNumber: string
   paymentMethod: PaymentMethodType
   shippingAddress: string | null
-  status: 'cancelled' | 'paid' | 'payment_pending' | 'pending' | 'picked_up' | 'preparing' | 'ready'
+  status: 'cancelled' | 'confirmed' | 'delivered' | 'pending' | 'picked_up' | 'preparing' | 'ready'
   subtotal: number
   total: number
 }

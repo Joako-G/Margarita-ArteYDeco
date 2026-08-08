@@ -47,7 +47,7 @@ const adminCustomerOrderRowFields = {
   order_number: z.string().trim().min(1),
   payment_method: z.enum(['bank_transfer', 'cash']),
   payment_status: z.enum(['paid', 'pending', 'rejected']),
-  status: z.enum(['cancelled', 'paid', 'payment_pending', 'pending', 'picked_up', 'preparing', 'ready']),
+  status: z.enum(['cancelled', 'confirmed', 'delivered', 'pending', 'picked_up', 'preparing', 'ready']),
   total: z.coerce.number().nonnegative(),
 }
 

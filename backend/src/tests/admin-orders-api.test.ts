@@ -34,6 +34,7 @@ const ORDER: IAdminOrderDetailDto = {
   canCancel: true,
   createdAt: UPDATED_AT,
   customer: { firstName: 'Ana', lastName: 'Pérez', phone: '+54 9 11 5555-1234' },
+  deliveryMethod: 'pickup',
   discount: 1200,
   id: ORDER_ID,
   itemCount: 1,
@@ -44,7 +45,8 @@ const ORDER: IAdminOrderDetailDto = {
   paymentStatus: 'pending',
   pickedUpAt: null,
   requiresManualRefundOnCancel: false,
-  status: 'payment_pending',
+  status: 'pending',
+  shippingAddress: null,
   subtotal: 12000,
   total: 10800,
   updatedAt: UPDATED_AT,
@@ -131,7 +133,7 @@ describe('admin orders API', () => {
         paymentMethod: 'bank_transfer',
         paymentStatus: 'pending',
         sort: 'oldest',
-        status: 'payment_pending',
+         status: 'pending',
       })
       .set('Cookie', `${ADMIN_ACCESS_COOKIE_NAME}=access`)
       .expect(200)
@@ -142,7 +144,7 @@ describe('admin orders API', () => {
       paymentMethod: 'bank_transfer',
       paymentStatus: 'pending',
       sort: 'oldest',
-      status: 'payment_pending',
+       status: 'pending',
     })
     expect(response.headers['cache-control']).toBe('no-store')
   })
