@@ -25,7 +25,7 @@ export function createCorsMiddleware(allowedOrigins: readonly string[]): Request
   const options: CorsOptions = {
     allowedHeaders: ['Content-Type', 'Idempotency-Key', 'X-CSRF-Token'],
     credentials: true,
-    methods: ['DELETE', 'GET', 'OPTIONS', 'POST', 'PUT'],
+    methods: ['DELETE', 'GET', 'OPTIONS', 'PATCH', 'POST', 'PUT'],
     origin: (origin, callback) => {
       if (origin === undefined || allowedOriginSet.has(origin)) {
         callback(null, true)

@@ -103,6 +103,18 @@ describe('createCorsMiddleware', () => {
     expect(allowed.headers['access-control-allow-credentials']).toBe('true')
   })
 
+  it('allows PATCH preflight requests used by publication controls', async () => {
+    const app = buildOriginApp(createCorsMiddleware(TEST_ENV.corsAllowedOrigins))
+
+    const response = await request(app)
+      .options('/')
+      .set('Origin', ALLOWED_ORIGIN)
+      .set('Access-Control-Request-Method', 'PATCH')
+      .expect(204)
+
+    expect(response.headers['access-control-allow-methods']).toContain('PATCH')
+  })
+
   it('rejects disallowed origins with the canonical error', async () => {
     const app = buildOriginApp(createCorsMiddleware(TEST_ENV.corsAllowedOrigins))
 
