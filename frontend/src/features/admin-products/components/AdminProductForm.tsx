@@ -190,7 +190,7 @@ export function AdminProductForm({
                 <Input
                   accept="image/jpeg,image/png,image/webp"
                   error={errors.image?.message}
-                  helpText="Opcional. JPG, PNG o WebP de hasta 5 MB."
+                  helpText="Opcional. JPG, PNG o WebP de hasta 10 MB. Las imágenes grandes se optimizan antes de subir."
                   label={currentImageUrl ? 'Reemplazar imagen' : 'Agregar imagen'}
                   name={fieldName}
                   onBlur={onBlur}

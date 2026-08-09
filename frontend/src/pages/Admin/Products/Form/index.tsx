@@ -17,6 +17,7 @@ import {
 import type { IAdminProductDetail } from '@/features/admin-products'
 import { Button, Skeleton } from '@/shared/components'
 import { getApiErrorResponse, getApiErrorStatus } from '@/shared/services/api/errors'
+import { getImageUploadPreparationError } from '@/shared/utils/prepare-image-upload'
 
 import '@/features/admin-products/admin-product-form.css'
 import '@/features/admin-inventory/admin-inventory.css'
@@ -26,7 +27,7 @@ interface IProductFormLocationState {
 }
 
 function getSaveError(error: unknown): string {
-  return getApiErrorResponse(error)?.message ??
+  return getImageUploadPreparationError(error) ?? getApiErrorResponse(error)?.message ??
     'Revisá que el backend esté disponible e intentá nuevamente.'
 }
 

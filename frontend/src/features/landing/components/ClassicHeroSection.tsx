@@ -1,7 +1,7 @@
 import { ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
-import heroImage from '@/assets/images/category-sellos-bajo-relieve.webp'
+import heroImage from '@/assets/images/Arte/category-sellos-bajo-relieve.webp'
 import { Container, Section, Typography } from '@/shared/components'
 
 export function ClassicHeroSection() {

@@ -157,7 +157,7 @@ export function AdminCategoryForm({
                 <Input
                   accept="image/jpeg,image/png,image/webp"
                   error={errors.image?.message}
-                  helpText="JPG, PNG o WebP cuadrada de hasta 5 MB."
+                  helpText="JPG, PNG o WebP cuadrada de hasta 10 MB. Las imágenes grandes se optimizan antes de subir."
                   label={category?.imageUrl ? 'Reemplazar imagen' : 'Imagen de la categoría'}
                   name={fieldName}
                   onBlur={onBlur}

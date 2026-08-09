@@ -2,6 +2,10 @@ import { fetchAdminCsrfToken } from '@/features/admin-auth/services/admin-auth.s
 import { apiClient } from '@/shared/services/api/axios'
 import { executeWithCsrf } from '@/shared/services/api/csrf.service'
 import type { IApiResponse } from '@/shared/services/api/types'
+import {
+  prepareImageForUpload,
+  PRODUCT_IMAGE_MAX_DIMENSION,
+} from '@/shared/utils/prepare-image-upload'
 
 import type {
   IAdminProductCategoryOption,
@@ -64,12 +68,13 @@ async function replaceProductImage(
   expectedUpdatedAt: string,
 ): Promise<IAdminProductDetail> {
   return executeWithCsrf(async (csrfToken) => {
+    const preparedImage = await prepareImageForUpload(image, PRODUCT_IMAGE_MAX_DIMENSION)
     const response = await apiClient.put<IApiResponse<IAdminProductDetail>>(
       `/admin/products/${encodeURIComponent(productId)}/image`,
-      image,
+      preparedImage,
       {
         headers: {
-          'Content-Type': image.type,
+          'Content-Type': preparedImage.type,
           'X-CSRF-Token': csrfToken,
         },
         params: { expectedUpdatedAt },

@@ -2,6 +2,10 @@ import { fetchAdminCsrfToken } from '@/features/admin-auth/services/admin-auth.s
 import { apiClient } from '@/shared/services/api/axios'
 import { executeWithCsrf } from '@/shared/services/api/csrf.service'
 import type { IApiResponse } from '@/shared/services/api/types'
+import {
+  CATEGORY_IMAGE_MAX_DIMENSION,
+  prepareImageForUpload,
+} from '@/shared/utils/prepare-image-upload'
 
 import type {
   IAdminCategory,
@@ -56,11 +60,12 @@ async function replaceCategoryImage(
   expectedUpdatedAt: string,
 ): Promise<IAdminCategory> {
   return executeWithCsrf(async (csrfToken) => {
+    const preparedImage = await prepareImageForUpload(image, CATEGORY_IMAGE_MAX_DIMENSION)
     const response = await apiClient.put<IApiResponse<IAdminCategory>>(
       `/admin/categories/${encodeURIComponent(categoryId)}/image`,
-      image,
+      preparedImage,
       {
-        headers: { 'Content-Type': image.type, 'X-CSRF-Token': csrfToken },
+        headers: { 'Content-Type': preparedImage.type, 'X-CSRF-Token': csrfToken },
         params: { expectedUpdatedAt },
       },
     )

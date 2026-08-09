@@ -1,17 +1,19 @@
 import { z } from 'zod'
 
-const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
-const MAX_IMAGE_BYTES = 5 * 1_024 * 1_024
+import {
+  ACCEPTED_CATALOG_IMAGE_TYPES,
+  CATALOG_IMAGE_INPUT_MAX_BYTES,
+} from '@/shared/utils/prepare-image-upload'
 
 export const adminProductFormSchema = z.object({
   categoryId: z.string().uuid('Seleccioná una categoría'),
   description: z.string().trim().max(2_000, 'La descripción no puede superar 2000 caracteres'),
   image: z.instanceof(File).optional()
-    .refine((file) => file === undefined || ACCEPTED_IMAGE_TYPES.includes(file.type), {
+    .refine((file) => file === undefined || ACCEPTED_CATALOG_IMAGE_TYPES.includes(file.type), {
       message: 'La imagen debe ser JPG, PNG o WebP',
     })
-    .refine((file) => file === undefined || file.size <= MAX_IMAGE_BYTES, {
-      message: 'La imagen no puede superar los 5 MB',
+    .refine((file) => file === undefined || file.size <= CATALOG_IMAGE_INPUT_MAX_BYTES, {
+      message: 'La imagen original no puede superar los 10 MB',
     }),
   isActive: z.boolean(),
   isFeatured: z.boolean(),
