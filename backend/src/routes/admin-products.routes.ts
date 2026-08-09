@@ -12,7 +12,7 @@ import {
   createCsrfValidationMiddleware,
   createOriginValidationMiddleware,
 } from '../middlewares/security.middleware.js'
-import { PRODUCT_IMAGE_MAX_BYTES } from '../utils/product-image.js'
+import { CATALOG_IMAGE_UPLOAD_MAX_BYTES } from '../utils/product-image.js'
 
 export function createAdminProductRouter(
   dependencies: Pick<
@@ -57,7 +57,7 @@ export function createAdminProductRouter(
     '/:productId/image',
     ...protectWrite,
     raw({
-      limit: PRODUCT_IMAGE_MAX_BYTES,
+      limit: CATALOG_IMAGE_UPLOAD_MAX_BYTES,
       type: ['image/jpeg', 'image/png', 'image/webp'],
     }),
     dependencies.adminProductController.replaceImage,

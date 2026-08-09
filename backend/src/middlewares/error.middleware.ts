@@ -30,10 +30,17 @@ export function createErrorMiddleware(logger: Logger): ErrorRequestHandler {
       'type' in error &&
       error.type === 'entity.too.large'
     ) {
+      const isCategoryImage = request.originalUrl.includes('/api/admin/categories/')
+      const isProductImage = request.originalUrl.includes('/api/admin/products/')
+      const isCatalogImage = isCategoryImage || isProductImage
       response.status(413).json({
         success: false,
-        message: 'La imagen no puede superar los 5 MB',
-        error: 'PRODUCT_IMAGE_TOO_LARGE',
+        message: `La imagen no puede superar los ${isCatalogImage ? 4 : 5} MB`,
+        error: isCategoryImage
+          ? 'CATEGORY_IMAGE_TOO_LARGE'
+          : isProductImage
+            ? 'PRODUCT_IMAGE_TOO_LARGE'
+            : 'SETTINGS_LOGO_IMAGE_TOO_LARGE',
       })
       return
     }

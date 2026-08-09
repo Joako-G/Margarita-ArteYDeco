@@ -103,7 +103,6 @@ export class AdminProductController {
           expectedUpdatedAt,
           image.file,
           image.mimeType,
-          image.extension,
           actor.id,
         ),
       })

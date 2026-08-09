@@ -51,6 +51,7 @@ import { RecoveryProtectionService } from '../services/recovery-protection.servi
 import { SettingsService } from '../services/settings.service.js'
 import { StorageService } from '../services/storage.service.js'
 import { TurnstileService } from '../services/turnstile.service.js'
+import { CatalogImageService } from '../services/catalog-image.service.js'
 import type { IEnv } from './env.js'
 import { createSupabaseClient } from './supabase.js'
 
@@ -105,15 +106,18 @@ export function createApplicationDependencies(
   )
   const categoryService = new CategoryService(new CategoryRepository(supabase), storageService)
   const productService = new ProductService(new ProductRepository(supabase), storageService)
+  const catalogImageService = new CatalogImageService()
   const adminProductService = new AdminProductService(
     new AdminProductRepository(supabase),
     storageService,
     logger,
+    catalogImageService,
   )
   const adminCategoryService = new AdminCategoryService(
     new AdminCategoryRepository(supabase),
     storageService,
     logger,
+    catalogImageService,
   )
   const adminCustomerService = new AdminCustomerService(
     new AdminCustomerRepository(supabase),

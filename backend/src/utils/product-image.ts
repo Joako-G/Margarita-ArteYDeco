@@ -1,6 +1,7 @@
 import { AppError } from './app-error.js'
 
 export const PRODUCT_IMAGE_MAX_BYTES = 5 * 1_024 * 1_024
+export const CATALOG_IMAGE_UPLOAD_MAX_BYTES = 4 * 1_024 * 1_024
 
 const IMAGE_EXTENSIONS = {
   'image/jpeg': 'jpg',
@@ -32,13 +33,19 @@ function validateImage(
   file: unknown,
   contentType: string | undefined,
   entity: 'CATEGORY' | 'PRODUCT' | 'SETTINGS_LOGO',
+  maxBytes: number,
 ): { extension: string; file: Buffer; mimeType: ProductImageMimeType } {
   if (!Buffer.isBuffer(file) || file.length === 0) {
     throw new AppError(400, 'Seleccioná una imagen válida', `${entity}_IMAGE_REQUIRED`)
   }
 
-  if (file.length > PRODUCT_IMAGE_MAX_BYTES) {
-    throw new AppError(413, 'La imagen no puede superar los 5 MB', `${entity}_IMAGE_TOO_LARGE`)
+  if (file.length > maxBytes) {
+    const maxMegabytes = maxBytes / (1_024 * 1_024)
+    throw new AppError(
+      413,
+      `La imagen no puede superar los ${maxMegabytes} MB`,
+      `${entity}_IMAGE_TOO_LARGE`,
+    )
   }
 
   if (contentType === undefined || !(contentType in IMAGE_EXTENSIONS)) {
@@ -71,19 +78,19 @@ export function validateProductImage(
   file: unknown,
   contentType: string | undefined,
 ): { extension: string; file: Buffer; mimeType: ProductImageMimeType } {
-  return validateImage(file, contentType, 'PRODUCT')
+  return validateImage(file, contentType, 'PRODUCT', CATALOG_IMAGE_UPLOAD_MAX_BYTES)
 }
 
 export function validateCategoryImage(
   file: unknown,
   contentType: string | undefined,
 ): { extension: string; file: Buffer; mimeType: CategoryImageMimeType } {
-  return validateImage(file, contentType, 'CATEGORY')
+  return validateImage(file, contentType, 'CATEGORY', CATALOG_IMAGE_UPLOAD_MAX_BYTES)
 }
 
 export function validateSettingsLogo(
   file: unknown,
   contentType: string | undefined,
 ): { extension: string; file: Buffer; mimeType: SettingsLogoMimeType } {
-  return validateImage(file, contentType, 'SETTINGS_LOGO')
+  return validateImage(file, contentType, 'SETTINGS_LOGO', PRODUCT_IMAGE_MAX_BYTES)
 }

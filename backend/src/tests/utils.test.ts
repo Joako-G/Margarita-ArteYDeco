@@ -17,7 +17,7 @@ import {
   setGuestSessionCookie,
 } from '../utils/cookies.js'
 import {
-  PRODUCT_IMAGE_MAX_BYTES,
+  CATALOG_IMAGE_UPLOAD_MAX_BYTES,
   validateCategoryImage,
   validateProductImage,
   validateSettingsLogo,
@@ -244,8 +244,8 @@ describe('image validation', () => {
     expect(() => validateProductImage(null, 'image/png'))
       .toThrowError(new AppError(400, 'Seleccioná una imagen válida', 'PRODUCT_IMAGE_REQUIRED'))
 
-    expect(() => validateProductImage(Buffer.alloc(PRODUCT_IMAGE_MAX_BYTES + 1), 'image/png'))
-      .toThrowError(new AppError(413, 'La imagen no puede superar los 5 MB', 'PRODUCT_IMAGE_TOO_LARGE'))
+    expect(() => validateProductImage(Buffer.alloc(CATALOG_IMAGE_UPLOAD_MAX_BYTES + 1), 'image/png'))
+      .toThrowError(new AppError(413, 'La imagen no puede superar los 4 MB', 'PRODUCT_IMAGE_TOO_LARGE'))
 
     expect(() => validateCategoryImage(buildImage('image/png'), 'application/pdf'))
       .toThrowError(new AppError(415, 'La imagen debe ser JPG, PNG o WebP', 'CATEGORY_IMAGE_TYPE_UNSUPPORTED'))

@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import type { IAdminCategoryRepository } from '../repositories/admin-categories.repository.js'
 import { AdminCategoryService } from '../services/admin-categories.service.js'
+import type { ICatalogImageService } from '../services/catalog-image.service.js'
 import type { IAdminCategoryRecord } from '../types/admin-categories.js'
 import type { IStorageMutationService } from '../types/storage.js'
 
@@ -49,6 +50,18 @@ function createStorageService(): IStorageMutationService {
       [CATEGORY.imagePath, 'https://storage.test/category'],
     ])),
     upload: vi.fn(),
+  }
+}
+
+function createCatalogImageService(): ICatalogImageService {
+  return {
+    process: vi.fn().mockResolvedValue({
+      file: Buffer.from('optimized-image'),
+      height: 1_200,
+      mimeType: 'image/webp',
+      size: 15,
+      width: 1_200,
+    }),
   }
 }
 
@@ -157,17 +170,22 @@ describe('AdminCategoryService', () => {
         updatedAt: '2026-08-03T13:00:00.000Z',
       }),
     })
-    const service = new AdminCategoryService(repository, storage, logger)
+    const catalogImageService = createCatalogImageService()
+    const service = new AdminCategoryService(repository, storage, logger, catalogImageService)
 
     await service.replaceImage(
       CATEGORY.id,
       CATEGORY.updatedAt,
       Buffer.from('image'),
       'image/webp',
-      'webp',
       'bd62774b-7863-4fb4-a041-60d9003a4432',
     )
 
+    expect(catalogImageService.process).toHaveBeenCalledWith(
+      Buffer.from('image'),
+      'image/webp',
+      'category',
+    )
     expect(storage.upload).toHaveBeenCalledWith(
       'categories',
       expect.stringMatching(/\.webp$/),
@@ -175,6 +193,40 @@ describe('AdminCategoryService', () => {
       'image/webp',
     )
     expect(storage.remove).toHaveBeenCalledWith('categories', [CATEGORY.imagePath])
+    expect(vi.mocked(storage.upload).mock.invocationCallOrder[0]).toBeLessThan(
+      vi.mocked(repository.updateImage).mock.invocationCallOrder[0] as number,
+    )
+    expect(vi.mocked(repository.updateImage).mock.invocationCallOrder[0]).toBeLessThan(
+      vi.mocked(storage.remove).mock.invocationCallOrder[0] as number,
+    )
+  })
+
+  it('removes the new object when persisting its path fails', async () => {
+    const persistenceError = new Error('database unavailable')
+    const storage = createStorageService()
+    const repository = createRepository({
+      findById: vi.fn().mockResolvedValue(CATEGORY),
+      updateImage: vi.fn().mockRejectedValue(persistenceError),
+    })
+    const service = new AdminCategoryService(
+      repository,
+      storage,
+      logger,
+      createCatalogImageService(),
+    )
+
+    await expect(service.replaceImage(
+      CATEGORY.id,
+      CATEGORY.updatedAt,
+      Buffer.from('image'),
+      'image/png',
+      'bd62774b-7863-4fb4-a041-60d9003a4432',
+    )).rejects.toBe(persistenceError)
+
+    const uploadedPath = vi.mocked(storage.upload).mock.calls[0]?.[1]
+    expect(uploadedPath).toMatch(/\.webp$/)
+    expect(storage.remove).toHaveBeenCalledWith('categories', [uploadedPath])
+    expect(storage.remove).not.toHaveBeenCalledWith('categories', [CATEGORY.imagePath])
   })
 
   it('rejects soft delete while products remain associated', async () => {

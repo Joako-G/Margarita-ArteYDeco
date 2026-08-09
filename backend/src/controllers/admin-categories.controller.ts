@@ -87,7 +87,6 @@ export class AdminCategoryController {
           expectedUpdatedAt,
           image.file,
           image.mimeType,
-          image.extension,
           actor.id,
         ),
       })

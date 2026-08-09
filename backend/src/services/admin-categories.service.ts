@@ -20,6 +20,7 @@ import type { IStorageMutationService } from '../types/storage.js'
 import { AppError } from '../utils/app-error.js'
 import type { CategoryImageMimeType } from '../utils/product-image.js'
 import { createSlug } from '../utils/slug.js'
+import { CatalogImageService, type ICatalogImageService } from './catalog-image.service.js'
 
 export interface IAdminCategoryService {
   create(
@@ -33,7 +34,6 @@ export interface IAdminCategoryService {
     expectedUpdatedAt: string,
     file: Buffer,
     mimeType: CategoryImageMimeType,
-    extension: string,
     actorProfileId: string,
   ): Promise<IAdminCategoryDetailDto>
   setPublication(
@@ -54,6 +54,7 @@ export class AdminCategoryService implements IAdminCategoryService {
     private readonly repository: IAdminCategoryRepository,
     private readonly storageService: IStorageMutationService,
     private readonly logger: Logger,
+    private readonly catalogImageService: ICatalogImageService = new CatalogImageService(),
   ) {}
 
   public async list(filters: IAdminCategoryFilters): Promise<IAdminCategoryListDto> {
@@ -138,14 +139,19 @@ export class AdminCategoryService implements IAdminCategoryService {
     expectedUpdatedAt: string,
     file: Buffer,
     mimeType: CategoryImageMimeType,
-    extension: string,
     actorProfileId: string,
   ): Promise<IAdminCategoryDetailDto> {
     const current = await this.requireCategory(categoryId)
-    const newPath = `catalog/${categoryId}/${randomUUID()}.${extension}`
+    const processedImage = await this.catalogImageService.process(file, mimeType, 'category')
+    const newPath = `catalog/${categoryId}/${randomUUID()}.webp`
 
     try {
-      await this.storageService.upload('categories', newPath, file, mimeType)
+      await this.storageService.upload(
+        'categories',
+        newPath,
+        processedImage.file,
+        processedImage.mimeType,
+      )
     } catch (error) {
       this.logger.error({ categoryId, error }, 'No fue posible subir la imagen de la categoría')
       throw new AppError(503, 'No pudimos guardar la imagen', 'CATEGORY_IMAGE_STORAGE_UNAVAILABLE')

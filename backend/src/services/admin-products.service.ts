@@ -21,6 +21,7 @@ import type { IStorageMutationService } from '../types/storage.js'
 import { AppError } from '../utils/app-error.js'
 import type { ProductImageMimeType } from '../utils/product-image.js'
 import { createSlug } from '../utils/slug.js'
+import { CatalogImageService, type ICatalogImageService } from './catalog-image.service.js'
 
 export interface IAdminProductService {
   create(input: AdminProductCreateRequestType, actorProfileId: string): Promise<IAdminProductDetailDto>
@@ -48,7 +49,6 @@ export interface IAdminProductService {
     expectedUpdatedAt: string,
     file: Buffer,
     mimeType: ProductImageMimeType,
-    extension: string,
     actorProfileId: string,
   ): Promise<IAdminProductDetailDto>
   update(
@@ -71,6 +71,7 @@ export class AdminProductService implements IAdminProductService {
     private readonly repository: IAdminProductRepository,
     private readonly storageService: IStorageMutationService,
     private readonly logger: Logger,
+    private readonly catalogImageService: ICatalogImageService = new CatalogImageService(),
   ) {}
 
   public async list(filters: IAdminProductFilters): Promise<IAdminProductListDto> {
@@ -166,14 +167,19 @@ export class AdminProductService implements IAdminProductService {
     expectedUpdatedAt: string,
     file: Buffer,
     mimeType: ProductImageMimeType,
-    extension: string,
     actorProfileId: string,
   ): Promise<IAdminProductDetailDto> {
     const current = await this.requireProduct(productId)
-    const newPath = `catalog/${productId}/${randomUUID()}.${extension}`
+    const processedImage = await this.catalogImageService.process(file, mimeType, 'product')
+    const newPath = `catalog/${productId}/${randomUUID()}.webp`
 
     try {
-      await this.storageService.upload('products', newPath, file, mimeType)
+      await this.storageService.upload(
+        'products',
+        newPath,
+        processedImage.file,
+        processedImage.mimeType,
+      )
     } catch (error) {
       this.logger.error({ error, productId }, 'No fue posible subir la imagen del producto')
       throw new AppError(503, 'No pudimos guardar la imagen', 'PRODUCT_IMAGE_STORAGE_UNAVAILABLE')
