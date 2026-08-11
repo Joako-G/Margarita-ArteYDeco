@@ -35,10 +35,17 @@ export function PrivacyPolicy() {
                 Durante el proceso de compra únicamente solicitamos la información mínima necesaria
                 para gestionar el pedido:
               </Typography>
-              <LegalList items={['Nombre', 'Apellido', 'Número de teléfono']} />
+              <LegalList
+                items={[
+                  'Nombre y apellido.',
+                  'Número de teléfono.',
+                  'Observaciones, únicamente si decidís incluirlas.',
+                  'Dirección de entrega, únicamente cuando solicitás un envío.',
+                ]}
+              />
               <Typography variant="body">
-                No solicitamos correo electrónico, dirección de envío, documento de identidad ni
-                ningún otro dato adicional. Tampoco es necesario crear una cuenta para comprar.
+                No solicitamos correo electrónico ni documento de identidad. Tampoco es necesario
+                crear una cuenta para comprar.
               </Typography>
             </LegalSection>
 
@@ -51,7 +58,9 @@ export function PrivacyPolicy() {
                   'Identificar al cliente y gestionar el pedido.',
                   'Contactar al cliente para informar el estado del pedido.',
                   'Coordinar el retiro de la compra en el local.',
+                  'Coordinar el costo y la entrega cuando se solicita un envío.',
                   'Responder consultas relacionadas con un pedido.',
+                  'Proteger el sitio, prevenir abusos y mantener la seguridad de las operaciones.',
                 ]}
               />
               <Typography variant="body">
@@ -60,11 +69,47 @@ export function PrivacyPolicy() {
               </Typography>
             </LegalSection>
 
-            <LegalSection title="Datos compartidos">
+            <LegalSection title="Cookies y almacenamiento en el dispositivo">
               <Typography variant="body">
-                No vendemos datos personales. No compartimos información con terceros para fines
-                comerciales ni publicitarios. Los datos permanecen dentro del sistema del negocio y
-                solo son accedidos por quienes gestionan los pedidos de manera legítima.
+                Utilizamos únicamente cookies técnicas y almacenamiento local necesarios para que
+                el sitio sea seguro y para facilitar la consulta de pedidos. No los usamos para
+                publicidad, analítica de comportamiento ni seguimiento entre sitios.
+              </Typography>
+              <LegalList
+                items={[
+                  'Seguridad del formulario: una cookie técnica evita envíos fraudulentos y vence aproximadamente después de una hora.',
+                  'Sesión anónima de pedidos: una cookie segura permite consultar desde este dispositivo los pedidos asociados y tiene una vigencia máxima de 30 días.',
+                  'Último pedido: el navegador conserva localmente solo su número para ofrecer un acceso rápido; no guarda el detalle, el celular, los importes ni datos bancarios.',
+                  'Administración: el área privada utiliza cookies de sesión exclusivas para el personal autorizado.',
+                ]}
+              />
+              <Typography variant="body">
+                Podés borrar estas tecnologías desde la configuración del navegador o utilizar la
+                opción “Olvidar pedidos de este dispositivo”. Al hacerlo, el pedido no se elimina,
+                pero deberás recuperarlo nuevamente con su número y el celular utilizado en la
+                compra.
+              </Typography>
+            </LegalSection>
+
+            <LegalSection title="Proveedores tecnológicos y servicios externos">
+              <Typography variant="body">
+                No vendemos datos personales ni los compartimos con terceros para fines comerciales
+                o publicitarios. Para operar el sitio utilizamos proveedores que pueden tratar la
+                información necesaria para prestar sus servicios:
+              </Typography>
+              <LegalList
+                items={[
+                  'Vercel, para el alojamiento y la entrega de la aplicación.',
+                  'Supabase, para la base de datos, el almacenamiento y la autenticación del área administrativa.',
+                  'Cloudflare Turnstile, únicamente cuando se requiere una verificación de seguridad.',
+                  'Google Fonts, para cargar las tipografías utilizadas por el sitio.',
+                ]}
+              />
+              <Typography variant="body">
+                Estos servicios pueden procesar información técnica o personal fuera de la
+                República Argentina según su infraestructura y sus propias políticas. Si elegís
+                abrir WhatsApp o Google Maps desde el sitio, la interacción continuará en ese
+                servicio externo y quedará sujeta a sus términos y políticas de privacidad.
               </Typography>
             </LegalSection>
 

@@ -347,6 +347,14 @@
   color: var(--color-primary);
 }
 
+.checkout__storage-notice {
+  margin: 0;
+  padding-inline-start: calc(24px + var(--space-1));
+  color: var(--color-text);
+  font-size: var(--font-size-caption);
+  line-height: 1.5;
+}
+
 .checkout__terms-error {
   margin: 0;
   padding-inline-start: calc(24px + var(--space-1));

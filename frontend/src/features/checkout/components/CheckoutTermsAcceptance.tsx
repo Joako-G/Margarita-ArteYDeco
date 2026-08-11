@@ -21,7 +21,11 @@ export function CheckoutTermsAcceptance({ errors, register }: ICheckoutTermsAcce
   return (
     <div className="checkout__terms">
       <Checkbox
-        aria-describedby={errorMessage ? 'checkout-terms-error' : undefined}
+        aria-describedby={
+          errorMessage
+            ? 'checkout-storage-notice checkout-terms-error'
+            : 'checkout-storage-notice'
+        }
         aria-invalid={Boolean(errorMessage)}
         form="checkout-form"
         label={
@@ -39,6 +43,10 @@ export function CheckoutTermsAcceptance({ errors, register }: ICheckoutTermsAcce
         }
         {...register('acceptTerms')}
       />
+      <p className="checkout__storage-notice" id="checkout-storage-notice">
+        Usamos cookies técnicas para proteger la compra y recordar los pedidos asociados a este
+        dispositivo. No utilizamos cookies publicitarias ni de seguimiento.
+      </p>
       {errorMessage ? (
         <p className="checkout__terms-error" id="checkout-terms-error" role="alert">
           {errorMessage}
