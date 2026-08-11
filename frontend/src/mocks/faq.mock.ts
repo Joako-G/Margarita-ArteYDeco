@@ -11,7 +11,7 @@ export const faqMock: IFaqItem[] = [
     id: 'faq-pickup',
     question: '¿Cómo recibo mi pedido?',
     answer:
-      'Por el momento todos los pedidos se retiran en el local. Te mostraremos la dirección y los horarios antes de confirmar.',
+      'Podés retirarlo en el local o elegir un envío a coordinar. Para el envío, nos comunicaremos por WhatsApp para acordar el costo y la entrega.',
   },
   {
     id: 'faq-ready',

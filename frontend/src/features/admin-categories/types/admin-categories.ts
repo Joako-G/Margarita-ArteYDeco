@@ -40,11 +40,14 @@ export interface IAdminCategoryList {
 export interface IAdminCategoryCreatePayload {
   catalogArea: AdminCategoryAreaType
   description: string | null
-  displayOrder: number
   name: string
 }
 
-export interface IAdminCategoryUpdatePayload extends IAdminCategoryCreatePayload {
+export interface IAdminCategoryUpdateFields extends IAdminCategoryCreatePayload {
+  displayOrder: number
+}
+
+export interface IAdminCategoryUpdatePayload extends IAdminCategoryUpdateFields {
   expectedUpdatedAt: string
   isActive: boolean
 }

@@ -84,7 +84,7 @@ export function SiteFooter() {
         </nav>
 
         <div className="landing-footer__pickup">
-          <strong>Retiro en el local</strong>
+          <strong>Nuestro local</strong>
           <p>
             <MapPin aria-hidden="true" size={20} strokeWidth={2} />
             {address}

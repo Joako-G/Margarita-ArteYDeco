@@ -90,7 +90,7 @@ export function CheckoutForm({ deliveryMethod, errors, register, settings }: ICh
         {deliveryMethod === 'shipping' ? (
           <TextArea
             error={errors.shippingAddress?.message}
-            helpText="Luego coordinaremos el costo y la entrega por WhatsApp."
+            helpText="Una vez recibido el pedido, coordinaremos el costo y la entrega por WhatsApp. El envío es gestionado directamente por el negocio."
             label="Dirección de entrega"
             maxLength={300}
             placeholder="Ingresá la dirección donde querés recibir tu pedido."
@@ -131,7 +131,7 @@ export function CheckoutForm({ deliveryMethod, errors, register, settings }: ICh
             Retiro en el local
           </Typography>
         </div>
-        <p>Todos los pedidos se retiran personalmente. No realizamos envíos.</p>
+        <p>Te avisaremos cuando tu pedido esté listo para retirar.</p>
         <dl>
           <div>
             <dt>

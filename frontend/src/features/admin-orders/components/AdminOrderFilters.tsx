@@ -89,7 +89,7 @@ export function AdminOrderFilters({ filters, onApply, onClear }: IAdminOrderFilt
         <option value="pending">Pendientes</option>
         <option value="confirmed">Confirmados</option>
         <option value="preparing">En preparación</option>
-        <option value="ready">Listos para retirar</option>
+        <option value="ready">Listos</option>
         <option value="picked_up">Retirados</option>
         <option value="delivered">Entregados</option>
         <option value="cancelled">Cancelados</option>

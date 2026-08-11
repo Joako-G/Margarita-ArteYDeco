@@ -59,7 +59,6 @@ export function AdminCategoryFormPage() {
     const payload = {
       catalogArea: values.catalogArea,
       description: values.description.trim() || null,
-      displayOrder: Number(values.displayOrder),
       name: values.name.trim(),
     }
 
@@ -83,7 +82,10 @@ export function AdminCategoryFormPage() {
         currentCategory: category.data as IAdminCategory,
         image: values.image,
         isActive: values.isActive,
-        payload,
+        payload: {
+          ...payload,
+          displayOrder: Number(values.displayOrder),
+        },
       })
       setFeedback(result.imageWarning ? 'savedWithoutImage' : 'saved')
     } catch (error) {
@@ -101,7 +103,7 @@ export function AdminCategoryFormPage() {
         currentLabel={isEditing ? 'Editar categoría' : 'Nueva categoría'}
         description={isEditing
           ? 'Actualizá su información, orden, publicación e imagen.'
-          : 'Definí el área, el orden y una imagen antes de publicarla.'}
+          : 'Definí el área y agregá una imagen. La posición se asignará automáticamente.'}
         sectionLabel="Categorías"
         title={isEditing ? 'Editar categoría' : 'Nueva categoría'}
         titleId="admin-category-form-title"

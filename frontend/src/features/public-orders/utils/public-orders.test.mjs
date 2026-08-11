@@ -3,6 +3,7 @@ import test from 'node:test'
 
 import { recoverOrderSchema } from '../schemas/recover-order.schema.ts'
 import { isValidOrderNumber, normalizeOrderNumber } from './last-order.ts'
+import { getPublicOrderStatusDetails } from './public-order-status.ts'
 import {
   getRecoveryErrorFeedback,
   isGuestSessionRequired,
@@ -79,4 +80,10 @@ test('distingue una sesión ausente para ofrecer recuperación desde la navegaci
   assert.equal(isGuestSessionRequired(createApiError('GUEST_SESSION_REQUIRED')), true)
   assert.equal(isGuestSessionRequired(createApiError('ORDER_NOT_AVAILABLE')), false)
   assert.equal(isGuestSessionRequired(createApiError('INTERNAL_SERVER_ERROR')), false)
+})
+
+test('muestra como enviado el estado final de los pedidos con envío', () => {
+  assert.equal(getPublicOrderStatusDetails('delivered', 'shipping').label, 'Enviado')
+  assert.equal(getPublicOrderStatusDetails('delivered', 'pickup').label, 'Entregado')
+  assert.equal(getPublicOrderStatusDetails('ready', 'shipping').label, 'Listo')
 })

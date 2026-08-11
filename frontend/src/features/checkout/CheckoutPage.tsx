@@ -183,7 +183,7 @@ export function CheckoutPage() {
         <Container>
           <div aria-live="polite" role="status">
             <EmptyState
-              description="Estamos cargando los datos de retiro y el descuento vigente."
+              description="Estamos cargando los datos de entrega y el descuento vigente."
               icon={<Spinner isDecorative size="large" />}
               title="Preparando tu compra"
             />

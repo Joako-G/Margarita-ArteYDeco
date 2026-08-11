@@ -68,9 +68,13 @@ export function TermsAndConditions() {
 
             <LegalSection title="Entregas y retiros">
               <Typography variant="body">
-                Los pedidos del sitio se retiran exclusivamente en el local. El comercio coordinará
-                con vos el retiro y los plazos podrán variar según la disponibilidad de los
-                productos.
+                Al realizar el pedido, podés elegir retirarlo en el local o solicitar un envío a
+                coordinar. Los plazos podrán variar según la disponibilidad de los productos.
+              </Typography>
+              <Typography variant="body">
+                Si elegís envío, el comercio se comunicará con vos por WhatsApp para coordinar el
+                costo y la entrega. El costo del envío no está incluido en el total del pedido y el
+                sitio no gestiona transportistas ni seguimiento.
               </Typography>
             </LegalSection>
 

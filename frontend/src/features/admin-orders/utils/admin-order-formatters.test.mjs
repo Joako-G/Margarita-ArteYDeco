@@ -14,7 +14,9 @@ const ORDER = {
     mapsUrl: 'https://maps.google.com/example',
   },
   customer: { firstName: 'Ana', lastName: 'Pérez', phone: '+54 9 11 5555-1234' },
+  deliveryMethod: 'pickup',
   orderNumber: 'MAD-20260803-000001',
+  shippingAddress: null,
 }
 
 test('genera enlaces wa.me con teléfono normalizado y mensaje codificado', () => {
@@ -31,6 +33,21 @@ test('prepara el aviso de retiro con dirección, horarios y ubicación', () => {
   assert.match(message, /Av\. Siempre Viva 123/)
   assert.match(message, /Lunes a viernes de 9 a 18 h/)
   assert.match(message, /https:\/\/maps\.google\.com\/example/)
+})
+
+test('prepara el aviso de envío sin indicar que el pedido debe retirarse', () => {
+  const message = getAdminWhatsAppTemplate(
+    {
+      ...ORDER,
+      deliveryMethod: 'shipping',
+      shippingAddress: 'Belgrano 607, San Salvador de Jujuy',
+    },
+    'ready',
+  )
+
+  assert.match(message, /ya está listo/)
+  assert.match(message, /Belgrano 607, San Salvador de Jujuy/)
+  assert.doesNotMatch(message, /retirar/)
 })
 
 test('prepara el recordatorio sin afirmar que el mensaje fue enviado', () => {

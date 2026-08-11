@@ -122,13 +122,17 @@ export function AdminCategoryForm({
               {...register('description')}
             />
 
-            <Input
-              error={errors.displayOrder?.message}
-              helpText="Dentro de Arte o Decoraciones, las categorías con número menor se muestran primero."
-              inputMode="numeric"
-              label="Posición en el área"
-              {...register('displayOrder')}
-            />
+            {category ? (
+              <Input
+                error={errors.displayOrder?.message}
+                helpText="Dentro de Arte o Decoraciones, las categorías con número menor se muestran primero."
+                inputMode="numeric"
+                label="Posición en el área"
+                {...register('displayOrder')}
+              />
+            ) : (
+              <input type="hidden" {...register('displayOrder')} />
+            )}
           </div>
         </section>
 
@@ -185,7 +189,9 @@ export function AdminCategoryForm({
               <div>
                 <strong>{name.trim() || 'Categoría sin nombre'}</strong>
                 <span>
-                  {area === 'art' ? 'Arte' : 'Decoraciones'} · {displayOrder || '0'} en el área
+                  {area === 'art' ? 'Arte' : 'Decoraciones'} · {category
+                    ? `${displayOrder || '0'} en el área`
+                    : 'posición automática'}
                 </span>
               </div>
             </div>

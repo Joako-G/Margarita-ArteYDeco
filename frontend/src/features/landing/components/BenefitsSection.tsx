@@ -1,4 +1,4 @@
-import { HeartHandshake, MapPin, Palette, Sparkles } from 'lucide-react'
+import { HeartHandshake, Palette, Sparkles, Truck } from 'lucide-react'
 
 import { Container, Section, Typography } from '@/shared/components'
 
@@ -19,9 +19,9 @@ const BENEFITS = [
     title: 'Atención cercana',
   },
   {
-    description: 'Prepará tu compra y coordiná el retiro cuando esté lista.',
-    icon: MapPin,
-    title: 'Retiro en el local',
+    description: 'Elegí retirar en el local o coordiná el envío con nosotros.',
+    icon: Truck,
+    title: 'Retiro o envío',
   },
 ]
 

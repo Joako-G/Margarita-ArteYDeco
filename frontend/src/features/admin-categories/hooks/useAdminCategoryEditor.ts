@@ -11,6 +11,7 @@ import type {
   IAdminCategory,
   IAdminCategorySaveInput,
   IAdminCategorySaveResult,
+  IAdminCategoryUpdateFields,
 } from '../types/admin-categories'
 import { ADMIN_CATEGORIES_QUERY_KEY } from './useAdminCategories'
 
@@ -76,8 +77,9 @@ export function useCreateAdminCategory() {
   })
 }
 
-interface IUpdateCategoryMutationInput extends IAdminCategorySaveInput {
+interface IUpdateCategoryMutationInput extends Omit<IAdminCategorySaveInput, 'payload'> {
   currentCategory: IAdminCategory
+  payload: IAdminCategoryUpdateFields
 }
 
 export function useUpdateAdminCategory() {

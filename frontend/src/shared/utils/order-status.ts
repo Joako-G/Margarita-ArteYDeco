@@ -17,5 +17,5 @@ export const ORDER_STATUS_DETAILS: Record<
   pending: { label: 'Pendiente', variant: 'warning' },
   picked_up: { label: 'Retirado', variant: 'success' },
   preparing: { label: 'En preparación', variant: 'neutral' },
-  ready: { label: 'Listo para retirar', variant: 'success' },
+  ready: { label: 'Listo', variant: 'success' },
 }

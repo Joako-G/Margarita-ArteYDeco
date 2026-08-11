@@ -55,6 +55,10 @@ export function getAdminWhatsAppTemplate(
 ): string {
   const customerName = order.customer.firstName
   if (template === 'ready') {
+    if (order.deliveryMethod === 'shipping') {
+      const shippingAddress = order.shippingAddress ?? 'la dirección indicada en el pedido'
+      return `Hola ${customerName}. Tu pedido ${order.orderNumber} ya está listo. Coordinemos por este medio el costo y la entrega en ${shippingAddress}.`
+    }
     return `Hola ${customerName}. Tu pedido ${order.orderNumber} ya está listo para retirar en ${order.business.address}. Horarios: ${order.business.businessHours}. Ubicación: ${order.business.mapsUrl}`
   }
   if (template === 'transferReminder') {

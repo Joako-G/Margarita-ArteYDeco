@@ -12,9 +12,9 @@ import { Link } from 'react-router-dom'
 import { routes } from '@/config/routes'
 import { Badge, Button, Divider, Typography } from '@/shared/components'
 import { formatPrice } from '@/shared/utils/format-price'
-import { ORDER_STATUS_DETAILS } from '@/shared/utils/order-status'
 
 import type { IOrderConfirmation } from '../types/public-orders'
+import { getPublicOrderStatusDetails } from '../utils/public-order-status'
 import { CopyValueButton } from './CopyValueButton'
 
 interface IOrderDetailsProps {
@@ -31,7 +31,7 @@ function formatOrderDate(value: string): string {
 }
 
 export function OrderDetails({ isForgetting, onForget, order }: IOrderDetailsProps) {
-  const status = ORDER_STATUS_DETAILS[order.status]
+  const status = getPublicOrderStatusDetails(order.status, order.delivery.method)
   const bankDetails = order.paymentMethod === 'transfer' ? order.bankDetails : null
 
   return (
@@ -142,15 +142,20 @@ export function OrderDetails({ isForgetting, onForget, order }: IOrderDetailsPro
             {order.delivery.method === 'pickup' ? 'Retiro en el local' : 'Envío a coordinar'}
           </Typography>
           {order.delivery.method === 'shipping' ? (
-            <dl className="public-order__pickup">
-              <div>
-                <dt>
-                  <Truck aria-hidden="true" size={18} strokeWidth={2} />
-                  Dirección de entrega
-                </dt>
-                <dd>{order.delivery.shippingAddress}</dd>
-              </div>
-            </dl>
+            <>
+              <dl className="public-order__pickup">
+                <div>
+                  <dt>
+                    <Truck aria-hidden="true" size={18} strokeWidth={2} />
+                    Dirección de entrega
+                  </dt>
+                  <dd>{order.delivery.shippingAddress}</dd>
+                </div>
+              </dl>
+              <p className="public-order__note">
+                Nos comunicaremos por WhatsApp para coordinar el costo y la entrega.
+              </p>
+            </>
           ) : (
             <>
               <dl className="public-order__pickup">
