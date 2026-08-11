@@ -16,6 +16,7 @@ El incremento 7.1 de solo lectura incluye:
 - `GET /api/public/categories`
 - `GET /api/public/products`
 - `GET /api/public/settings`
+- `GET /api/public/sitemap.xml`
 
 Este incremento fue validado contra Supabase remoto el 2 de agosto de 2026 con
 categorías, productos activos, Settings, logo y URLs firmadas de Storage.

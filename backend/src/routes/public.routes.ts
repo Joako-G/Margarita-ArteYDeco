@@ -5,6 +5,7 @@ import type { CsrfController } from '../controllers/csrf.controller.js'
 import type { ProductController } from '../controllers/products.controller.js'
 import type { PublicOrderController } from '../controllers/public-orders.controller.js'
 import type { SettingsController } from '../controllers/settings.controller.js'
+import type { SitemapController } from '../controllers/sitemap.controller.js'
 import type { IEnv } from '../config/env.js'
 import {
   createCsrfValidationMiddleware,
@@ -22,6 +23,7 @@ export interface IPublicRouteControllers {
   productController: ProductController
   publicOrderController: PublicOrderController
   settingsController: SettingsController
+  sitemapController: SitemapController
 }
 
 export function createPublicRouter(
@@ -38,6 +40,7 @@ export function createPublicRouter(
   router.get('/csrf-token', controllers.csrfController.getToken)
   router.get('/products', controllers.productController.listPublic)
   router.get('/settings', controllers.settingsController.getPublic)
+  router.get('/sitemap.xml', controllers.sitemapController.get)
   router.get('/orders/recent', controllers.publicOrderController.getRecent)
   router.get(
     '/orders/:orderNumber',

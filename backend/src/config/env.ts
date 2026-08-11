@@ -14,6 +14,7 @@ const envSchema = z
     NODE_ENV: z.enum(['development', 'test', 'production']),
     PORT: z.coerce.number().int().min(1).max(65_535).default(3000),
     PUBLIC_CACHE_MAX_AGE_SECONDS: z.coerce.number().int().min(0).max(300).default(60),
+    PUBLIC_SITE_URL: z.url().default('https://margaritas-arteydeco.vercel.app'),
     PUBLIC_RATE_LIMIT_MAX: z.coerce.number().int().min(1).max(10_000).default(120),
     PUBLIC_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().min(1_000).default(60_000),
     REDIS_URL: z.url().optional(),
@@ -79,6 +80,7 @@ export interface IEnv {
   publicCacheMaxAgeSeconds: number
   publicRateLimitMax: number
   publicRateLimitWindowMs: number
+  publicSiteUrl: string
   redisUrl: string | null
   recoveryBlockDurationMs: number
   recoveryCaptchaThreshold: number
@@ -129,6 +131,16 @@ function parseTrustedProxyIps(value: string): readonly string[] {
   return [...new Set(value.split(',').map((ip) => ip.trim()).filter(Boolean))]
 }
 
+function parsePublicSiteUrl(value: string): string {
+  const url = new URL(value)
+
+  if (!['http:', 'https:'].includes(url.protocol) || url.pathname !== '/' || url.search || url.hash) {
+    throw new Error('PUBLIC_SITE_URL debe ser un origen HTTP o HTTPS sin ruta')
+  }
+
+  return url.origin
+}
+
 export function loadEnv(source: NodeJS.ProcessEnv = process.env): IEnv {
   const value = envSchema.parse(source)
 
@@ -146,6 +158,7 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): IEnv {
     publicCacheMaxAgeSeconds: value.PUBLIC_CACHE_MAX_AGE_SECONDS,
     publicRateLimitMax: value.PUBLIC_RATE_LIMIT_MAX,
     publicRateLimitWindowMs: value.PUBLIC_RATE_LIMIT_WINDOW_MS,
+    publicSiteUrl: parsePublicSiteUrl(value.PUBLIC_SITE_URL),
     redisUrl: value.REDIS_URL ?? null,
     recoveryBlockDurationMs: value.RECOVERY_BLOCK_DURATION_MS,
     recoveryCaptchaThreshold: value.RECOVERY_CAPTCHA_THRESHOLD,

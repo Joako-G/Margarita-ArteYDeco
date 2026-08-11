@@ -15,6 +15,7 @@ import { OrderController } from '../controllers/orders.controller.js'
 import { ProductController } from '../controllers/products.controller.js'
 import { PublicOrderController } from '../controllers/public-orders.controller.js'
 import { SettingsController } from '../controllers/settings.controller.js'
+import { SitemapController } from '../controllers/sitemap.controller.js'
 import { CategoryRepository } from '../repositories/categories.repository.js'
 import { AdminCategoryRepository } from '../repositories/admin-categories.repository.js'
 import { AdminCustomerRepository } from '../repositories/admin-customers.repository.js'
@@ -49,6 +50,7 @@ import { ProductService } from '../services/products.service.js'
 import { PublicOrderService } from '../services/public-orders.service.js'
 import { RecoveryProtectionService } from '../services/recovery-protection.service.js'
 import { SettingsService } from '../services/settings.service.js'
+import { SitemapService } from '../services/sitemap.service.js'
 import { StorageService } from '../services/storage.service.js'
 import { TurnstileService } from '../services/turnstile.service.js'
 import { CatalogImageService } from '../services/catalog-image.service.js'
@@ -74,6 +76,7 @@ export interface IApplicationDependencies {
   productController: ProductController
   publicOrderController: PublicOrderController
   settingsController: SettingsController
+  sitemapController: SitemapController
 }
 
 export function createApplicationDependencies(
@@ -183,5 +186,9 @@ export function createApplicationDependencies(
     productController: new ProductController(productService, env.publicCacheMaxAgeSeconds),
     publicOrderController: new PublicOrderController(publicOrderService),
     settingsController: new SettingsController(settingsService, env.publicCacheMaxAgeSeconds),
+    sitemapController: new SitemapController(
+      new SitemapService(categoryService, env.publicSiteUrl),
+      env.publicCacheMaxAgeSeconds,
+    ),
   }
 }

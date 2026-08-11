@@ -67,4 +67,20 @@ describe('loadEnv', () => {
   it('detects the Vercel runtime flag', () => {
     expect(loadEnv({ ...BASE_ENV, VERCEL: '1' }).isVercel).toBe(true)
   })
+
+  it('normalizes the public site URL used by SEO resources', () => {
+    const env = loadEnv({
+      ...BASE_ENV,
+      PUBLIC_SITE_URL: 'https://margaritas-arteydeco.vercel.app/',
+    })
+
+    expect(env.publicSiteUrl).toBe('https://margaritas-arteydeco.vercel.app')
+  })
+
+  it('rejects a public site URL with a path', () => {
+    expect(() => loadEnv({
+      ...BASE_ENV,
+      PUBLIC_SITE_URL: 'https://margaritas-arteydeco.vercel.app/catalogo',
+    })).toThrow()
+  })
 })

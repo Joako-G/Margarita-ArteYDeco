@@ -97,6 +97,21 @@ describe('public API', () => {
     expect(response.body.data).not.toHaveProperty('logoPath')
   })
 
+  it('returns a valid sitemap with public routes and active categories', async () => {
+    const response = await request(getApp()).get('/api/public/sitemap.xml').expect(200)
+
+    expect(response.headers['content-type']).toContain('application/xml')
+    expect(response.headers['cache-control']).toContain('max-age=60')
+    expect(response.text).toContain('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+    expect(response.text).toContain('<loc>https://margaritas-arteydeco.vercel.app/</loc>')
+    expect(response.text).toContain(
+      '<loc>https://margaritas-arteydeco.vercel.app/categoria/moldes</loc>',
+    )
+    expect(response.text).not.toContain('/admin')
+    expect(response.text).not.toContain('/checkout')
+    expect(response.text).not.toContain('/pedido/')
+  })
+
   it('rejects browser origins outside the explicit allowlist', async () => {
     const response = await request(getApp())
       .get('/api/public/categories')

@@ -13,6 +13,7 @@ import { OrderController } from '../controllers/orders.controller.js'
 import { ProductController } from '../controllers/products.controller.js'
 import { PublicOrderController } from '../controllers/public-orders.controller.js'
 import { SettingsController } from '../controllers/settings.controller.js'
+import { SitemapController } from '../controllers/sitemap.controller.js'
 import type { IApplicationDependencies } from '../config/dependencies.js'
 import type { IEnv } from '../config/env.js'
 import type { ICategoryService } from '../services/categories.service.js'
@@ -30,6 +31,7 @@ import type { IPublicOrderService } from '../services/public-orders.service.js'
 import { CsrfService } from '../services/csrf.service.js'
 import type { IOrderService } from '../services/orders.service.js'
 import type { ISettingsService } from '../services/settings.service.js'
+import { SitemapService } from '../services/sitemap.service.js'
 
 export const TEST_ADMIN_ORIGIN = 'http://localhost:5173'
 
@@ -47,6 +49,7 @@ export const TEST_ENV: IEnv = {
   publicCacheMaxAgeSeconds: 60,
   publicRateLimitMax: 120,
   publicRateLimitWindowMs: 60_000,
+  publicSiteUrl: 'https://margaritas-arteydeco.vercel.app',
   redisUrl: null,
   recoveryBlockDurationMs: 1_800_000,
   recoveryCaptchaThreshold: 3,
@@ -237,5 +240,9 @@ export function createTestDependencies(
     productController: new ProductController(productService, 60),
     publicOrderController: new PublicOrderController(publicOrderService),
     settingsController: new SettingsController(settingsService, 60),
+    sitemapController: new SitemapController(
+      new SitemapService(categoryService, TEST_ENV.publicSiteUrl),
+      60,
+    ),
   }
 }
