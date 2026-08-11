@@ -1,6 +1,5 @@
 User-agent: *
 Allow: /
-Disallow: /admin
-Disallow: /checkout
-Disallow: /pedido/
-Disallow: /recuperar-pedido
+Disallow: /route-shells/
+
+Sitemap: https://margaritas-arteydeco.vercel.app/sitemap.xml

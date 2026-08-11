@@ -30,8 +30,8 @@ export function AdminProfilePage() {
   useRefreshAdminSessionOnUnauthorized(profile.error)
 
   useEffect(() => {
-    document.title = 'Mi perfil | Margarita Arte & Deco'
-    return () => { document.title = 'Margarita Arte & Deco' }
+    document.title = 'Mi perfil | Margaritas Arte & Deco'
+    return () => { document.title = 'Margaritas Arte & Deco' }
   }, [])
 
   if (profile.isPending) return <AdminProfileSkeleton />

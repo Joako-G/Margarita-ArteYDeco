@@ -20,10 +20,10 @@ export function AdminDashboardPage() {
   useRefreshAdminSessionOnUnauthorized(dashboard.error)
 
   useEffect(() => {
-    document.title = 'Panel principal | Margarita Arte & Deco'
+    document.title = 'Panel principal | Margaritas Arte & Deco'
 
     return () => {
-      document.title = 'Margarita Arte & Deco'
+      document.title = 'Margaritas Arte & Deco'
     }
   }, [])
 

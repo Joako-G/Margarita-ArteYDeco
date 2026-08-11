@@ -45,8 +45,8 @@ export function AdminCategoryFormPage() {
   useRefreshAdminSessionOnUnauthorized(unauthorizedError)
 
   useEffect(() => {
-    document.title = `${isEditing ? 'Editar categoría' : 'Nueva categoría'} | Margarita Arte & Deco`
-    return () => { document.title = 'Margarita Arte & Deco' }
+    document.title = `${isEditing ? 'Editar categoría' : 'Nueva categoría'} | Margaritas Arte & Deco`
+    return () => { document.title = 'Margaritas Arte & Deco' }
   }, [isEditing])
 
   useEffect(() => {

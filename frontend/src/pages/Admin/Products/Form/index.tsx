@@ -50,9 +50,9 @@ export function AdminProductFormPage() {
   useRefreshAdminSessionOnUnauthorized(unauthorizedError)
 
   useEffect(() => {
-    document.title = `${isEditing ? 'Editar producto' : 'Nuevo producto'} | Margarita Arte & Deco`
+    document.title = `${isEditing ? 'Editar producto' : 'Nuevo producto'} | Margaritas Arte & Deco`
     return () => {
-      document.title = 'Margarita Arte & Deco'
+      document.title = 'Margaritas Arte & Deco'
     }
   }, [isEditing])
 

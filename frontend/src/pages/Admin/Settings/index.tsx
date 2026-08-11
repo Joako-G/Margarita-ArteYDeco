@@ -39,8 +39,8 @@ export function AdminSettingsPage() {
   useRefreshAdminSessionOnUnauthorized(settings.error ?? updateSettings.error ?? logoMutation.error)
 
   useEffect(() => {
-    document.title = 'Configuración | Margarita Arte & Deco'
-    return () => { document.title = 'Margarita Arte & Deco' }
+    document.title = 'Configuración | Margaritas Arte & Deco'
+    return () => { document.title = 'Margaritas Arte & Deco' }
   }, [])
 
   async function handleUpdate(values: AdminSettingsFormType) {

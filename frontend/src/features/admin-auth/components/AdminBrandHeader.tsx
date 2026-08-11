@@ -22,12 +22,12 @@ export function AdminBrandHeader({
         <div className="admin-brand-header__identity">
           {leadingAction}
           <Link
-            aria-label="Ir al inicio de Margarita Arte & Deco"
+            aria-label="Ir al inicio de Margaritas Arte & Deco"
             className="admin-brand-header__brand"
             to={brandDestination}
           >
             <img
-              alt="Margarita Arte & Deco"
+              alt="Margaritas Arte & Deco"
               className="admin-brand-header__logo"
               decoding="async"
               height="544"

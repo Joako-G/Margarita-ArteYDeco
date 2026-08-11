@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import { getRouteMetadata } from './route-metadata.ts'
+import { getCategoryRouteMetadata, getRouteMetadata } from './route-metadata.ts'
 
 test('permite indexar únicamente las páginas públicas de descubrimiento', () => {
   assert.equal(getRouteMetadata('/').robots, 'index, follow')
@@ -34,4 +34,15 @@ test('genera títulos específicos para cada área principal', () => {
   assert.match(getRouteMetadata('/admin/productos/nuevo').title, /^Productos/)
   assert.match(getRouteMetadata('/admin/configuracion').title, /^Configuración/)
   assert.match(getRouteMetadata('/ruta-inexistente').title, /^Página no encontrada/)
+})
+
+test('genera metadata específica para una categoría pública', () => {
+  const metadata = getCategoryRouteMetadata(
+    'Pinceles',
+    'Herramientas para cada trazo, técnica y nivel de detalle.',
+  )
+
+  assert.equal(metadata.title, 'Pinceles | Margaritas Arte & Deco')
+  assert.match(metadata.description, /cada trazo/)
+  assert.equal(metadata.robots, 'index, follow')
 })

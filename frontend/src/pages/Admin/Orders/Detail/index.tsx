@@ -317,8 +317,8 @@ export function AdminOrderDetailPage() {
   useRefreshAdminSessionOnUnauthorized(order.error)
 
   useEffect(() => {
-    document.title = 'Detalle del pedido | Margarita Arte & Deco'
-    return () => { document.title = 'Margarita Arte & Deco' }
+    document.title = 'Detalle del pedido | Margaritas Arte & Deco'
+    return () => { document.title = 'Margaritas Arte & Deco' }
   }, [])
 
   if (order.isPending) return <AdminOrderDetailSkeleton />

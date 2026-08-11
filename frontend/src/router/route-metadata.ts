@@ -99,3 +99,16 @@ export function getRouteMetadata(pathname: string): IRouteMetadata {
     title: `Página no encontrada | ${BRAND_NAME}`,
   }
 }
+
+export function getCategoryRouteMetadata(
+  categoryName: string,
+  categoryDescription: string,
+): IRouteMetadata {
+  return {
+    description:
+      categoryDescription.trim() ||
+      `Explorá productos de ${categoryName} para tus proyectos creativos en ${BRAND_NAME}.`,
+    robots: 'index, follow',
+    title: `${categoryName} | ${BRAND_NAME}`,
+  }
+}

@@ -1,5 +1,13 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/index.html",
+      "destination": "/",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
@@ -29,16 +37,97 @@
           "value": "default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.supabase.co https://*.supabase.in; connect-src 'self' https://margarita-backend.vercel.app https://*.supabase.co https://*.supabase.in; frame-src 'none'; form-action 'self'; upgrade-insecure-requests; frame-ancestors 'none';"
         }
       ]
+    },
+    {
+      "source": "/admin/:path*",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/admin",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/checkout",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/pedido/:path*",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/recuperar-pedido",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
     }
   ],
   "rewrites": [
+    {
+      "source": "/sitemap.xml",
+      "destination": "https://margarita-backend.vercel.app/api/public/sitemap.xml"
+    },
     {
       "source": "/api/:path*",
       "destination": "https://margarita-backend.vercel.app/api/:path*"
     },
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "source": "/productos",
+      "destination": "/route-shells/products.html"
+    },
+    {
+      "source": "/categoria/:slug",
+      "destination": "/route-shells/category.html"
+    },
+    {
+      "source": "/politica-de-privacidad",
+      "destination": "/route-shells/privacy.html"
+    },
+    {
+      "source": "/terminos-y-condiciones",
+      "destination": "/route-shells/terms.html"
+    },
+    {
+      "source": "/checkout",
+      "destination": "/route-shells/private.html"
+    },
+    {
+      "source": "/pedido/:orderNumber",
+      "destination": "/route-shells/private.html"
+    },
+    {
+      "source": "/recuperar-pedido",
+      "destination": "/route-shells/private.html"
+    },
+    {
+      "source": "/admin",
+      "destination": "/route-shells/private.html"
+    },
+    {
+      "source": "/admin/:path*",
+      "destination": "/route-shells/private.html"
     }
   ]
 }

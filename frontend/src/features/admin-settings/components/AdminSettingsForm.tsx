@@ -77,7 +77,7 @@ export function AdminSettingsForm({
             error={errors.businessName?.message}
             label="Nombre del negocio"
             maxLength={120}
-            placeholder="Ej.: Margarita Arte & Deco"
+            placeholder="Ej.: Margaritas Arte & Deco"
             {...register('businessName')}
           />
           <Input

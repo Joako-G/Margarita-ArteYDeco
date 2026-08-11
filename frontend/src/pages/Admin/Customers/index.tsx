@@ -35,8 +35,8 @@ export function AdminCustomersPage() {
   useRefreshAdminSessionOnUnauthorized(customers.error)
 
   useEffect(() => {
-    document.title = 'Clientes | Margarita Arte & Deco'
-    return () => { document.title = 'Margarita Arte & Deco' }
+    document.title = 'Clientes | Margaritas Arte & Deco'
+    return () => { document.title = 'Margaritas Arte & Deco' }
   }, [])
 
   useEffect(() => {

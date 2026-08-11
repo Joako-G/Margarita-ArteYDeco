@@ -26,8 +26,8 @@ export function AdminOrdersPage() {
   useRefreshAdminSessionOnUnauthorized(orders.error)
 
   useEffect(() => {
-    document.title = 'Pedidos | Margarita Arte & Deco'
-    return () => { document.title = 'Margarita Arte & Deco' }
+    document.title = 'Pedidos | Margaritas Arte & Deco'
+    return () => { document.title = 'Margaritas Arte & Deco' }
   }, [])
 
   useEffect(() => {

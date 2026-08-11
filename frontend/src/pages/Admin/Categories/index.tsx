@@ -38,8 +38,8 @@ export function AdminCategoriesPage() {
   useRefreshAdminSessionOnUnauthorized(lifecycle.error)
 
   useEffect(() => {
-    document.title = 'Categorías | Margarita Arte & Deco'
-    return () => { document.title = 'Margarita Arte & Deco' }
+    document.title = 'Categorías | Margaritas Arte & Deco'
+    return () => { document.title = 'Margaritas Arte & Deco' }
   }, [])
 
   useEffect(() => {

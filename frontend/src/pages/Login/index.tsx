@@ -32,10 +32,10 @@ export function LoginPage() {
   })
 
   useEffect(() => {
-    document.title = 'Acceso administrativo | Margarita Arte & Deco'
+    document.title = 'Acceso administrativo | Margaritas Arte & Deco'
 
     return () => {
-      document.title = 'Margarita Arte & Deco'
+      document.title = 'Margaritas Arte & Deco'
     }
   }, [])
 
@@ -56,7 +56,7 @@ export function LoginPage() {
 
   return (
     <main className="admin-login" aria-labelledby="admin-login-title">
-      <section className="admin-login__brand" aria-label="Margarita Arte & Deco">
+      <section className="admin-login__brand" aria-label="Margaritas Arte & Deco">
         <div>
           <p className="admin-login__eyebrow">Área privada</p>
           <h1 id="admin-login-title">Administración</h1>

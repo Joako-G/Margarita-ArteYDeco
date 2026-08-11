@@ -42,10 +42,10 @@ export function AdminProductsPage() {
   useRefreshAdminSessionOnUnauthorized(lifecycle.error)
 
   useEffect(() => {
-    document.title = 'Productos | Margarita Arte & Deco'
+    document.title = 'Productos | Margaritas Arte & Deco'
 
     return () => {
-      document.title = 'Margarita Arte & Deco'
+      document.title = 'Margaritas Arte & Deco'
     }
   }, [])
 
