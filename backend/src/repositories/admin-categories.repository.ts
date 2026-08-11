@@ -1,5 +1,6 @@
 import type { ServerSupabaseClient } from '../config/supabase.js'
 import {
+  adminCategoryDisplayOrderRowSchema,
   adminCategoryRowSchema,
   adminCategoryRowsSchema,
 } from '../schemas/admin-categories.schema.js'
@@ -30,6 +31,7 @@ export class CategoryAreaConflictError extends Error {
 export interface IAdminCategoryRepository {
   create(input: IAdminCategoryCreateInput): Promise<IAdminCategoryRecord>
   findById(categoryId: string): Promise<IAdminCategoryRecord | null>
+  findNextDisplayOrder(catalogArea: IAdminCategoryCreateInput['catalogArea']): Promise<number>
   findPage(filters: IAdminCategoryFilters): Promise<IAdminCategoryPage>
   softDelete(categoryId: string, expectedUpdatedAt: string): Promise<boolean>
   update(
@@ -146,6 +148,30 @@ export class AdminCategoryRepository implements IAdminCategoryRepository {
 
     if (error !== null) throw new RepositoryError('No fue posible consultar la categoría')
     return data === null ? null : mapCategory(data)
+  }
+
+  public async findNextDisplayOrder(
+    catalogArea: IAdminCategoryCreateInput['catalogArea'],
+  ): Promise<number> {
+    const { data, error } = await this.client
+      .from('categories')
+      .select('display_order')
+      .eq('catalog_area', catalogArea)
+      .is('deleted_at', null)
+      .order('display_order', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (error !== null) {
+      throw new RepositoryError('No fue posible calcular el orden de la categoría')
+    }
+    if (data === null) return 0
+
+    const row = adminCategoryDisplayOrderRowSchema.safeParse(data)
+    if (!row.success || row.data.display_order >= 2_147_483_647) {
+      throw new RepositoryError('No fue posible asignar un orden válido a la categoría')
+    }
+    return row.data.display_order + 1
   }
 
   public async create(input: IAdminCategoryCreateInput): Promise<IAdminCategoryRecord> {

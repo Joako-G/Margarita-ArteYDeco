@@ -132,7 +132,6 @@ describe('admin categories API', () => {
     const payload = {
       catalogArea: 'art',
       description: null,
-      displayOrder: 3,
       name: 'Papeles',
     }
 
@@ -145,6 +144,32 @@ describe('admin categories API', () => {
       .expect(201)
 
     expect(service.create).toHaveBeenCalledWith(payload, PROFILE.id)
+  })
+
+  it('accepts but discards the legacy display order during creation', async () => {
+    const service = createCategoryService()
+    const app = getApp(service)
+    const csrfResponse = await request(app).get('/api/admin/auth/csrf-token').expect(200)
+    const token = csrfResponse.body.data.csrfToken as string
+
+    await request(app)
+      .post('/api/admin/categories')
+      .set('Cookie', `${ADMIN_ACCESS_COOKIE_NAME}=access; ${CSRF_COOKIE_NAME}=${token}`)
+      .set('Origin', TEST_ADMIN_ORIGIN)
+      .set('X-CSRF-Token', token)
+      .send({
+        catalogArea: 'art',
+        description: null,
+        displayOrder: 99,
+        name: 'Papeles',
+      })
+      .expect(201)
+
+    expect(service.create).toHaveBeenCalledWith({
+      catalogArea: 'art',
+      description: null,
+      name: 'Papeles',
+    }, PROFILE.id)
   })
 
   it('validates the real image signature before replacing it', async () => {

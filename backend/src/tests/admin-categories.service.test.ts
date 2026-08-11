@@ -4,7 +4,10 @@ import { describe, expect, it, vi } from 'vitest'
 import type { IAdminCategoryRepository } from '../repositories/admin-categories.repository.js'
 import { AdminCategoryService } from '../services/admin-categories.service.js'
 import type { ICatalogImageService } from '../services/catalog-image.service.js'
-import type { IAdminCategoryRecord } from '../types/admin-categories.js'
+import type {
+  IAdminCategoryCreateInput,
+  IAdminCategoryRecord,
+} from '../types/admin-categories.js'
 import type { IStorageMutationService } from '../types/storage.js'
 
 const CATEGORY: IAdminCategoryRecord = {
@@ -34,6 +37,7 @@ function createRepository(
   return {
     create: vi.fn(),
     findById: vi.fn(),
+    findNextDisplayOrder: vi.fn(),
     findPage: vi.fn(),
     softDelete: vi.fn(),
     update: vi.fn(),
@@ -94,7 +98,9 @@ describe('AdminCategoryService', () => {
 
   it('creates an inactive category with a private pending image path', async () => {
     const repository = createRepository({
-      create: vi.fn().mockImplementation(async (input) => ({
+      create: vi.fn().mockImplementation(async (
+        input: IAdminCategoryCreateInput,
+      ): Promise<IAdminCategoryRecord> => ({
         ...CATEGORY,
         catalogArea: input.catalogArea,
         id: input.id,
@@ -104,22 +110,46 @@ describe('AdminCategoryService', () => {
         productCount: 0,
         slug: input.slug,
       })),
+      findNextDisplayOrder: vi.fn().mockResolvedValue(7),
     })
     const service = new AdminCategoryService(repository, createStorageService(), logger)
 
     const result = await service.create({
       catalogArea: 'decoration',
       description: null,
-      displayOrder: 1,
       name: 'Objetos pintados',
     }, 'bd62774b-7863-4fb4-a041-60d9003a4432')
 
     expect(repository.create).toHaveBeenCalledWith(expect.objectContaining({
       catalogArea: 'decoration',
+      displayOrder: 7,
       imagePath: expect.stringMatching(/\/pending\.webp$/),
       slug: 'objetos-pintados',
     }))
     expect(result).toMatchObject({ imageUrl: null, isActive: false })
+  })
+
+  it('starts category order at zero when the area has no previous categories', async () => {
+    const repository = createRepository({
+      create: vi.fn().mockImplementation(async (
+        input: IAdminCategoryCreateInput,
+      ): Promise<IAdminCategoryRecord> => ({
+        ...CATEGORY,
+        ...input,
+        isActive: false,
+        productCount: 0,
+      })),
+      findNextDisplayOrder: vi.fn().mockResolvedValue(0),
+    })
+    const service = new AdminCategoryService(repository, createStorageService(), logger)
+
+    await service.create({
+      catalogArea: 'art',
+      description: null,
+      name: 'Primera categoría',
+    }, 'bd62774b-7863-4fb4-a041-60d9003a4432')
+
+    expect(repository.create).toHaveBeenCalledWith(expect.objectContaining({ displayOrder: 0 }))
   })
 
   it('does not publish a category while its image is pending', async () => {

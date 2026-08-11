@@ -88,10 +88,12 @@ export class AdminCategoryService implements IAdminCategoryService {
   ): Promise<IAdminCategoryDetailDto> {
     const id = randomUUID()
     const slug = this.requireSlug(input.name)
+    const displayOrder = await this.repository.findNextDisplayOrder(input.catalogArea)
 
     try {
       const category = await this.repository.create({
         ...input,
+        displayOrder,
         id,
         imagePath: `catalog/${id}/pending.webp`,
         slug,

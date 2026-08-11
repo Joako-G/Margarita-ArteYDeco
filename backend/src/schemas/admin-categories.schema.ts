@@ -10,17 +10,26 @@ export const adminCategoryFiltersSchema = z.strictObject({
     .default('orderAsc'),
 })
 
-const adminCategoryMutationFields = {
+const adminCategoryBaseMutationFields = {
   catalogArea: z.enum(['art', 'decoration']),
   description: z.string().trim().max(1_000).nullable(),
-  displayOrder: z.number().int().nonnegative().max(2_147_483_647),
   name: z.string().trim().min(2).max(100),
 }
 
-export const adminCategoryCreateSchema = z.strictObject(adminCategoryMutationFields)
+const adminCategoryDisplayOrderSchema = z.number().int().nonnegative().max(2_147_483_647)
+
+export const adminCategoryCreateSchema = z.strictObject({
+  ...adminCategoryBaseMutationFields,
+  displayOrder: adminCategoryDisplayOrderSchema.optional(),
+}).transform((input) => ({
+  catalogArea: input.catalogArea,
+  description: input.description,
+  name: input.name,
+}))
 
 export const adminCategoryUpdateSchema = z.strictObject({
-  ...adminCategoryMutationFields,
+  ...adminCategoryBaseMutationFields,
+  displayOrder: adminCategoryDisplayOrderSchema,
   expectedUpdatedAt: z.iso.datetime({ offset: true }),
   isActive: z.boolean(),
 })
@@ -53,3 +62,6 @@ const adminCategoryRowFields = {
 
 export const adminCategoryRowSchema = z.strictObject(adminCategoryRowFields)
 export const adminCategoryRowsSchema = z.array(z.strictObject(adminCategoryRowFields))
+export const adminCategoryDisplayOrderRowSchema = z.strictObject({
+  display_order: z.coerce.number().int().nonnegative(),
+})

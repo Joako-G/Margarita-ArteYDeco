@@ -83,7 +83,7 @@ export interface IAdminCategoryListDto {
 
 export type AdminCategoryCreateRequestType = Pick<
   IAdminCategoryCreateInput,
-  'catalogArea' | 'description' | 'displayOrder' | 'name'
+  'catalogArea' | 'description' | 'name'
 >
 
 export type AdminCategoryUpdateRequestType = Omit<IAdminCategoryUpdateInput, 'slug'>
