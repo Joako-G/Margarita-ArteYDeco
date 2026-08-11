@@ -53,7 +53,7 @@ export function AdminProfilePage() {
     <main aria-labelledby="admin-profile-title" className="admin-page admin-profile">
       <AdminPageHeader
         currentLabel="Mi perfil"
-        description="Administrá tu identidad y las credenciales utilizadas para acceder al Panel."
+        description="Actualizá tu nombre, el correo con el que ingresás y tu contraseña."
         sectionLabel="Cuenta"
         title="Mi perfil"
         titleId="admin-profile-title"

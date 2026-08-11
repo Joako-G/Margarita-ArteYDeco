@@ -64,7 +64,7 @@ export function LoginPage() {
         </div>
         <div className="admin-login__security-note">
           <ShieldCheck aria-hidden="true" size={22} />
-          <span>La sesión se guarda de forma segura y no expone credenciales en el navegador.</span>
+          <span>Tu acceso se mantiene protegido mientras administrás la tienda.</span>
         </div>
       </section>
 
@@ -105,6 +105,7 @@ export function LoginPage() {
             autoComplete="current-password"
             error={form.formState.errors.password?.message}
             label="Contraseña"
+            placeholder="Ingresá tu contraseña"
             type="password"
             {...form.register('password')}
           />

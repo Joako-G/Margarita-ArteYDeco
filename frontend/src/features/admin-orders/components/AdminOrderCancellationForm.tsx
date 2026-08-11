@@ -40,7 +40,7 @@ export function AdminOrderCancellationForm({
       <TextArea
         error={errors.reason?.message}
         label="Motivo de la cancelación"
-        placeholder="Ej.: solicitud del cliente"
+        placeholder="Ej.: El cliente pidió cancelar la compra."
         {...register('reason')}
       />
       {requiresManualRefund ? (

@@ -7,13 +7,15 @@ export function getAdminProductLifecycleSuccessMessage(
 ): string {
   switch (action) {
     case 'publication':
-      return `“${productName}” ahora está ${value ? 'activo' : 'inactivo'}.`
+      return value
+        ? `“${productName}” ya está visible en la tienda.`
+        : `“${productName}” quedó oculto y ya no puede agregarse a nuevos pedidos.`
     case 'featured':
       return value
-        ? `“${productName}” se agregó a destacados.`
-        : `“${productName}” se quitó de destacados.`
+        ? `“${productName}” ahora aparece entre los recomendados.`
+        : `“${productName}” ya no aparece entre los recomendados.`
     case 'delete':
-      return `“${productName}” se eliminó del catálogo.`
+      return `Quitaste “${productName}” del catálogo. Su información y su historial quedaron guardados.`
   }
 }
 

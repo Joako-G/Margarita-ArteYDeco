@@ -118,6 +118,7 @@ export function AdminStockAdjustmentForm({
               inputMode="numeric"
               label="Cantidad"
               min={1}
+              placeholder="Ej.: 5"
               step={1}
               type="number"
               {...register('quantity', { valueAsNumber: true })}
@@ -125,9 +126,10 @@ export function AdminStockAdjustmentForm({
             <TextArea
               disabled={disabled || isSubmitting}
               error={errors.reason?.message}
-              helpText="Quedará visible en el historial de auditoría."
+              helpText="El motivo quedará guardado en el historial del producto."
               label="Motivo"
               maxLength={500}
+              placeholder="Ej.: Ingreso de mercadería del proveedor."
               rows={3}
               {...register('reason')}
             />

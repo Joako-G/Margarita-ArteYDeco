@@ -53,8 +53,10 @@ export function AdminWhatsAppComposer({ order }: IAdminWhatsAppComposerProps) {
         ))}
       </div>
       <TextArea
+        helpText="Podés editar este texto antes de abrir la conversación."
         label="Mensaje"
         onChange={(event) => setMessage(event.target.value)}
+        placeholder="Escribí el mensaje para el cliente"
         value={message}
       />
       <div className="admin-whatsapp-composer__actions">

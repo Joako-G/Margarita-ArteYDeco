@@ -23,10 +23,10 @@ test('explica la imagen requerida antes de publicar', () => {
 test('describe las acciones de publicación sin exponer detalles internos', () => {
   assert.equal(
     getAdminCategoryLifecycleSuccessMessage('Pinceles', 'publication', false),
-    'Ocultaste Pinceles de la tienda.',
+    '“Pinceles” quedó oculta y ya no aparece en la tienda.',
   )
   assert.equal(
     getAdminCategoryLifecycleSuccessMessage('Pinceles', 'delete'),
-    'Eliminaste Pinceles del panel.',
+    'Quitaste “Pinceles” del catálogo. Su información quedó guardada.',
   )
 })

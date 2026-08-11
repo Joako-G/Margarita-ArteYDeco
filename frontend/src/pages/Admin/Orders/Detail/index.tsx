@@ -56,6 +56,15 @@ interface IAdminOrderContentProps {
   order: IAdminOrderDetail
 }
 
+const ORDER_ACTION_SUCCESS_MESSAGES: Record<AdminOrderActionType, string> = {
+  confirmPayment: 'Pago confirmado. El pedido ya figura como pagado.',
+  confirmOrder: 'Pedido confirmado. Ya podés comenzar a prepararlo.',
+  markDelivered: 'Pedido entregado. La entrega quedó registrada.',
+  markPickedUp: 'Pedido retirado. El retiro quedó registrado.',
+  markReady: 'Pedido listo. Ya podés avisarle al cliente.',
+  startPreparing: 'Preparación iniciada. El pedido ya muestra su nuevo estado.',
+}
+
 function AdminOrderContent({ order }: IAdminOrderContentProps) {
   const lifecycle = useAdminOrderLifecycle()
   const [actionToConfirm, setActionToConfirm] = useState<AdminOrderActionType | null>(null)
@@ -74,7 +83,7 @@ function AdminOrderContent({ order }: IAdminOrderContentProps) {
     setFeedback(null)
     try {
       await lifecycle.mutateAsync({ action: 'transition', order, transition: actionToConfirm })
-      setFeedback({ message: `${ORDER_ACTION_LABELS[actionToConfirm]}: cambio guardado.`, type: 'success' })
+      setFeedback({ message: ORDER_ACTION_SUCCESS_MESSAGES[actionToConfirm], type: 'success' })
       setActionToConfirm(null)
     } catch (error) {
       setFeedback({ message: getAdminOrderErrorMessage(getApiErrorCode(error)), type: 'error' })
@@ -86,7 +95,7 @@ function AdminOrderContent({ order }: IAdminOrderContentProps) {
     try {
       await lifecycle.mutateAsync({ action: 'cancel', order, ...values })
       setFeedback({
-        message: 'Pedido cancelado. El stock se restauró una sola vez.',
+        message: 'Pedido cancelado. Las unidades de sus productos volvieron al stock disponible.',
         type: 'success',
       })
       setIsCancellationOpen(false)
@@ -126,7 +135,7 @@ function AdminOrderContent({ order }: IAdminOrderContentProps) {
 
       <section aria-labelledby="order-operation-title" className="admin-order-detail__operation">
         <div>
-          <h2 id="order-operation-title">Estado del pedido</h2>
+          <h2 id="order-operation-title">Qué sigue con este pedido</h2>
           <div className="admin-order-detail__status">
             <Badge className="admin-order-detail__status-badge" variant={status.variant}>{status.label}</Badge>
             <div className="admin-order-detail__payment-info">
@@ -281,8 +290,8 @@ function AdminOrderContent({ order }: IAdminOrderContentProps) {
         )}
       >
         <p>
-          {actionToConfirm ? ORDER_ACTION_LABELS[actionToConfirm] : ''} para el pedido{' '}
-          <strong>{order.orderNumber}</strong>. El cambio quedará auditado.
+          Vas a elegir “{actionToConfirm ? ORDER_ACTION_LABELS[actionToConfirm] : ''}” para el pedido{' '}
+          <strong>{order.orderNumber}</strong>. El cambio quedará guardado en su historial.
         </p>
       </Modal>
 

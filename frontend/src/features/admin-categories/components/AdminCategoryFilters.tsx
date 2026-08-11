@@ -122,7 +122,7 @@ export function AdminCategoryFilters({
           className="admin-category-filters__search-input"
           error={errors.search?.message}
           label="Buscar categoría"
-          placeholder="Nombre de la categoría"
+          placeholder="Ej.: pinturas"
           type="search"
           {...register('search')}
         />

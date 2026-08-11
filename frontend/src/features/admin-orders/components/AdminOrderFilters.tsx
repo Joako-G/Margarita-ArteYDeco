@@ -99,7 +99,7 @@ export function AdminOrderFilters({ filters, onApply, onClear }: IAdminOrderFilt
         <option value="cash">Efectivo</option>
         <option value="bank_transfer">Transferencia</option>
       </Select>
-      <Select label="Confirmación de pago" {...paymentStatusRegister}>
+      <Select label="Estado del pago" {...paymentStatusRegister}>
         <option value="all">Todos</option>
         <option value="pending">Sin confirmar</option>
         <option value="paid">Confirmado</option>
@@ -108,8 +108,8 @@ export function AdminOrderFilters({ filters, onApply, onClear }: IAdminOrderFilt
       <Select label="Ordenar por" {...sortRegister}>
         <option value="newest">Más recientes primero</option>
         <option value="oldest">Más antiguos primero</option>
-        <option value="totalDesc">Mayor precio primero</option>
-        <option value="totalAsc">Menor precio primero</option>
+        <option value="totalDesc">Mayor importe primero</option>
+        <option value="totalAsc">Menor importe primero</option>
       </Select>
       <Select label="Resultados por página" {...pageSizeRegister}>
         <option value="10">10 pedidos</option>
@@ -132,7 +132,7 @@ export function AdminOrderFilters({ filters, onApply, onClear }: IAdminOrderFilt
           className="admin-order-filters__search-input"
           error={errors.search?.message}
           label="Buscar pedido"
-          placeholder="Pedido o cliente"
+          placeholder="Ej.: 000123, María o 11 2345-6789"
           type="search"
           {...register('search')}
         />

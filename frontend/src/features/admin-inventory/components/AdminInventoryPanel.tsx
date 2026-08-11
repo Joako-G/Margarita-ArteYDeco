@@ -42,7 +42,7 @@ export function AdminInventoryPanel({
       reason: values.reason.trim(),
     })
     setPage(1)
-    setSuccessMessage(`Stock actualizado: ahora hay ${result.stockQuantity} unidades.`)
+    setSuccessMessage(`Listo, el producto ahora tiene ${result.stockQuantity} unidades disponibles.`)
   }
 
   if (history.isPending) {
@@ -59,7 +59,7 @@ export function AdminInventoryPanel({
         <CircleAlert aria-hidden="true" size={28} />
         <div>
           <h2>No pudimos cargar el inventario</h2>
-          <p>Revisá que el backend esté disponible e intentá nuevamente.</p>
+          <p>No pudimos conectar con el sistema. Revisá tu conexión e intentá nuevamente.</p>
         </div>
         <Button onClick={() => void history.refetch()} variant="secondary">Reintentar</Button>
       </section>

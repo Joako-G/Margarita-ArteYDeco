@@ -165,7 +165,7 @@ export function AdminCategoriesPage() {
             <CircleAlert aria-hidden="true" size={28} />
             <div>
               <h2>No pudimos cargar las categorías</h2>
-              <p>Revisá que el backend esté disponible e intentá nuevamente.</p>
+              <p>No pudimos conectar con el sistema. Revisá tu conexión e intentá nuevamente.</p>
             </div>
             <Button onClick={() => void categories.refetch()} variant="secondary">Reintentar</Button>
           </div>
@@ -214,17 +214,17 @@ export function AdminCategoriesPage() {
             <Button
               className="admin-categories__confirm-delete"
               isLoading={lifecycle.isPending && lifecycle.variables.action === 'delete'}
-              loadingText="Eliminando…"
+              loadingText="Quitando categoría…"
               onClick={() => void handleDeleteConfirm()}
             >
               <Trash2 aria-hidden="true" size={18} />
-              Eliminar categoría
+              Quitar categoría
             </Button>
           </div>
         )}
         isOpen={categoryToDelete !== null}
         onClose={() => { if (!lifecycle.isPending) setCategoryToDelete(null) }}
-        title="Eliminar categoría"
+        title="Quitar categoría del catálogo"
       >
         <div className="admin-categories__delete-copy">
           <p>Vas a quitar <strong>{categoryToDelete?.name}</strong> del panel y del catálogo.</p>

@@ -77,6 +77,7 @@ export function AdminSettingsForm({
             error={errors.businessName?.message}
             label="Nombre del negocio"
             maxLength={120}
+            placeholder="Ej.: Margarita Arte & Deco"
             {...register('businessName')}
           />
           <Input
@@ -86,6 +87,7 @@ export function AdminSettingsForm({
             inputMode="tel"
             label="WhatsApp"
             maxLength={40}
+            placeholder="Ej.: 54 9 11 2345-6789"
             {...register('whatsapp')}
           />
         </div>
@@ -105,6 +107,7 @@ export function AdminSettingsForm({
             error={errors.address?.message}
             label="Dirección"
             maxLength={300}
+            placeholder="Ej.: Av. San Martín 1234, Buenos Aires"
             {...register('address')}
           />
           <TextArea
@@ -112,6 +115,7 @@ export function AdminSettingsForm({
             helpText="Escribí los días y horarios tal como deben verlos los clientes."
             label="Horarios de atención"
             maxLength={1_000}
+            placeholder="Ej.: Lunes a viernes de 9 a 18 h. Sábados de 9 a 13 h."
             rows={4}
             {...register('businessHours')}
           />
@@ -119,8 +123,9 @@ export function AdminSettingsForm({
             <Input
               error={errors.mapsUrl?.message}
               helpText="Pegá el enlace HTTPS para abrir la ubicación exacta."
-              label="URL de Google Maps"
+              label="Enlace de Google Maps"
               maxLength={500}
+              placeholder="Ej.: https://maps.app.goo.gl/..."
               type="url"
               {...register('mapsUrl')}
             />
@@ -148,6 +153,7 @@ export function AdminSettingsForm({
             error={errors.bankName?.message}
             label="Banco"
             maxLength={120}
+            placeholder="Ej.: Banco Nación"
             {...register('bankName')}
           />
           <Input
@@ -155,6 +161,7 @@ export function AdminSettingsForm({
             error={errors.transferAlias?.message}
             label="Alias"
             maxLength={120}
+            placeholder="Ej.: MARGARITA.ARTE"
             {...register('transferAlias')}
           />
           <Input
@@ -164,17 +171,19 @@ export function AdminSettingsForm({
             inputMode="numeric"
             label="CBU"
             maxLength={40}
+            placeholder="Ej.: 0000000000000000000000"
             {...register('transferCbu')}
           />
           <Input
             error={errors.transferDiscount?.message}
-            helpText="Porcentaje aplicado por el Backend al crear el pedido."
+            helpText="Este descuento se calcula automáticamente al crear un pedido por transferencia."
             inputMode="decimal"
             label="Descuento por transferencia (%)"
             max="100"
             min="0"
             step="0.01"
             type="number"
+            placeholder="Ej.: 10"
             {...register('transferDiscount')}
           />
         </div>
@@ -186,17 +195,18 @@ export function AdminSettingsForm({
             <p>Operación</p>
             <h2 id="settings-operation-title">Inventario y redes sociales</h2>
           </div>
-          <span>El umbral actualiza los avisos de stock bajo del Panel.</span>
+          <span>Elegí desde cuántas unidades querés recibir el aviso de poco stock.</span>
         </div>
         <div className="admin-settings__fields admin-settings__fields--two-columns">
           <Input
             error={errors.lowStockThreshold?.message}
             helpText="Los productos con stock igual o menor se consideran bajos."
             inputMode="numeric"
-            label="Umbral de stock bajo"
+            label="Avisar cuando queden"
             min="0"
             step="1"
             type="number"
+            placeholder="Ej.: 5"
             {...register('lowStockThreshold')}
           />
           <div aria-hidden="true" className="admin-settings__field-spacer" />
@@ -205,7 +215,7 @@ export function AdminSettingsForm({
             helpText="Opcional. Debe comenzar con https://"
             label="Instagram"
             maxLength={500}
-            placeholder="https://instagram.com/..."
+            placeholder="Ej.: https://instagram.com/margaritaartedeco"
             type="url"
             {...register('instagram')}
           />
@@ -214,7 +224,7 @@ export function AdminSettingsForm({
             helpText="Opcional. Debe comenzar con https://"
             label="Facebook"
             maxLength={500}
-            placeholder="https://facebook.com/..."
+            placeholder="Ej.: https://facebook.com/margaritaartedeco"
             type="url"
             {...register('facebook')}
           />

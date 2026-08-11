@@ -86,14 +86,14 @@ export function AdminProductFilters({ filters, onApply, onClear }: IAdminProduct
 
   const advancedFilters = (
     <>
-      <Select label={isCompact ? 'Visible en la tienda' : 'Publicación'} {...publicationRegister}>
+      <Select label="Visible en la tienda" {...publicationRegister}>
         <option value="all">Todos</option>
-        <option value="active">{isCompact ? 'Visibles' : 'Activos'}</option>
-        <option value="inactive">{isCompact ? 'Ocultos' : 'Inactivos'}</option>
+        <option value="active">Visibles</option>
+        <option value="inactive">Ocultos</option>
       </Select>
-      <Select label={isCompact ? 'Unidades disponibles' : 'Stock'} {...stockRegister}>
+      <Select label="Unidades disponibles" {...stockRegister}>
         <option value="all">Todos</option>
-        <option value="inStock">{isCompact ? 'En stock' : 'Disponible'}</option>
+        <option value="inStock">Con unidades</option>
         <option value="lowStock">Stock bajo</option>
         <option value="outOfStock">Sin stock</option>
       </Select>
@@ -106,7 +106,7 @@ export function AdminProductFilters({ filters, onApply, onClear }: IAdminProduct
         <option value="stockAsc">Menor stock</option>
         <option value="stockDesc">Mayor stock</option>
       </Select>
-      <Select label={isCompact ? 'Productos por página' : 'Filas'} {...pageSizeRegister}>
+      <Select label="Productos por página" {...pageSizeRegister}>
         <option value="10">10</option>
         <option value="20">20</option>
         <option value="50">50</option>
@@ -127,7 +127,7 @@ export function AdminProductFilters({ filters, onApply, onClear }: IAdminProduct
           className="admin-product-filters__search-input"
           error={errors.search?.message}
           label="Buscar producto"
-          placeholder="Nombre del producto"
+          placeholder="Ej.: bandeja"
           type="search"
           {...register('search')}
         />

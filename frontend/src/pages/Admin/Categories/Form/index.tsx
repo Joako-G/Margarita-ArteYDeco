@@ -25,7 +25,7 @@ interface ICategoryFormLocationState {
 
 function getSaveError(error: unknown): string {
   return getImageUploadPreparationError(error) ?? getApiErrorResponse(error)?.message ??
-    'Revisá que el backend esté disponible e intentá nuevamente.'
+    'No pudimos conectar con el sistema. Revisá tu conexión e intentá nuevamente.'
 }
 
 export function AdminCategoryFormPage() {
@@ -102,7 +102,7 @@ export function AdminCategoryFormPage() {
       <AdminPageHeader
         currentLabel={isEditing ? 'Editar categoría' : 'Nueva categoría'}
         description={isEditing
-          ? 'Actualizá su información, orden, publicación e imagen.'
+          ? 'Actualizá sus datos y elegí dónde y cómo se muestra en la tienda.'
           : 'Definí el área y agregá una imagen. La posición se asignará automáticamente.'}
         sectionLabel="Categorías"
         title={isEditing ? 'Editar categoría' : 'Nueva categoría'}
@@ -115,8 +115,10 @@ export function AdminCategoryFormPage() {
           <div>
             <strong>{isEditing ? 'Categoría guardada' : 'Categoría creada'}</strong>
             <span>{feedback === 'saved'
-              ? 'Los cambios ya están disponibles en el catálogo.'
-              : 'Los datos se guardaron, pero la nueva imagen no pudo cargarse. Si no había una imagen anterior, la categoría permanece inactiva.'}</span>
+              ? isEditing
+                ? 'La información de la categoría quedó actualizada.'
+                : 'La categoría quedó guardada al final del área que elegiste.'
+              : 'Guardamos la categoría, pero no pudimos cargar la imagen. Si todavía no tenía una, seguirá oculta hasta que vuelvas a intentarlo.'}</span>
           </div>
         </div>
       ) : null}
@@ -133,7 +135,7 @@ export function AdminCategoryFormPage() {
           <CircleAlert aria-hidden="true" size={28} />
           <div>
             <h2>No pudimos preparar el formulario</h2>
-            <p>Revisá que el backend esté disponible e intentá nuevamente.</p>
+            <p>No pudimos conectar con el sistema. Revisá tu conexión e intentá nuevamente.</p>
           </div>
           <Button onClick={() => void category.refetch()} variant="secondary">Reintentar</Button>
         </div>

@@ -141,7 +141,7 @@ export function AdminProductsPage() {
           </Link>
         )}
         currentLabel="Productos"
-        description="Consultá el catálogo, su publicación y el estado actual del inventario."
+        description="Revisá tus productos, las unidades disponibles y cuáles se muestran en la tienda."
         sectionLabel="Gestión"
         title="Productos"
         titleId="admin-products-title"
@@ -200,7 +200,7 @@ export function AdminProductsPage() {
             <CircleAlert aria-hidden="true" size={28} />
             <div>
               <h2>No pudimos cargar los productos</h2>
-              <p>Revisá que el backend esté disponible e intentá nuevamente.</p>
+              <p>No pudimos conectar con el sistema. Revisá tu conexión e intentá nuevamente.</p>
             </div>
             <Button onClick={() => void products.refetch()} variant="secondary">
               Reintentar
@@ -269,11 +269,11 @@ export function AdminProductsPage() {
             <Button
               className="admin-products__confirm-delete"
               isLoading={lifecycle.isPending && lifecycle.variables.action === 'delete'}
-              loadingText="Eliminando…"
+              loadingText="Quitando producto…"
               onClick={() => void handleDeleteConfirm()}
             >
               <Trash2 aria-hidden="true" size={18} />
-              Eliminar producto
+              Quitar producto
             </Button>
           </div>
         )}
@@ -281,7 +281,7 @@ export function AdminProductsPage() {
         onClose={() => {
           if (!lifecycle.isPending) setProductToDelete(null)
         }}
-        title="Eliminar producto"
+        title="Quitar producto del catálogo"
       >
         <div className="admin-products__delete-copy">
           <p>

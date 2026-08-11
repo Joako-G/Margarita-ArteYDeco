@@ -61,7 +61,7 @@ export function AdminSettingsLogoForm({
           <p>Marca</p>
           <h2 id="settings-logo-title">Logo público</h2>
         </div>
-        <span>Header y Footer mantienen la variante oficial como respaldo.</span>
+        <span>Si no cargás uno, la tienda seguirá mostrando el logo oficial.</span>
       </div>
 
       <div className="admin-settings-logo__preview">
@@ -114,7 +114,7 @@ export function AdminSettingsLogoForm({
         onClose={() => { if (!isRemoving) setIsRemoveOpen(false) }}
         title="Usar el logo oficial de respaldo"
       >
-        <p>El logo configurado se quitará de la tienda y del almacenamiento privado. Header y Footer volverán a mostrar automáticamente la variante oficial incluida en la aplicación.</p>
+        <p>El logo actual dejará de mostrarse en la tienda. El encabezado y el pie de página volverán a usar automáticamente el logo oficial.</p>
       </Modal>
     </section>
   )

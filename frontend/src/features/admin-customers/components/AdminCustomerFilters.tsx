@@ -37,17 +37,17 @@ export function AdminCustomerFilters({ filters, onApply, onClear }: IAdminCustom
       <Input
         error={errors.search?.message}
         label="Buscar cliente"
-        placeholder="Nombre, apellido o celular"
+        placeholder="Ej.: María, González o 11 2345-6789"
         type="search"
         {...register('search')}
       />
-      <Select label="Ordenar" {...register('sort')}>
+      <Select label="Mostrar primero" {...register('sort')}>
         <option value="nameAsc">Nombre A–Z</option>
         <option value="nameDesc">Nombre Z–A</option>
         <option value="newest">Más recientes</option>
         <option value="oldest">Más antiguos</option>
       </Select>
-      <Select label="Resultados" {...register('pageSize')}>
+      <Select label="Clientes por página" {...register('pageSize')}>
         <option value="10">10 por página</option>
         <option value="20">20 por página</option>
         <option value="50">50 por página</option>

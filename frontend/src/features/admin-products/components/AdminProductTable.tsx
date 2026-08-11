@@ -416,7 +416,7 @@ export function AdminProductTable({
                     aria-label={`${product.isActive ? 'Desactivar' : 'Activar'} ${product.name}`}
                     checked={product.isActive}
                     disabled={isPending}
-                    label={product.isActive ? 'Activo' : 'Inactivo'}
+                    label={product.isActive ? 'Visible' : 'Oculto'}
                     onChange={(event) => onPublicationChange(product, event.target.checked)}
                   />
                 </td>

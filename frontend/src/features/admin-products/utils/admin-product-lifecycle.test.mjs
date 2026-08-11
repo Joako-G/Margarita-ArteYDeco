@@ -9,7 +9,7 @@ import {
 test('describes publication changes in plain language', () => {
   assert.equal(
     getAdminProductLifecycleSuccessMessage('Pincel redondo', 'publication', false),
-    '“Pincel redondo” ahora está inactivo.',
+    '“Pincel redondo” quedó oculto y ya no puede agregarse a nuevos pedidos.',
   )
 })
 

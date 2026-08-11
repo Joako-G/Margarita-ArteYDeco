@@ -67,7 +67,7 @@ function AdminCustomerContent({ customer, onOrdersPageChange }: IAdminCustomerCo
           phone: values.phone.trim(),
         },
       })
-      setFeedback({ message: 'Datos del cliente actualizados.', type: 'success' })
+      setFeedback({ message: 'Listo, los datos del cliente quedaron actualizados.', type: 'success' })
     } catch (error) {
       setFeedback({ message: getAdminCustomerErrorMessage(getApiErrorCode(error)), type: 'error' })
     }
@@ -79,7 +79,7 @@ function AdminCustomerContent({ customer, onOrdersPageChange }: IAdminCustomerCo
       await lifecycle.mutateAsync({ action: 'delete', customer })
       navigate(routes.adminCustomers, {
         replace: true,
-        state: { feedback: 'Cliente dado de baja. Su historial de pedidos se conservó.' },
+        state: { feedback: 'El cliente ya no aparece en el listado. Su historial de pedidos quedó guardado.' },
       })
     } catch (error) {
       setFeedback({ message: getAdminCustomerErrorMessage(getApiErrorCode(error)), type: 'error' })
@@ -118,7 +118,7 @@ function AdminCustomerContent({ customer, onOrdersPageChange }: IAdminCustomerCo
             <p className="admin-customer-detail__label">Información actual</p>
             <h2 id="customer-data-title">Datos de contacto</h2>
           </div>
-          <p>Los cambios no modifican los snapshots guardados en pedidos anteriores.</p>
+          <p>Los pedidos anteriores conservarán los datos que tenían al momento de la compra.</p>
         </div>
         <AdminCustomerForm
           customer={customer}

@@ -26,17 +26,17 @@ export const adminSettingsFormSchema = z.object({
   businessName: z.string().trim().min(2, 'Ingresá el nombre del negocio').max(120),
   facebook: z.string().trim().max(500).refine(
     isOptionalHttpsUrl,
-    'Ingresá una URL segura que comience con https://',
+    'Pegá un enlace completo que comience con https://',
   ),
   instagram: z.string().trim().max(500).refine(
     isOptionalHttpsUrl,
-    'Ingresá una URL segura que comience con https://',
+    'Pegá un enlace completo que comience con https://',
   ),
   lowStockThreshold: z.string().trim().regex(/^\d+$/, 'Ingresá un número entero mayor o igual a 0')
-    .refine((value) => Number(value) <= 1_000_000, 'El umbral es demasiado alto'),
+    .refine((value) => Number(value) <= 1_000_000, 'La cantidad elegida es demasiado alta'),
   mapsUrl: z.string().trim().refine(
     isHttpsUrl,
-    'Ingresá una URL segura que comience con https://',
+    'Pegá un enlace completo que comience con https://',
   ),
   transferAlias: z.string().trim().min(2, 'Ingresá el alias').max(120),
   transferCbu: z.string().trim().refine(

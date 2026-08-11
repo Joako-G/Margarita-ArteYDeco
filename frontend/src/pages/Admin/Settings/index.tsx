@@ -62,7 +62,7 @@ export function AdminSettingsPage() {
         transferDiscount: Number(values.transferDiscount),
         whatsapp: normalizeSettingsDigits(values.whatsapp),
       })
-      setFeedback({ message: 'Configuración actualizada. Los nuevos datos ya son la referencia del negocio.', type: 'success' })
+      setFeedback({ message: 'Listo, guardamos la configuración. La tienda ya usa los nuevos datos.', type: 'success' })
     } catch (error) {
       setFeedback({ message: getAdminSettingsErrorMessage(getApiErrorCode(error)), type: 'error' })
     }
@@ -77,7 +77,7 @@ export function AdminSettingsPage() {
         expectedUpdatedAt: settings.data.updatedAt,
         image,
       })
-      setFeedback({ message: 'Logo actualizado en la tienda pública.', type: 'success' })
+      setFeedback({ message: 'Listo, el nuevo logo ya se muestra en la tienda.', type: 'success' })
       return true
     } catch (error) {
       setFeedback({ message: getAdminSettingsErrorMessage(getApiErrorCode(error)), type: 'error' })
@@ -93,7 +93,7 @@ export function AdminSettingsPage() {
         action: 'remove',
         expectedUpdatedAt: settings.data.updatedAt,
       })
-      setFeedback({ message: 'La tienda volvió a utilizar el logo oficial de respaldo.', type: 'success' })
+      setFeedback({ message: 'Listo, la tienda volvió a mostrar el logo oficial.', type: 'success' })
       return true
     } catch (error) {
       setFeedback({ message: getAdminSettingsErrorMessage(getApiErrorCode(error)), type: 'error' })
@@ -119,7 +119,7 @@ export function AdminSettingsPage() {
     <main aria-labelledby="admin-settings-title" className="admin-page admin-settings">
       <AdminPageHeader
         currentLabel="Configuración"
-        description="Administrá la información operativa que utiliza la tienda, el checkout y el trabajo diario del Panel."
+        description="Actualizá la información que ven tus clientes y los datos que usás para cobrar y organizar el negocio."
         sectionLabel="Negocio"
         title="Configuración"
         titleId="admin-settings-title"
@@ -127,7 +127,7 @@ export function AdminSettingsPage() {
 
       <div className="admin-settings__scope-note">
         <Settings aria-hidden="true" size={22} />
-        <p>Los cambios afectan futuras compras y comunicaciones. Los pedidos anteriores conservan sus importes y snapshots históricos.</p>
+        <p>Los cambios se usarán en las próximas compras y comunicaciones. Los pedidos anteriores conservarán sus importes y datos originales.</p>
       </div>
 
       {feedback ? (

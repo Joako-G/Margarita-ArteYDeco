@@ -16,6 +16,10 @@ export function getAdminCategoryLifecycleSuccessMessage(
   action: 'delete' | 'publication',
   value?: boolean,
 ): string {
-  if (action === 'delete') return `Eliminaste ${name} del panel.`
-  return value ? `Mostraste ${name} en la tienda.` : `Ocultaste ${name} de la tienda.`
+  if (action === 'delete') {
+    return `Quitaste “${name}” del catálogo. Su información quedó guardada.`
+  }
+  return value
+    ? `“${name}” ya está visible en la tienda.`
+    : `“${name}” quedó oculta y ya no aparece en la tienda.`
 }

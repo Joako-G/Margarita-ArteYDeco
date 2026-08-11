@@ -34,6 +34,7 @@ export function AdminCustomerForm({ customer, isSubmitting, onSubmit }: IAdminCu
           error={errors.firstName?.message}
           label="Nombre"
           maxLength={100}
+          placeholder="Ej.: María"
           {...register('firstName')}
         />
         <Input
@@ -41,6 +42,7 @@ export function AdminCustomerForm({ customer, isSubmitting, onSubmit }: IAdminCu
           error={errors.lastName?.message}
           label="Apellido"
           maxLength={100}
+          placeholder="Ej.: González"
           {...register('lastName')}
         />
         <Input
@@ -50,6 +52,7 @@ export function AdminCustomerForm({ customer, isSubmitting, onSubmit }: IAdminCu
           inputMode="tel"
           label="Celular"
           maxLength={40}
+          placeholder="Ej.: 11 2345-6789"
           {...register('phone')}
         />
         <TextArea
@@ -57,6 +60,7 @@ export function AdminCustomerForm({ customer, isSubmitting, onSubmit }: IAdminCu
           helpText="Uso interno. No modifica las observaciones de pedidos anteriores."
           label="Observaciones"
           maxLength={1_000}
+          placeholder="Ej.: Prefiere recibir mensajes por la tarde."
           rows={5}
           {...register('notes')}
         />

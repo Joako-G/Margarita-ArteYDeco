@@ -28,7 +28,7 @@ interface IProductFormLocationState {
 
 function getSaveError(error: unknown): string {
   return getImageUploadPreparationError(error) ?? getApiErrorResponse(error)?.message ??
-    'Revisá que el backend esté disponible e intentá nuevamente.'
+    'No pudimos conectar con el sistema. Revisá tu conexión e intentá nuevamente.'
 }
 
 export function AdminProductFormPage() {
@@ -113,7 +113,7 @@ export function AdminProductFormPage() {
       <AdminPageHeader
         currentLabel={isEditing ? 'Editar producto' : 'Nuevo producto'}
         description={isEditing
-          ? 'Actualizá la información comercial, la publicación y la imagen.'
+          ? 'Actualizá los datos del producto y elegí cómo querés mostrarlo en la tienda.'
           : 'Cargá los datos básicos. La imagen es opcional y puede agregarse después.'}
         sectionLabel="Productos"
         title={isEditing ? 'Editar producto' : 'Nuevo producto'}
@@ -129,8 +129,10 @@ export function AdminProductFormPage() {
           <div>
             <strong>{isEditing ? 'Producto guardado' : 'Producto creado'}</strong>
             <span>{feedback === 'created'
-              ? 'Los cambios ya están disponibles en el catálogo.'
-              : 'Los datos se guardaron, pero la imagen no pudo cargarse. Podés reintentarla ahora.'}</span>
+              ? isEditing
+                ? 'La información del producto quedó actualizada.'
+                : 'El producto quedó guardado y ya podés seguir administrándolo.'
+              : 'Guardamos el producto, pero no pudimos cargar la imagen. Podés elegirla nuevamente e intentar otra vez.'}</span>
           </div>
         </div>
       ) : null}
@@ -147,7 +149,7 @@ export function AdminProductFormPage() {
           <CircleAlert aria-hidden="true" size={28} />
           <div>
             <h2>No pudimos preparar el formulario</h2>
-            <p>Revisá que el backend esté disponible e intentá nuevamente.</p>
+            <p>No pudimos conectar con el sistema. Revisá tu conexión e intentá nuevamente.</p>
           </div>
           <Button onClick={() => {
             void categories.refetch()

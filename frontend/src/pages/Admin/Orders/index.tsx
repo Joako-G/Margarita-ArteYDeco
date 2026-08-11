@@ -68,7 +68,7 @@ export function AdminOrdersPage() {
     <main aria-labelledby="admin-orders-title" className="admin-page admin-orders">
       <AdminPageHeader
         currentLabel="Pedidos"
-        description="Revisá ventas, confirmá pagos y acompañá cada pedido hasta el retiro."
+        description="Revisá las ventas, confirmá los pagos y acompañá cada pedido hasta su retiro o entrega."
         sectionLabel="Gestión"
         title="Pedidos"
         titleId="admin-orders-title"

@@ -107,9 +107,10 @@ export function AdminProductForm({
             <Input
               autoComplete="off"
               error={errors.name?.message}
-              helpText="La URL se generará automáticamente desde el nombre."
+              helpText="La dirección del producto en la tienda se crea automáticamente."
               label="Nombre"
               maxLength={120}
+              placeholder="Ej.: Bandeja de madera"
               {...register('name')}
             />
 
@@ -148,6 +149,7 @@ export function AdminProductForm({
               helpText="Opcional. Contá brevemente sus características o usos."
               label="Descripción"
               maxLength={2_000}
+              placeholder="Ej.: Bandeja artesanal lista para pintar o decorar."
               rows={5}
               {...register('description')}
             />
@@ -157,15 +159,16 @@ export function AdminProductForm({
                 error={errors.price?.message}
                 inputMode="decimal"
                 label="Precio"
-                placeholder="0,00"
+                placeholder="Ej.: 12500,00"
                 {...register('price')}
               />
               <Input
                 disabled={isEditing}
                 error={errors.stockQuantity?.message}
-                helpText={isEditing ? 'El stock se ajustará desde Inventario.' : 'Stock inicial.'}
+                helpText={isEditing ? 'Para cambiar las unidades, usá la sección de inventario que aparece más abajo.' : 'Cantidad disponible al crear el producto.'}
                 inputMode="numeric"
-                label="Stock"
+                label="Unidades disponibles"
+                placeholder="Ej.: 10"
                 {...register('stockQuantity')}
               />
             </div>
@@ -218,10 +221,10 @@ export function AdminProductForm({
           <section aria-labelledby="product-publication-title" className="admin-product-form__panel">
             <div className="admin-product-form__section-heading">
               <p>Catálogo</p>
-              <h2 id="product-publication-title">Publicación</h2>
+              <h2 id="product-publication-title">Cómo se muestra en la tienda</h2>
             </div>
-            <Switch label="Producto activo" {...register('isActive')} />
-            <Switch label="Mostrar como destacado" {...register('isFeatured')} />
+            <Switch label="Visible en la tienda" {...register('isActive')} />
+            <Switch label="Mostrar entre los recomendados" {...register('isFeatured')} />
             <div className="admin-product-form__summary">
               <PackageCheck aria-hidden="true" size={20} />
               <div>

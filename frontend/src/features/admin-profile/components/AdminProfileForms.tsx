@@ -60,7 +60,7 @@ export function AdminProfileNameForm({ profile }: { profile: IAdminProfileDetail
         expectedUpdatedAt: profile.updatedAt,
         fullName: values.fullName.trim(),
       })
-      setFeedback({ message: 'Nombre actualizado en el panel.', type: 'success' })
+      setFeedback({ message: 'Listo, tu nombre ya está actualizado en el panel.', type: 'success' })
       form.reset({ fullName: values.fullName.trim() })
     } catch (error) {
       if (getApiErrorCode(error) === 'ADMIN_PROFILE_UPDATE_CONFLICT') {
@@ -85,6 +85,7 @@ export function AdminProfileNameForm({ profile }: { profile: IAdminProfileDetail
           autoComplete="name"
           error={form.formState.errors.fullName?.message}
           label="Nombre completo"
+          placeholder="Ej.: María González"
           {...form.register('fullName')}
         />
         <Button isLoading={mutation.isPending} loadingText="Guardando…" type="submit">
@@ -113,7 +114,7 @@ export function AdminProfileEmailForm({ profile }: { profile: IAdminProfileDetai
       })
       const message = result.status === 'confirmation_pending'
         ? `Enviamos la confirmación a ${result.email}. El correo actual seguirá activo hasta completar la verificación.`
-        : 'Correo actualizado. Usalo la próxima vez que inicies sesión.'
+        : 'Listo, tu correo cambió correctamente. Usalo la próxima vez que inicies sesión.'
       setFeedback({ message, type: 'success' })
       form.reset({ currentPassword: '', email: result.email })
     } catch (error) {
@@ -136,6 +137,7 @@ export function AdminProfileEmailForm({ profile }: { profile: IAdminProfileDetai
           autoComplete="email"
           error={form.formState.errors.email?.message}
           label="Nuevo correo electrónico"
+          placeholder="Ej.: maria@correo.com"
           type="email"
           {...form.register('email')}
         />
@@ -144,6 +146,7 @@ export function AdminProfileEmailForm({ profile }: { profile: IAdminProfileDetai
           error={form.formState.errors.currentPassword?.message}
           helpText="Necesaria para autorizar el cambio."
           label="Contraseña actual"
+          placeholder="Ingresá tu contraseña actual"
           type="password"
           {...form.register('currentPassword')}
         />
@@ -196,6 +199,7 @@ export function AdminProfilePasswordForm() {
           autoComplete="current-password"
           error={form.formState.errors.currentPassword?.message}
           label="Contraseña actual"
+          placeholder="Ingresá tu contraseña actual"
           type="password"
           {...form.register('currentPassword')}
         />
@@ -204,6 +208,7 @@ export function AdminProfilePasswordForm() {
           error={form.formState.errors.newPassword?.message}
           helpText="Usá al menos 12 caracteres."
           label="Nueva contraseña"
+          placeholder="Escribí una contraseña segura"
           type="password"
           {...form.register('newPassword')}
         />
@@ -211,6 +216,7 @@ export function AdminProfilePasswordForm() {
           autoComplete="new-password"
           error={form.formState.errors.confirmPassword?.message}
           label="Repetir nueva contraseña"
+          placeholder="Volvé a escribir la nueva contraseña"
           type="password"
           {...form.register('confirmPassword')}
         />

@@ -93,6 +93,7 @@ export function AdminCategoryForm({
               error={errors.name?.message}
               label="Nombre"
               maxLength={100}
+              placeholder="Ej.: Pinturas acrílicas"
               {...register('name')}
             />
 
@@ -118,6 +119,7 @@ export function AdminCategoryForm({
               helpText="Opcional. Explicá qué reúne esta categoría."
               label="Descripción"
               maxLength={1_000}
+              placeholder="Ej.: Pinturas y colores para proyectos de arte."
               rows={5}
               {...register('description')}
             />
@@ -127,7 +129,8 @@ export function AdminCategoryForm({
                 error={errors.displayOrder?.message}
                 helpText="Dentro de Arte o Decoraciones, las categorías con número menor se muestran primero."
                 inputMode="numeric"
-                label="Posición en el área"
+                label="Lugar en el que se muestra"
+                placeholder="Ej.: 2"
                 {...register('displayOrder')}
               />
             ) : (

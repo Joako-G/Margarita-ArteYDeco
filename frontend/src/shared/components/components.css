@@ -116,6 +116,11 @@
   transition-duration: var(--duration-fast);
 }
 
+.ui-field__control::placeholder {
+  color: var(--color-text);
+  opacity: 0.72;
+}
+
 .ui-field__control:hover:not(:disabled) {
   border-color: var(--color-primary);
 }
