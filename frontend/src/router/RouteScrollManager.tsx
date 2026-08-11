@@ -31,6 +31,8 @@ export function RouteScrollManager() {
   }, [hash, pathname])
 
   useEffect(() => {
+    if (pathname.startsWith('/categoria/')) return
+
     const metadata = getRouteMetadata(pathname)
 
     applyDocumentMetadata(metadata, pathname)

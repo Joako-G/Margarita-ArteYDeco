@@ -14,7 +14,7 @@ import {
 } from '@/shared/components'
 import type { ICategory, IProduct } from '@/shared/types/catalog'
 import { applyDocumentMetadata } from '@/router/document-metadata'
-import { getCategoryRouteMetadata } from '@/router/route-metadata'
+import { getCategoryRouteMetadata, getRouteMetadata } from '@/router/route-metadata'
 
 import { CatalogHero } from './components/CatalogHero'
 import { ProductGrid } from './components/ProductGrid'
@@ -150,7 +150,14 @@ export function CatalogPage() {
   const hasMoreProducts = remainingProductCount > 0
 
   useEffect(() => {
-    if (!slug || !selectedCategory) return
+    if (!slug) return
+
+    const pathname = `/categoria/${slug}`
+
+    if (!selectedCategory) {
+      applyDocumentMetadata(getRouteMetadata(pathname), pathname)
+      return
+    }
 
     applyDocumentMetadata(
       getCategoryRouteMetadata(selectedCategory.name, selectedCategory.description),
