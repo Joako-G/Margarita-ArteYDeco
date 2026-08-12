@@ -79,6 +79,13 @@ function removeMeta(html, attribute, key) {
   return html.replace(pattern, '')
 }
 
+function removeWebsiteStructuredData(html) {
+  return html.replace(
+    /\s*<script\s+id="website-structured-data"[\s\S]*?<\/script>/i,
+    '',
+  )
+}
+
 function setCanonical(html, pathname) {
   const canonicalPattern = /<link\s+rel="canonical"[\s\S]*?\/?>/i
 
@@ -93,7 +100,7 @@ function setCanonical(html, pathname) {
 }
 
 function createShell(sourceHtml, metadata) {
-  let html = sourceHtml.replace(
+  let html = removeWebsiteStructuredData(sourceHtml).replace(
     /<title>[\s\S]*?<\/title>/i,
     `<title>${escapeHtml(metadata.title)}</title>`,
   )

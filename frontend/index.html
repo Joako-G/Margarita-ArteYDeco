@@ -2,8 +2,9 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" href="/favicon.png" sizes="512x512" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="shortcut icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -56,6 +57,32 @@
       content="Materiales, herramientas y accesorios para manualidades, decoración y proyectos creativos."
     />
     <meta name="twitter:image" content="__SITE_URL__/social-preview.webp" />
+    <script id="website-structured-data" type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "__SITE_URL__/#website",
+            "url": "__SITE_URL__/",
+            "name": "Margaritas Arte & Deco",
+            "alternateName": "Margaritas Arte y Deco"
+          },
+          {
+            "@type": "Organization",
+            "@id": "__SITE_URL__/#organization",
+            "url": "__SITE_URL__/",
+            "name": "Margaritas Arte & Deco",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "__SITE_URL__/favicon.png",
+              "width": 512,
+              "height": 512
+            }
+          }
+        ]
+      }
+    </script>
     <title>Margaritas Arte &amp; Deco | Arte, materiales y decoración</title>
   </head>
 
