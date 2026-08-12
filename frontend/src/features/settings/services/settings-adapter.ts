@@ -12,6 +12,7 @@ export function adaptPublicSettings(settings: IPublicSettingsDto): IPublicSettin
     instagram: settings.instagram,
     logoUrl: settings.logoUrl,
     mapsUrl: settings.mapsUrl,
+    tiktok: settings.tiktok,
     transferDiscount: settings.transferDiscount,
     whatsapp: settings.whatsapp,
   }

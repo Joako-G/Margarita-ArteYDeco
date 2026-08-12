@@ -31,6 +31,7 @@ export interface ISettings {
   lowStockThreshold: number
   logoUrl: string | null
   mapsUrl: string
+  tiktok: string
   transferAlias: string
   transferCbu: string
   transferDiscount: number
@@ -46,6 +47,7 @@ export interface IPublicSettings {
   instagram: string | null
   logoUrl: string | null
   mapsUrl: string
+  tiktok: string | null
   transferDiscount: number
   whatsapp: string
 }

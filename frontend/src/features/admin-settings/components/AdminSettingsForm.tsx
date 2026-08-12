@@ -28,6 +28,7 @@ function getDefaultValues(settings: IAdminSettings): AdminSettingsFormType {
     instagram: settings.instagram ?? '',
     lowStockThreshold: String(settings.lowStockThreshold),
     mapsUrl: settings.mapsUrl,
+    tiktok: settings.tiktok ?? '',
     transferAlias: settings.transferAlias,
     transferCbu: settings.transferCbu,
     transferDiscount: String(settings.transferDiscount),
@@ -227,6 +228,15 @@ export function AdminSettingsForm({
             placeholder="Ej.: https://facebook.com/margaritaartedeco"
             type="url"
             {...register('facebook')}
+          />
+          <Input
+            error={errors.tiktok?.message}
+            helpText="Opcional. Debe comenzar con https://"
+            label="TikTok"
+            maxLength={500}
+            placeholder="Ej.: https://tiktok.com/@margaritaartedeco"
+            type="url"
+            {...register('tiktok')}
           />
         </div>
       </section>

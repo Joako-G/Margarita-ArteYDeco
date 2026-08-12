@@ -13,12 +13,14 @@ test('adapts every public setting without adding private banking fields', () => 
     instagram: 'https://instagram.com/margaritas',
     logoUrl: null,
     mapsUrl: 'https://maps.google.com/example',
+    tiktok: 'https://tiktok.com/@margaritas',
     transferDiscount: 10,
     whatsapp: '5491100000000',
   })
 
   assert.equal(settings.logoUrl, null)
   assert.equal(settings.transferDiscount, 10)
+  assert.equal(settings.tiktok, 'https://tiktok.com/@margaritas')
   assert.equal('transferAlias' in settings, false)
   assert.equal('transferCbu' in settings, false)
 })

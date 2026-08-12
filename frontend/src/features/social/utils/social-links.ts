@@ -4,9 +4,7 @@ import type { IPublicSettings } from '@/shared/types/commerce'
 
 import type { ISocialLink } from '../types/social-links'
 
-export const TEMPORARY_TIKTOK_URL = 'https://www.tiktok.com/'
-
-export function createSocialLinks(settings?: Pick<IPublicSettings, 'facebook' | 'instagram'>) {
+export function createSocialLinks(settings?: Pick<IPublicSettings, 'facebook' | 'instagram' | 'tiktok'>) {
   const links: ISocialLink[] = []
 
   if (settings?.instagram) {
@@ -27,12 +25,14 @@ export function createSocialLinks(settings?: Pick<IPublicSettings, 'facebook' | 
     })
   }
 
-  links.push({
-    Icon: Music2,
-    id: 'tiktok',
-    name: 'TikTok',
-    url: TEMPORARY_TIKTOK_URL,
-  })
+  if (settings?.tiktok) {
+    links.push({
+      Icon: Music2,
+      id: 'tiktok',
+      name: 'TikTok',
+      url: settings.tiktok,
+    })
+  }
 
   return links
 }

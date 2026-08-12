@@ -15,6 +15,7 @@ const VALID_SETTINGS = {
   instagram: 'https://instagram.com/margaritas',
   lowStockThreshold: '5',
   mapsUrl: 'https://maps.google.com/?q=local',
+  tiktok: 'https://tiktok.com/@margaritas',
   transferAlias: 'MARGARITAS.ARTE',
   transferCbu: '1234 5678 9012 3456 7890 12',
   transferDiscount: '10',
@@ -33,6 +34,10 @@ test('exige enlaces HTTPS para ubicación y redes', () => {
   assert.equal(adminSettingsFormSchema.safeParse({
     ...VALID_SETTINGS,
     instagram: 'javascript:alert(1)',
+  }).success, false)
+  assert.equal(adminSettingsFormSchema.safeParse({
+    ...VALID_SETTINGS,
+    tiktok: 'http://tiktok.com/@margaritas',
   }).success, false)
 })
 

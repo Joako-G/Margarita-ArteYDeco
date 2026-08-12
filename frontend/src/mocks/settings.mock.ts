@@ -15,4 +15,5 @@ export const settingsMock: ISettings = {
   instagram: 'https://www.instagram.com',
   facebook: 'https://www.facebook.com',
   logoUrl: null,
+  tiktok: 'https://www.tiktok.com/',
 }

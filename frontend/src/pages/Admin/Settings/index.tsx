@@ -57,6 +57,7 @@ export function AdminSettingsPage() {
         instagram: values.instagram.trim() || null,
         lowStockThreshold: Number(values.lowStockThreshold),
         mapsUrl: values.mapsUrl.trim(),
+        tiktok: values.tiktok.trim() || null,
         transferAlias: values.transferAlias.trim(),
         transferCbu: normalizeSettingsDigits(values.transferCbu),
         transferDiscount: Number(values.transferDiscount),

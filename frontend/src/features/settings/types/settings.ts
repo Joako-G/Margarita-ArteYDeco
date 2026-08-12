@@ -7,6 +7,7 @@ export interface IPublicSettingsDto {
   instagram: string | null
   logoUrl: string | null
   mapsUrl: string
+  tiktok: string | null
   transferDiscount: number
   whatsapp: string
 }

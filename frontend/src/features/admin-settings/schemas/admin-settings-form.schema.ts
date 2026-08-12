@@ -38,6 +38,10 @@ export const adminSettingsFormSchema = z.object({
     isHttpsUrl,
     'Pegá un enlace completo que comience con https://',
   ),
+  tiktok: z.string().trim().max(500).refine(
+    isOptionalHttpsUrl,
+    'Pegá un enlace completo que comience con https://',
+  ),
   transferAlias: z.string().trim().min(2, 'Ingresá el alias').max(120),
   transferCbu: z.string().trim().refine(
     (value) => /^\d{22}$/.test(normalizeSettingsDigits(value)),

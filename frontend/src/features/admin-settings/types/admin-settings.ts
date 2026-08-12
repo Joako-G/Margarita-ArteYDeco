@@ -8,6 +8,7 @@ export interface IAdminSettings {
   logoUrl: string | null
   lowStockThreshold: number
   mapsUrl: string
+  tiktok: string | null
   transferAlias: string
   transferCbu: string
   transferDiscount: number
@@ -25,6 +26,7 @@ export interface IAdminSettingsUpdatePayload {
   instagram: string | null
   lowStockThreshold: number
   mapsUrl: string
+  tiktok: string | null
   transferAlias: string
   transferCbu: string
   transferDiscount: number
