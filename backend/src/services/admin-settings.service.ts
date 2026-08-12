@@ -120,6 +120,7 @@ export class AdminSettingsService implements IAdminSettingsService {
       logoUrl: settings.logoPath === null ? null : (logoUrls.get(settings.logoPath) ?? null),
       lowStockThreshold: settings.lowStockThreshold,
       mapsUrl: settings.mapsUrl,
+      tiktok: settings.tiktok,
       transferAlias: settings.transferAlias,
       transferCbu: settings.transferCbu,
       transferDiscount: settings.transferDiscount,

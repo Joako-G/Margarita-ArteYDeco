@@ -23,7 +23,8 @@ export class SettingsRepository implements ISettingsRepository {
         business_hours,
         transfer_discount,
         instagram,
-        facebook
+        facebook,
+        tiktok
       `)
       .maybeSingle()
 
@@ -50,6 +51,7 @@ export class SettingsRepository implements ISettingsRepository {
       instagram: parsedRow.data.instagram,
       logoPath: parsedRow.data.logo_path,
       mapsUrl: parsedRow.data.maps_url,
+      tiktok: parsedRow.data.tiktok,
       transferDiscount: parsedRow.data.transfer_discount,
       whatsapp: parsedRow.data.whatsapp,
     }

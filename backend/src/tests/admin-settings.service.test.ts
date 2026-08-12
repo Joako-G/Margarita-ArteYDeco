@@ -17,6 +17,7 @@ const SETTINGS: IAdminSettingsRecord = {
   logoPath: 'brand/current.webp',
   lowStockThreshold: 5,
   mapsUrl: 'https://maps.google.com/?q=local',
+  tiktok: 'https://tiktok.com/@margaritas',
   transferAlias: 'MARGARITAS.ARTE',
   transferCbu: '1234567890123456789012',
   transferDiscount: 10,

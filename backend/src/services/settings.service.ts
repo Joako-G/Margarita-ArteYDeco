@@ -34,6 +34,7 @@ export class SettingsService implements ISettingsService {
       instagram: settings.instagram,
       logoUrl: settings.logoPath === null ? null : (logoUrls.get(settings.logoPath) ?? null),
       mapsUrl: settings.mapsUrl,
+      tiktok: settings.tiktok,
       transferDiscount: settings.transferDiscount,
       whatsapp: settings.whatsapp,
     }

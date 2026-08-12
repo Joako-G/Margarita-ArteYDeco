@@ -62,6 +62,7 @@ type ISettingsDatabaseRow = {
   low_stock_threshold: number
   maps_url: string
   singleton_key: boolean
+  tiktok: string | null
   transfer_alias: string
   transfer_cbu: string
   transfer_discount: number

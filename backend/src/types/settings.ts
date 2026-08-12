@@ -7,6 +7,7 @@ export interface ISettingsRow {
   instagram: string | null
   logoPath: string | null
   mapsUrl: string
+  tiktok: string | null
   transferDiscount: number
   whatsapp: string
 }
@@ -20,6 +21,7 @@ export interface IPublicSettingsDto {
   instagram: string | null
   logoUrl: string | null
   mapsUrl: string
+  tiktok: string | null
   transferDiscount: number
   whatsapp: string
 }

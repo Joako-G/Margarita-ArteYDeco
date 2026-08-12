@@ -9,6 +9,7 @@ export interface IAdminSettingsRecord {
   logoPath: string | null
   lowStockThreshold: number
   mapsUrl: string
+  tiktok: string | null
   transferAlias: string
   transferCbu: string
   transferDiscount: number
@@ -26,6 +27,7 @@ export interface IAdminSettingsDto {
   logoUrl: string | null
   lowStockThreshold: number
   mapsUrl: string
+  tiktok: string | null
   transferAlias: string
   transferCbu: string
   transferDiscount: number
@@ -43,6 +45,7 @@ export interface IAdminSettingsUpdateInput {
   instagram: string | null
   lowStockThreshold: number
   mapsUrl: string
+  tiktok: string | null
   transferAlias: string
   transferCbu: string
   transferDiscount: number

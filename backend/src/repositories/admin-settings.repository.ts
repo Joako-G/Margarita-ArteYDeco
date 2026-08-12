@@ -34,6 +34,7 @@ const SETTINGS_COLUMNS = `
   low_stock_threshold,
   instagram,
   facebook,
+  tiktok,
   updated_at
 `
 
@@ -52,6 +53,7 @@ function mapSettings(value: unknown): IAdminSettingsRecord {
     logoPath: parsed.data.logo_path,
     lowStockThreshold: parsed.data.low_stock_threshold,
     mapsUrl: parsed.data.maps_url,
+    tiktok: parsed.data.tiktok,
     transferAlias: parsed.data.transfer_alias,
     transferCbu: parsed.data.transfer_cbu,
     transferDiscount: parsed.data.transfer_discount,
@@ -84,6 +86,7 @@ export class AdminSettingsRepository implements IAdminSettingsRepository {
         instagram: input.instagram,
         low_stock_threshold: input.lowStockThreshold,
         maps_url: input.mapsUrl,
+        tiktok: input.tiktok,
         transfer_alias: input.transferAlias,
         transfer_cbu: input.transferCbu,
         transfer_discount: input.transferDiscount,

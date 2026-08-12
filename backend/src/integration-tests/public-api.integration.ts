@@ -45,6 +45,7 @@ const settingsResponseSchema = z
         instagram: z.url().nullable(),
         logoUrl: z.url().nullable(),
         mapsUrl: z.url(),
+        tiktok: z.url().nullable(),
         transferDiscount: z.number().min(0).max(100),
         whatsapp: z.string().regex(/^[1-9][0-9]{7,14}$/),
       })

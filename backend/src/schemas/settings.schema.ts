@@ -9,6 +9,7 @@ export const settingsRowSchema = z.object({
   instagram: z.url().nullable(),
   logo_path: z.string().min(1).nullable(),
   maps_url: z.url().refine((value) => value.startsWith('https://')),
+  tiktok: z.url().nullable(),
   transfer_discount: z.coerce.number().min(0).max(100),
   whatsapp: z.string().regex(/^[1-9][0-9]{7,14}$/),
 })

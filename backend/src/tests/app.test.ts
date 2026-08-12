@@ -39,6 +39,7 @@ const settingsService: ISettingsService = {
     instagram: null,
     logoUrl: null,
     mapsUrl: 'https://maps.google.com/example',
+    tiktok: 'https://tiktok.com/@margaritas',
     transferDiscount: 10,
     whatsapp: '5491100000000',
   }),
