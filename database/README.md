@@ -1,13 +1,14 @@
 # Base de datos
 
 La base de datos usa PostgreSQL administrado por Supabase. Los cambios se aplican
-exclusivamente mediante los archivos versionados de `migrations/`, en orden
-lexicográfico.
+exclusivamente mediante los archivos versionados de `../supabase/migrations/`,
+en orden lexicográfico.
 
 ## Orden de aplicación
 
-1. Ejecutar las migraciones.
-2. Ejecutar los seeds únicamente en un entorno nuevo y controlado.
+1. Ejecutar las migraciones con Supabase CLI desde la raíz del repositorio.
+2. Ejecutar los seeds de `seeds/` manualmente y únicamente en un entorno nuevo
+   y controlado; `supabase/config.toml` no los ejecuta automáticamente.
 3. Crear el usuario administrador mediante Supabase Auth.
 4. Insertar su `profile` usando el UUID generado por Auth.
 5. Subir las imágenes a los buckets privados antes de activar categorías o
@@ -73,3 +74,49 @@ Resultados:
 2. Se cargaron 29 productos sin duplicados después de ejecutar el seed dos veces.
 3. El constraint rechazó valores diferentes de `art` y `decoration`.
 4. El trigger impidió cambiar el área de una categoría con productos asociados.
+
+## Validación de normalización preproducción
+
+El 8 de agosto de 2026 se reconstruyeron desde cero las 15 migraciones y se
+aplicó el seed dos veces sobre PostgreSQL 17 embebido y descartable. Esta primera
+prueba no modificó ningún proyecto Supabase remoto.
+
+Resultados:
+
+1. Las migraciones iniciales conservaron el modelo histórico y la migración
+   incremental convirtió `order_status` al ciclo operativo vigente.
+2. Se creó únicamente `public.delivery_method`; no quedó ningún tipo
+   `delivery_method_enum` alternativo.
+3. Los triggers y el constraint dependientes de `orders.status` se retiraron y
+   restauraron dentro de la misma transacción durante el reemplazo del enum.
+4. La creación de un producto con stock registró su movimiento inicial.
+5. El RPC de pedidos validó retiro y envío, rechazó direcciones fuera del rango
+   permitido y descontó stock atómicamente.
+6. Un reintento con la misma clave de idempotencia devolvió el pedido original
+   sin descontar stock nuevamente.
+7. Las transiciones exigieron el método de entrega correcto y pago confirmado
+   antes de retirar o entregar, conservaron auditoría y rechazaron la
+   cancelación de pedidos completados.
+8. Inventory Movements continuó rechazando modificaciones y eliminaciones.
+
+PGlite no distribuye `pgcrypto` ni `pg_cron`. La prueba sustituyó únicamente
+esas extensiones por dobles locales compatibles para validar la estructura y el
+comportamiento transaccional; las migraciones reales conservaron las extensiones
+administradas por Supabase.
+
+## Validación en Supabase alojado
+
+El 8 de agosto de 2026 las mismas 15 migraciones se aplicaron desde cero en el
+proyecto descartable `margarita-staging`, alojado en São Paulo con PostgreSQL 17.
+
+Resultados:
+
+1. El historial local y remoto quedó sincronizado en las 15 versiones.
+2. Las 13 tablas de `public` conservaron RLS habilitado.
+3. `order_status` y `delivery_method` quedaron con los valores canónicos y no se
+   creó el tipo alternativo `delivery_method_enum`.
+4. Los asesores de seguridad y rendimiento de Supabase no reportaron problemas.
+5. Una prueba transaccional creó un producto y un pedido, verificó el descuento
+   de stock y la idempotencia, y terminó con `ROLLBACK`.
+6. Después del rollback, staging quedó sin configuraciones, categorías,
+   productos, clientes, pedidos, sesiones invitadas ni movimientos de inventario.
