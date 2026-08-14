@@ -112,12 +112,14 @@ Flujo:
 
 1. Revisar productos y cantidades.
 2. Completar nombre, apellido y celular.
-3. Elegir Efectivo o Transferencia.
-4. Mostrar descuento y total actualizado.
-5. Confirmar el pedido.
-6. Asociar el pedido a la sesión anónima devuelta por el Backend.
-7. Navegar a `/pedido/:orderNumber`.
-8. Mostrar número de pedido y próximos pasos.
+3. Elegir Retiro en el local o Envío a coordinar.
+4. Si se elige envío, completar la dirección de entrega.
+5. Elegir un método de pago válido para la entrega seleccionada.
+6. Mostrar descuento y total actualizado.
+7. Confirmar el pedido.
+8. Asociar el pedido a la sesión anónima devuelta por el Backend.
+9. Navegar a `/pedido/:orderNumber`.
+10. Mostrar número de pedido y próximos pasos.
 
 - Mantener visible el resumen antes de confirmar.
 - Validar los datos con React Hook Form y Zod.
@@ -126,15 +128,23 @@ Flujo:
 - Después de crear correctamente un pedido por transferencia, mostrar número de pedido, importe final, alias, CBU, banco y acciones para copiar.
 - Incluir "Enviar comprobante por WhatsApp" con un mensaje predefinido que contenga nombre y número de pedido. El cliente adjuntará el archivo manualmente.
 - Los datos bancarios deberán permanecer visibles en la confirmación aunque WhatsApp no pueda abrirse.
-- Informar antes de confirmar que el pedido se retira exclusivamente en el local.
-- Mostrar la dirección y los horarios configurados del local antes de confirmar.
-- En la confirmación, mostrar dirección, horarios y el botón "Ver ubicación" enlazado a Google Maps.
+- Informar antes de confirmar si el pedido se retirará en el local o se enviará mediante coordinación manual.
+- Para retiro, mostrar la dirección y los horarios configurados del local antes de confirmar.
+- Para retiro, mostrar en la confirmación la dirección, los horarios y el botón "Ver ubicación" enlazado a Google Maps.
 - Abrir el mapa en una pestaña nueva con `rel="noopener noreferrer"`.
-- Para efectivo, informar que el pago se realiza al retirar.
-- No solicitar dirección al cliente.
+- Para envío, solicitar una dirección de entrega de entre 10 y 300 caracteres e informar que costo y entrega se coordinarán por WhatsApp.
+- No calcular costos, transportistas, fechas ni seguimiento de envíos.
+- Para efectivo, informar que el pago se realiza al retirar y ofrecerlo únicamente cuando el método de entrega sea retiro.
+- Para envío, ofrecer únicamente transferencia en el MVP.
 - La confirmación no dependerá del estado local de `CheckoutPage`; se consultará mediante TanStack Query desde la ruta del pedido.
 - Limpiar el carrito únicamente después de que el Backend confirme la creación correcta.
 - El Frontend nunca leerá, almacenará ni enviará manualmente el token de la sesión anónima.
+- Antes de confirmar, el checkout informará que utiliza cookies técnicas para proteger la compra
+  y recordar los pedidos asociados al dispositivo, con acceso a la Política de Privacidad.
+- La Política de Privacidad describirá las cookies de seguridad, la sesión anónima de hasta 30
+  días, la pista local `lastOrderNumber`, las cookies administrativas y los proveedores
+  tecnológicos utilizados. No presentará un banner de consentimiento mientras el sitio no utilice
+  cookies publicitarias, analíticas o de seguimiento.
 
 ### Consulta y recuperación pública de pedidos
 
@@ -156,7 +166,8 @@ Flujo:
 - El Backend seguirá siendo la fuente oficial de estado, pago, totales y datos bancarios.
 - No mostrar pedidos de una sesión distinta aunque se conozca su número.
 - No incluir número de pedido, celular, CBU, alias ni respuestas de recuperación en analítica, logs del navegador o herramientas de monitoreo.
-- La consulta pública mostrará número, fecha, estado, productos, cantidades, importes, método de pago, retiro y datos de transferencia cuando correspondan.
+- La consulta pública mostrará número, fecha, estado, productos, cantidades, importes, método de pago, método de entrega, datos de retiro o dirección de envío y datos de transferencia cuando correspondan.
+- En la consulta pública, el estado interno `delivered` se mostrará como "Enviado" cuando el método de entrega sea envío. La administración conservará la etiqueta operativa "Entregado".
 - WhatsApp continuará siendo una acción manual para enviar el comprobante, no un mecanismo de recuperación.
 
 ## 6. Panel Administrativo
@@ -166,7 +177,7 @@ Flujo:
 ### Dashboard
 
 - Mostrar productos activos, productos sin stock, productos con stock bajo según
-  Settings, categorías, clientes registrados, pedidos en curso, pedidos retirados
+  Settings, categorías, clientes registrados, pedidos en curso, pedidos finalizados
   y ventas recientes.
 - Consultar el resumen mediante TanStack Query y el servicio Axios administrativo.
 - Resolver carga con skeleton, error con reintento y listas vacías sin ocultar el
@@ -195,6 +206,10 @@ Flujo:
 - El formulario de alta y edición incluirá categoría, imagen, nombre, descripción, precio, stock, estado activo y condición de destacado.
 - Generar el slug a partir del nombre y permitir validar su unicidad.
 - Mostrar vista previa de la imagen antes de guardar.
+- Aceptar originales JPG, PNG o WebP de hasta 10 MB. Si superan 4 MB, preparar en
+  el navegador una variante WebP proporcional de hasta 1600 px antes de enviarla
+  a la API desplegada en Vercel. El Backend seguirá siendo la validación y
+  conversión autoritativa.
 
 ### Categorías
 
@@ -204,8 +219,12 @@ Flujo:
   cada fila como ficha etiquetada sin desbordamiento horizontal.
 - Permitirá crear, editar, ordenar, activar, desactivar y dar de baja lógicamente
   categorías, con confirmación explícita para la acción destructiva.
-- El formulario reutilizable gestionará área, nombre, imagen, descripción, orden
-  visual y publicación mediante React Hook Form y Zod.
+- El formulario reutilizable gestionará área, nombre, imagen, descripción y
+  publicación mediante React Hook Form y Zod. En creación no mostrará ni enviará
+  el orden visual; en edición permitirá modificar la posición asignada.
+- Aceptar originales JPG, PNG o WebP de hasta 10 MB y preparar en el navegador los
+  que superen 4 MB como WebP proporcional de hasta 1200 px antes de enviarlos a
+  Vercel, sin acceder directamente a Supabase.
 - Una categoría nueva se creará inactiva, cargará su imagen privada y solo después
   solicitará la activación. Si falla la imagen conservará un estado seguro y
   ofrecerá feedback recuperable.
@@ -219,9 +238,9 @@ Flujo:
 - En desktop utilizará una tabla semántica y por debajo de 1024 px reorganizará
   cada fila como ficha etiquetada sin scroll horizontal.
 - El detalle mostrará cliente, celular, productos, cantidades, importes, descuento,
-  método, estado de pago, observaciones y datos de retiro.
+  método, estado de pago, observaciones y datos de entrega.
 - Mostrará únicamente la siguiente acción válida para el método y estado vigente.
-  Confirmar pago y retiro requerirá confirmación explícita.
+  Confirmar pago, retiro o entrega requerirá confirmación explícita.
 - La cancelación utilizará un formulario con motivo obligatorio. Si el pedido está
   pagado, exigirá confirmar que el reintegro se gestionará manualmente.
 - Mostrar claramente cuándo una cancelación restauró stock y actualizar Dashboard,
@@ -336,6 +355,16 @@ La consulta pública contemplará además:
 - Cada ruta pública indexable actualizará título, descripción, Open Graph,
   canonical y robots. Checkout, pedidos, recuperación y administración serán
   `noindex, nofollow`.
+- El dominio canónico procederá de `VITE_SITE_URL`; mientras no exista dominio
+  propio será `https://margaritas-arteydeco.vercel.app`.
+- El build generará shells HTML específicos para las rutas públicas fijas y un
+  shell `noindex` para rutas transaccionales y administrativas. Las categorías
+  completarán su metadata individual después de obtener el catálogo público.
+- Vercel limitará los rewrites a rutas reales para conservar respuestas `404`
+  en URLs desconocidas, redirigirá `/index.html` a `/` y aplicará
+  `X-Robots-Tag` a toda ruta privada. Las URLs se normalizarán sin barra final.
+- `robots.txt` permitirá el rastreo necesario para que los buscadores procesen
+  `noindex` y declarará el sitemap público.
 
 ## 15. Flujo de Navegación
 

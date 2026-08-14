@@ -224,7 +224,7 @@ Catálogo actualizado.
 
 Asesoramiento.
 
-Retiro coordinado en el local.
+Retiro en el local o envío coordinado.
 
 ---
 
@@ -301,12 +301,13 @@ Confirmación:
 
 - "¡Recibimos tu pedido!"
 - "Tu número de pedido es {orderNumber}."
-- "Tu pedido se retira en nuestro local."
-- "Te avisaremos cuando esté listo para retirar."
-- "Dirección de retiro: {businessAddress}."
-- "Horarios: {businessHours}."
-- "Ver ubicación"
-- "Cómo llegar"
+- "Te avisaremos cuando tu pedido esté listo."
+- Para retiro: "Tu pedido se retira en nuestro local."
+- Para retiro: "Dirección de retiro: {businessAddress}."
+- Para retiro: "Horarios: {businessHours}."
+- Para retiro: "Ver ubicación" y "Cómo llegar".
+- Para envío: "Nos comunicaremos por WhatsApp para coordinar el costo y la entrega."
+- Para envío: "Dirección de entrega: {shippingAddress}."
 
 ---
 
@@ -363,7 +364,9 @@ Nunca comunicar cuál de los dos datos fue incorrecto. Ante un bloqueo temporal:
 
 - "Realizaste varios intentos. Esperá unos minutos antes de volver a probar."
 
-La pantalla recuperada mostrará número, estado, fecha, productos, total, método de pago, información de retiro y, para transferencias, banco, alias, CBU y envío manual de comprobante por WhatsApp.
+La pantalla recuperada mostrará número, estado, fecha, productos, total, método de pago, método de entrega, información de retiro o dirección de envío y, para transferencias, banco, alias, CBU y envío manual de comprobante por WhatsApp.
+
+Para pedidos con envío, el estado final visible al cliente será "Enviado". El texto "Entregado" se reservará para la operación administrativa.
 
 Nunca utilizar:
 
@@ -460,7 +463,8 @@ Contactar cliente:
 
 Pedido listo:
 
-"Hola {customerName}. Tu pedido {orderNumber} ya está listo para retirar en {businessAddress}. Horarios: {businessHours}. Ubicación: {mapsUrl}"
+- Retiro: "Hola {customerName}. Tu pedido {orderNumber} ya está listo para retirar en {businessAddress}. Horarios: {businessHours}. Ubicación: {mapsUrl}"
+- Envío: "Hola {customerName}. Tu pedido {orderNumber} ya está listo. Coordinemos por este medio el costo y la entrega en {shippingAddress}."
 
 Recordatorio de transferencia:
 

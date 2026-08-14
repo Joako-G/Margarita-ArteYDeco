@@ -148,7 +148,12 @@ Formulario de producto
 - Estado Activo o Inactivo
 - Producto destacado
 
-El slug se generará a partir del nombre y deberá ser único. Las imágenes aceptadas serán JPG, PNG o WebP, con un tamaño máximo de 5 MB. Un producto podrá guardarse sin imagen y mostrará el respaldo visual del Frontend. El Backend repetirá todas las validaciones.
+El slug se generará a partir del nombre y deberá ser único. Las imágenes originales
+aceptadas serán JPG, PNG o WebP de hasta 10 MB. Para respetar el límite de ingreso
+de Vercel, el Frontend preparará las imágenes que superen 4 MB antes de enviarlas;
+el Backend repetirá todas las validaciones, aplicará autoorientación y almacenará
+una salida WebP de hasta 1600 px y 2 MB. Un producto podrá guardarse sin imagen y
+mostrará el respaldo visual del Frontend.
 
 No permitir eliminación física.
 
@@ -183,8 +188,11 @@ Formulario de categoría
 - Nombre
 - Imagen
 - Descripción
-- Orden de visualización
 - Estado Activo o Inactivo
+
+Al crear una categoría, el formulario no solicitará el orden de visualización. El
+Backend asignará la siguiente posición dentro del área seleccionada. La posición
+podrá modificarse posteriormente desde la edición o el reordenamiento.
 
 No eliminar categorías con productos asociados.
 
@@ -197,6 +205,11 @@ El alta se realizará en dos pasos seguros: primero se creará la categoría ina
 y luego se cargará la imagen. La activación solo se permitirá cuando exista una
 imagen real en el bucket privado `categories`. Si la carga falla, la categoría
 continuará inactiva y podrá editarse para reintentarla.
+
+Las imágenes originales aceptadas serán JPG, PNG o WebP de hasta 10 MB. El
+Frontend preparará las que superen 4 MB antes de enviarlas a Vercel y el Backend
+generará siempre un WebP estático, sin recorte ni ampliación, de hasta 1200 px y
+2 MB antes de subirlo a Storage.
 
 La edición, publicación y baja lógica utilizarán la fecha de actualización como
 control de concurrencia. La baja preservará la imagen y requerirá confirmación
@@ -246,11 +259,11 @@ Administrar el flujo completo de ventas.
 Estados
 
 - Pendiente
-- Pendiente de Pago
-- Pagado
+- Confirmado
 - Preparando
 - Listo
 - Retirado
+- Entregado
 - Cancelado
 
 Funcionalidades
@@ -267,7 +280,7 @@ Funcionalidades
 
 El Panel habilitará únicamente las transiciones válidas para el método de pago. Cancelar un pedido pagado requerirá confirmación reforzada y advertirá que el reintegro monetario se gestiona manualmente.
 
-La acción "Marcar como retirado" estará disponible únicamente para pedidos `ready` con pago confirmado. Al ejecutarla se registrará la fecha y hora del retiro.
+La acción final disponible para un pedido `ready` con pago confirmado dependerá del método de entrega. Para retiro será "Marcar como retirado" y registrará la fecha y hora del retiro; para envío será "Marcar como entregado" y registrará la fecha y hora de la entrega.
 
 ## Acciones de WhatsApp
 
@@ -326,11 +339,14 @@ PNG o WebP de hasta 5 MB, conservará la proporción de la imagen y almacenará 
 archivo en el bucket privado `settings`. Quitar el logo configurado restaurará
 el uso de la variante local oficial en la aplicación pública.
 
-La edición se organizará por identidad y contacto, retiro en el local, datos de
+La edición se organizará por identidad y contacto, entrega, datos de
 transferencia, inventario y redes sociales. La URL de Maps ofrecerá una acción de
 comprobación antes de guardar. Alias, CBU y banco serán visibles únicamente en el
 Panel y en la confirmación autorizada de pedidos por transferencia; no formarán
 parte del DTO público general de Settings.
+
+Instagram, Facebook y TikTok se configurarán como URLs HTTPS opcionales. Al
+vaciar una red, su enlace dejará de mostrarse en la aplicación pública.
 
 La edición y el ciclo de vida del logo utilizarán `updated_at` como control de
 concurrencia. Reemplazar el logo eliminará el objeto anterior solo después de

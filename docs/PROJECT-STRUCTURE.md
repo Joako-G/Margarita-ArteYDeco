@@ -766,8 +766,6 @@ rate-limit
 ```
 database/
 
-migrations/
-
 seeds/
 
 policies/
@@ -777,6 +775,16 @@ functions/
 views/
 
 backups/
+```
+
+Las migraciones ejecutables por Supabase CLI viven exclusivamente en:
+
+```
+supabase/
+
+config.toml
+
+migrations/
 ```
 
 ---

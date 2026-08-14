@@ -737,11 +737,11 @@ BackOffice sobre la infraestructura de seguridad de la Fase 8.5.
 - CRUD Categorías
 - Gestión de Pedidos
 - Verificación manual de pagos
-- Confirmación de retiro en el local
+- Confirmación de retiro en el local o entrega del envío, según corresponda
 - Botones manuales de WhatsApp con mensajes predefinidos
 - Gestión de Clientes
 - Configuración del Negocio
-- Gestión de dirección, horarios y ubicación de retiro
+- Gestión de dirección, horarios y ubicación del local
 - Subida de Imágenes
 
 ## Implementación incremental
@@ -779,7 +779,8 @@ BackOffice sobre la infraestructura de seguridad de la Fase 8.5.
     - [x] **9.2.2.3 — Edición:** formulario reutilizable, control de concurrencia
       optimista y actualización de datos comerciales sin modificar stock.
     - [x] **9.2.2.4 — Imágenes:** carga, reemplazo y retiro en Storage privado;
-      JPG, PNG o WebP de hasta 5 MB, firma real validada y respaldo visual local.
+      originales JPG, PNG o WebP de hasta 10 MB, preprocesado compatible con
+      Vercel, conversión autoritativa a WebP y respaldo visual local.
     - [x] **9.2.2.5 — Validación:** pruebas backend y frontend, lint, builds,
       consulta real de Supabase y revisión visual responsive.
   - [x] **9.2.3 — Ajustes de stock e historial de movimientos.**
@@ -1213,7 +1214,7 @@ Frontend
 
 Backend
 
-- Railway
+- Vercel
 
 Base de Datos
 
@@ -1234,7 +1235,7 @@ Seguridad de sesión anónima
 - Tarea programada para purgar sesiones expiradas o revocadas
 - Verificación de que logs, analítica y observabilidad redacten tokens, cookies, celulares y datos bancarios
 - Dominios personalizados same-site para Frontend y API siempre que sea posible, por ejemplo `www.dominio.com` y `api.dominio.com`
-- Si se conservan dominios cross-site de Vercel y Railway, documentar y probar `SameSite=None`, CSRF, CORS y credenciales en el entorno definitivo
+- Si se conservan dominios cross-site para los dos proyectos de Vercel, documentar y probar `SameSite=None`, CSRF, CORS y credenciales en el entorno definitivo
 - Proveedor de CAPTCHA aprobado y validación del token exclusivamente en el Backend
 
 ## Resultado esperado

@@ -456,6 +456,7 @@ Campos mínimos
 - low_stock_threshold
 - instagram
 - facebook
+- tiktok
 - created_at
 - updated_at
 
@@ -467,7 +468,9 @@ de transferencia o retiro afectarán operaciones futuras y no reescribirán Orde
 
 `transfer_discount` deberá estar entre 0 y 100. `low_stock_threshold` deberá ser un entero mayor o igual a 0.
 
-`maps_url` deberá ser una URL HTTPS válida. `business_hours` será texto administrable para mostrar los horarios vigentes del local.
+`maps_url` deberá ser una URL HTTPS válida. `instagram`, `facebook` y `tiktok`
+serán URLs HTTPS opcionales. `business_hours` será texto administrable para
+mostrar los horarios vigentes del local.
 
 `logo_path` almacenará únicamente la ruta relativa del objeto dentro del bucket
 privado `settings`; nunca almacenará una URL pública ni una URL firmada. Será
@@ -554,11 +557,11 @@ La disponibilidad de compra no constituye un estado adicional: se calcula con `i
 ## Pedidos
 
 - pending
-- payment_pending
-- paid
+- confirmed
 - preparing
 - ready
 - picked_up
+- delivered
 - cancelled
 
 ---
@@ -574,7 +577,7 @@ La disponibilidad de compra no constituye un estado adicional: se calcula con `i
 - cash
 - bank_transfer
 
-Los pedidos en efectivo se crearán como `pending` con pago `pending`. Los pedidos por transferencia se crearán como `payment_pending` con pago `pending`.
+Todos los pedidos se crearán como `pending` con pago `pending`, independientemente del método. `payment_status` es independiente de `order_status`.
 
 `picked_up_at` deberá permanecer NULL hasta que el pedido cambie a `picked_up`; en esa transición se registrará la fecha y hora.
 

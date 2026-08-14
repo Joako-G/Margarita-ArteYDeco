@@ -582,6 +582,8 @@ Las categorías requieren imagen y orden administrable. El Panel deberá gestion
 
 ## Retiro exclusivo en el local
 
+Estado: reemplazado por ADR-042.
+
 ### Contexto
 
 El MVP no realizará envíos ni entregas a domicilio. Todos los pedidos serán retirados personalmente en el local.
@@ -605,6 +607,8 @@ El sistema registrará `picked_up_at`. Para efectivo, el pago se confirmará al 
 # ADR-032
 
 ## Ubicación del local en el flujo de compra
+
+Estado: ampliado por ADR-042 para los pedidos con envío.
 
 ### Contexto
 
@@ -887,3 +891,108 @@ El Frontend no conoce ni persiste JWT. La autorización puede revocarse mediante
 `profiles.is_active` sin desplegar código. Los futuros endpoints de la Fase 9
 deberán reutilizar los mismos middlewares de autenticación y rol antes de sus
 controllers.
+
+---
+
+# ADR-041
+
+## Optimización WebP del catálogo compatible con Vercel
+
+### Contexto
+
+El Backend está desplegado en Vercel, cuyo límite de cuerpo para Functions impide
+que un original de 10 MB llegue sin transformación. Las imágenes de productos y
+categorías deben continuar atravesando el Backend y Supabase Storage debe seguir
+siendo privado.
+
+### Decisión
+
+El Panel aceptará originales estáticos JPG, PNG o WebP de hasta 10 MB. Cuando un
+archivo supere 4 MB, el navegador preparará una variante WebP proporcional antes
+de enviarla. La API rechazará cuerpos de catálogo mayores a 4 MB y, con
+independencia del trabajo realizado en el cliente, decodificará nuevamente la
+imagen con Sharp, validará formato, firma, animación y un máximo de 40
+megapíxeles, aplicará autoorientación y generará el objeto WebP definitivo.
+
+Los productos tendrán un máximo de 1600 px y las categorías de 1200 px, siempre
+con `fit: inside`, sin recorte ni ampliación, calidad 82 y salida máxima de 2 MB.
+Las rutas conservarán `catalog/<entityId>/<uuid>.webp`. El reemplazo subirá el
+nuevo objeto, persistirá la ruta con concurrencia optimista y solo entonces
+intentará retirar el objeto anterior. Las imágenes históricas JPG, PNG o WebP
+seguirán siendo legibles; no se realizará una migración masiva.
+
+### Consecuencias
+
+El cliente reduce el transporte pero no constituye una frontera de confianza. El
+Backend garantiza que todo objeto nuevo del catálogo sea WebP y nunca expone
+credenciales ni acceso directo a Supabase. Los buckets pueden conservar sus MIME
+históricos para compatibilidad, mientras la escritura administrativa queda
+normalizada por la API.
+
+---
+
+# ADR-042
+
+## Retiro en el local y envío coordinado en el MVP
+
+### Contexto
+
+El negocio necesita ofrecer envíos dentro del MVP sin incorporar un sistema de
+logística. ADR-031 había limitado todos los pedidos al retiro en el local.
+
+### Decisión
+
+Esta decisión reemplaza ADR-031 y amplía ADR-032. El checkout permitirá elegir
+entre retiro en el local y envío a coordinar. El retiro conservará la dirección,
+los horarios y la ubicación del local. El envío requerirá una dirección y se
+coordinará manualmente por WhatsApp; el sistema no calculará costos ni gestionará
+transportistas, fechas, seguimiento o números de guía.
+
+El estado `ready` se mostrará como "Listo", porque es común a ambos métodos. El
+estado final será `picked_up` para retiro y `delivered` para envío. En el MVP, el
+pago en efectivo se ofrecerá únicamente para retiro y el envío utilizará
+transferencia.
+
+### Consecuencias
+
+La confirmación pública y el detalle administrativo mostrarán el método y los
+datos de entrega correspondientes. Los mensajes de WhatsApp para un pedido listo
+se adaptarán al método de entrega. La coordinación y el costo del envío seguirán
+fuera del total y de la automatización del sistema.
+
+---
+
+# ADR-043
+
+## Indexación SEO de la SPA en Vercel
+
+### Contexto
+
+La aplicación pública utiliza React Router y Vite. Un rewrite global a
+`index.html` hacía que rutas privadas, URLs inexistentes y `/sitemap.xml`
+recibieran inicialmente el mismo HTML indexable con estado 200. Los metadatos
+correctos dependían por completo de la ejecución de JavaScript.
+
+### Decisión
+
+El origen canónico se configurará mediante `VITE_SITE_URL` en el Frontend y
+`PUBLIC_SITE_URL` en el Backend. El build generará shells HTML para inicio,
+catálogo, páginas legales, categorías y áreas privadas sin incorporar SSR ni una
+dependencia de gestión del `head`. Las rutas privadas tendrán `noindex` tanto en
+el shell como mediante `X-Robots-Tag`.
+
+Vercel reescribirá únicamente las rutas reales; cualquier otra URL conservará un
+404 HTTP. `/index.html` redirigirá permanentemente a `/` y las rutas se
+normalizarán sin barra final. El Backend generará un
+sitemap XML cacheable con las rutas públicas fijas y las categorías activas, y
+el dominio público lo expondrá como `/sitemap.xml`. `robots.txt` permitirá el
+rastreo para que los buscadores puedan procesar `noindex` y declarará el sitemap.
+
+### Consecuencias
+
+Las páginas públicas fijas entregarán título, descripción, canonical, Open Graph
+y Twitter Cards antes de ejecutar React. Las categorías tendrán un shell genérico
+y completarán su metadata individual con los datos públicos del catálogo. Las
+rutas de pedidos, checkout y administración no dependerán únicamente de
+JavaScript para impedir la indexación. Cambiar al futuro dominio `.com` requerirá
+actualizar las dos variables de entorno y desplegar Frontend y Backend.

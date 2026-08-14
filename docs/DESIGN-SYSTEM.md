@@ -202,6 +202,16 @@ HEX
 
 #8A6814
 
+## WhatsApp
+
+Uso:
+
+Botones y enlaces de contacto mediante WhatsApp
+
+HEX
+
+#25D366
+
 Los colores semánticos se utilizarán para texto, iconos y bordes de estado. Sus fondos deberán usar una variante con opacidad baja del mismo color.
 
 ---

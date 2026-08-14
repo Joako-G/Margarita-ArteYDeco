@@ -223,8 +223,7 @@ Antes de crear el pedido:
 
 Estado inicial:
 
-- Efectivo: pedido `pending`, pago `pending`.
-- Transferencia: pedido `payment_pending`, pago `pending`.
+- Todo pedido: estado `pending`, pago `pending`.
 
 El teléfono deberá normalizarse antes de buscar o crear el cliente.
 
@@ -232,8 +231,8 @@ Para enlaces manuales de WhatsApp, el número normalizado contendrá código de 
 
 Las transiciones de estado permitidas serán:
 
-- Transferencia: `payment_pending` → `paid` → `preparing` → `ready` → `picked_up`.
-- Efectivo: `pending` → `preparing` → `ready` → `paid` → `picked_up`.
+- Todos los pedidos: `pending` → `confirmed` → `preparing` → `ready`.
+- Desde `ready`: `picked_up` o `delivered` según la modalidad.
 - Cualquier pedido no retirado podrá pasar a `cancelled`.
 
 Los Services rechazarán saltos inválidos. Cancelar un pedido pagado requerirá confirmación administrativa y dejará el eventual reintegro de dinero registrado como gestión manual.
@@ -349,7 +348,13 @@ InventoryService
 StorageService
 
 - Validación y subida de imágenes de productos, categorías y configuración.
-- Aceptar únicamente JPG, PNG o WebP de hasta 5 MB.
+- Para catálogo, aceptar únicamente cuerpos JPG, PNG o WebP de hasta 4 MB en la
+  API, validar firma y formato decodificado, limitar la entrada a 40 megapíxeles y
+  rechazar animaciones.
+- Aplicar autoorientación, redimensionado proporcional sin recorte ni ampliación y
+  conversión WebP con calidad 82: hasta 1600 px para productos y 1200 px para
+  categorías, con una salida máxima de 2 MB.
+- Mantener el logo de Settings con su contrato independiente de hasta 5 MB.
 - Guardar en Supabase Storage y persistir únicamente la ruta relativa del objeto.
 - Almacenar el logo de marca bajo `brand/` dentro del bucket `settings` y reemplazarlo de forma controlada.
 
@@ -423,6 +428,8 @@ Los endpoints públicos iniciales de solo lectura serán:
 - `GET /api/public/products`, con filtros opcionales `catalogArea`,
   `categorySlug`, `featured`, `search`, `sort` y `limit` limitado a 100.
 - `GET /api/public/settings`.
+- `GET /api/public/sitemap.xml`, XML cacheable construido con las rutas públicas
+  fijas y las categorías activas, usando `PUBLIC_SITE_URL` como origen canónico.
 
 Antes de una escritura pública, el Frontend obtendrá un token mediante
 `GET /api/public/csrf-token`. El Backend lo entregará en JSON y en una cookie
@@ -773,8 +780,11 @@ El incremento 9.2.2 incorpora:
 
 El alta y la edición validan el contrato en el Backend y derivan el slug desde el
 nombre. La edición utiliza `updated_at` como control de concurrencia optimista y
-no modifica stock. La imagen es opcional; sus operaciones aceptan JPG, PNG o WebP
-de hasta 5 MB con firma de archivo validada y Storage privado.
+no modifica stock. La imagen es opcional; la API recibe JPG, PNG o WebP de hasta
+4 MB debido al límite de Vercel, valida firma y contenido decodificado y genera un
+WebP estático de hasta 1600 px y 2 MB antes de escribir en Storage privado. El
+Panel puede seleccionar originales de hasta 10 MB porque prepara los archivos más
+grandes antes de realizar esta petición.
 
 El incremento 9.2.3 incorpora:
 
@@ -822,9 +832,10 @@ El incremento 9.3 incorpora:
 
 El listado privado acepta área, búsqueda, publicación, orden y paginación de hasta
 50 filas. Devuelve el total de productos asociados y una URL firmada para la
-imagen privada, sin exponer `image_path`. El alta genera el slug en el Backend y
-siempre crea la categoría inactiva; la interfaz carga la imagen antes de solicitar
-su publicación.
+imagen privada, sin exponer `image_path`. El alta genera el slug y calcula el
+siguiente `display_order` dentro del área en el Backend; cualquier orden recibido
+desde un cliente anterior se descarta. La categoría siempre se crea inactiva y la
+interfaz carga la imagen antes de solicitar su publicación.
 
 La edición y las acciones de ciclo de vida utilizan `updated_at` como control de
 concurrencia optimista. Una categoría solo puede activarse cuando posee una imagen
@@ -891,6 +902,10 @@ configuración bancaria, pero expone `logoUrl` firmada y nunca `logo_path`. El D
 público general continúa sin incluir alias, CBU ni banco. La edición normaliza
 WhatsApp y CBU, exige URLs HTTPS, valida descuento y umbral de stock y utiliza
 `expectedUpdatedAt` para concurrencia optimista.
+
+Instagram, Facebook y TikTok forman parte de los contratos administrativo y
+público de Settings como URLs HTTPS opcionales. El Backend persiste `null` cuando
+el administrador vacía una red social.
 
 El logo acepta únicamente JPG, PNG o WebP con firma válida y hasta 5 MB. El
 Backend carga un objeto nuevo bajo `brand/`, persiste su ruta con la versión

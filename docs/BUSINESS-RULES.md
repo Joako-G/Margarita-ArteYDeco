@@ -91,7 +91,8 @@ Las reglas aquí definidas tienen prioridad sobre cualquier decisión técnica.
 
 - Toda categoría deberá tener un nombre único.
 - Toda categoría pública deberá tener una imagen.
-- El orden de visualización deberá poder administrarse.
+- Al crear una categoría, el Backend le asignará automáticamente la siguiente posición disponible dentro de su área.
+- El administrador podrá modificar posteriormente el orden de visualización.
 
 ## Estado
 
@@ -159,21 +160,21 @@ En el MVP, nombre, apellido y teléfono serán obligatorios.
 Los estados permitidos son:
 
 - Pendiente
-- Pendiente de Pago
-- Pagado
+- Confirmado
 - Preparando
 - Listo
 - Retirado
+- Entregado
 - Cancelado
 
 No se permitirán estados diferentes.
 
 Transiciones del MVP:
 
-- Transferencia: `payment_pending` → `paid` → `preparing` → `ready` → `picked_up`.
-- Efectivo: `pending` → `preparing` → `ready` → `paid` → `picked_up`.
-- Un pedido podrá pasar a `cancelled` antes de ser retirado.
-- No se podrá reabrir un pedido cancelado o retirado.
+- Todos los pedidos: `pending` → `confirmed` → `preparing` → `ready`.
+- Desde `ready`, un pedido puede pasar a `picked_up` o `delivered` según corresponda.
+- Un pedido podrá pasar a `cancelled` antes de ser retirado o entregado.
+- No se podrá reabrir un pedido cancelado, retirado o entregado.
 
 ---
 
@@ -243,18 +244,20 @@ Frontend utilizará la variante local oficial como respaldo.
 - La recuperación nunca indicará si falló el número de pedido o el celular por separado.
 - Los intentos de recuperación deberán limitarse por IP y por identificadores normalizados, con bloqueo temporal ante abuso y CAPTCHA únicamente cuando se detecte comportamiento sospechoso.
 - Un número de pedido por sí solo nunca será suficiente para consultar información.
-- La consulta pública expondrá únicamente la confirmación necesaria para el cliente: número, fecha, estado, productos, importes, método de pago, retiro y, cuando corresponda, datos de transferencia.
+- La consulta pública expondrá únicamente la confirmación necesaria para el cliente: número, fecha, estado, productos, importes, método de pago, método de entrega y, cuando corresponda, dirección de envío o datos de transferencia.
 - Una confirmación recuperada deberá mostrar la misma información operativa que la confirmación original mientras la sesión sea válida.
 - La consulta pública nunca expondrá IDs internos, auditoría, notas administrativas ni datos de otros clientes.
 - El cliente podrá eliminar la asociación local mediante una acción "Olvidar pedidos de este dispositivo". Esta acción no eliminará pedidos ni historial comercial.
 
-## Retiro
+## Método de entrega
 
-- Todos los pedidos del MVP se retirarán exclusivamente en el local.
-- No habrá envío ni entrega a domicilio.
-- El checkout mostrará dirección y horarios antes de confirmar.
-- La confirmación mostrará dirección, horarios y una acción para abrir la ubicación en Google Maps.
-- El administrador marcará el pedido como `picked_up` cuando el cliente lo retire.
+- El cliente elegirá entre retiro en el local (`pickup`) y envío a coordinar (`shipping`).
+- Para retiro, el checkout y la confirmación mostrarán la dirección, los horarios y la ubicación del local.
+- Para envío, la dirección de entrega será obligatoria y se conservará en el pedido.
+- Los envíos se coordinarán manualmente por WhatsApp entre el negocio y el cliente.
+- El sistema no calculará costos de envío ni gestionará transportistas, fechas, seguimiento o números de guía.
+- El pago en efectivo estará disponible únicamente para retiro; los pedidos con envío utilizarán transferencia.
+- El administrador marcará como `picked_up` un retiro completado y como `delivered` un envío completado.
 - Para pagos en efectivo, el administrador confirmará primero el pago y luego el retiro.
 
 ---
@@ -323,7 +326,7 @@ Los métodos disponibles en el MVP serán:
 
 La transferencia aplicará el descuento configurado por el administrador. El Backend calculará el descuento y el total; nunca confiará en importes calculados por el Frontend.
 
-Un pedido en efectivo se creará con estado `pending` y pago `pending`. Un pedido por transferencia se creará con estado `payment_pending` y pago `pending`. El administrador marcará el pago como recibido después de verificarlo.
+Todo pedido se creará con estado `pending` y pago `pending`, independientemente del método elegido. El administrador marcará el pago como recibido después de verificarlo; esa acción no modifica `order_status`.
 
 Antes de confirmar una transferencia se mostrarán el porcentaje de descuento y el total resultante, pero no se solicitará ningún pago todavía.
 
