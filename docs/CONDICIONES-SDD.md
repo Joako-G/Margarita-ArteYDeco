@@ -222,3 +222,32 @@ Al finalizar debe existir:
 - enlace interno hacia la Política de Privacidad;
 - contenido profesional, claro y coherente con el funcionamiento actual de Margarita Arte y Deco;
 - código limpio, modular y reutilizable para futuras páginas legales.
+
+## Actualización obligatoria para activar el Botón de Arrepentimiento
+
+La versión publicada de Términos y Condiciones deberá actualizarse en el mismo
+despliegue que habilite `/arrepentimiento`. Hasta entonces continuará describiendo
+únicamente el funcionamiento vigente.
+
+La actualización deberá explicar con lenguaje claro y revisión jurídica:
+
+- el derecho de revocar una compra a distancia, su plazo general y reglas de
+  cómputo;
+- el acceso directo mediante `BOTÓN DE ARREPENTIMIENTO`, sin cuenta ni login;
+- que el número de pedido es opcional y que se emite una constancia inmediata;
+- que la verificación posterior será razonable y exclusivamente de identidad y
+  seguridad;
+- el alcance inicial sobre el pedido completo y las excepciones aplicables;
+- la restitución recíproca, devolución sin gastos para el consumidor y tratamiento
+  de pedidos no entregados, retirados o enviados;
+- que registrar la solicitud no equivale a aceptarla ni modifica automáticamente
+  pedido, pago o stock;
+- reintegros manuales para efectivo/transferencia y, cuando exista, reintegro por
+  Mercado Pago sin convertir limitaciones técnicas del proveedor en pérdida del
+  derecho;
+- Atención al cliente, canal alternativo, horarios y contingencia por WhatsApp;
+- enlace directo al formulario y a la Política de Privacidad.
+
+La lectura o aceptación de los Términos no será requisito para presentar la
+solicitud. No se publicarán plazos, excepciones o fórmulas generados sin revisión
+profesional.

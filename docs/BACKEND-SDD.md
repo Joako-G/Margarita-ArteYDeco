@@ -941,6 +941,131 @@ Los metadatos editables del usuario de Auth no conceden autorización.
 
 ---
 
+# Módulo de Arrepentimientos
+
+La implementación seguirá `BOTON-ARREPENTIMIENTO-SDD.md` y mantendrá separados
+los servicios público y administrativo.
+
+## Capas
+
+- `ConsumerWithdrawalController` y `ConsumerWithdrawalService` para registro y
+  consulta pública;
+- `AdminConsumerWithdrawalService` para identificación, decisión y resolución;
+- `ConsumerWithdrawalRepository` como único acceso a Supabase;
+- schemas Zod, DTO, mapeadores y errores propios;
+- reutilización de HMAC, teléfono normalizado, Origin, CSRF, idempotencia,
+  Turnstile, rate limiting, auditoría y redacción de logs existentes.
+
+## API pública
+
+- `POST /api/public/consumer-withdrawals`: recibe número de pedido o la alternativa
+  explícita de no encontrarlo, celular, comentario opcional y CAPTCHA únicamente
+  cuando sea solicitado. Exige `Idempotency-Key` y devuelve siempre una constancia
+  para una entrada válida sin revelar coincidencias.
+- `POST /api/public/consumer-withdrawals/status`: recibe el código en el body y
+  devuelve solo estado público, presentación, actualización y próximo paso.
+
+Ninguno de estos endpoints requerirá, leerá, creará, renovará ni revocará Guest
+Sessions. Usarán JSON estricto, tamaño máximo, `Origin`, CSRF cuando corresponda,
+rate limiting persistente, `Cache-Control: no-store` y
+`Referrer-Policy: no-referrer`. No registrarán códigos, teléfonos, pedidos o
+comentarios en logs.
+
+El código público tendrá al menos 128 bits efectivos. El Backend lo derivará con
+HMAC-SHA-256 desde una clave de idempotencia aleatoria, el fingerprint canónico,
+un secreto versionado y separación de dominio. Persistirá únicamente hash,
+sufijo y versión de clave. Un reintento con la misma key y payload devolverá la
+misma constancia; la misma key con otro payload producirá conflicto.
+
+La respuesta de estado proyectará `received`, `under_review`, `applicable`,
+`action_required`, `not_applicable` o `closed`. Para `not_applicable` expondrá una
+explicación pública comprensible y un canal de revisión o reclamo, sin revelar
+pedido, cliente, notas internas, fallos del proveedor de pago ni datos de
+verificación.
+
+## API administrativa
+
+- `GET /api/admin/consumer-withdrawals`;
+- `GET /api/admin/consumer-withdrawals/:requestId`;
+- `GET /api/admin/consumer-withdrawals/:requestId/order-candidates`;
+- `POST /api/admin/consumer-withdrawals/contingency`;
+- `POST /api/admin/consumer-withdrawals/:requestId/actions`;
+- `POST /api/admin/consumer-withdrawals/:requestId/order-link`.
+
+Todas las rutas exigirán sesión y rol administrativo. Las mutaciones validarán
+Origin, CSRF, Zod, `expectedVersion` e idempotencia. El Backend devolverá
+`availableActions`; el Frontend no compondrá transiciones. Los candidatos serán
+privados, paginados, no preseleccionados y nunca se incluirán en logs o analítica.
+
+El detalle administrativo incluirá el estado operativo y de pago, medio y total
+del pedido vinculado. Antes de crear la liquidación, si el pago está confirmado,
+el Backend proyectará el total cobrado como importe contractual preliminar; el
+Frontend nunca lo calculará.
+
+Un `42501` emitido expresamente porque el perfil no es un administrador activo
+se traducirá a `ADMIN_FORBIDDEN`. Cualquier otro `42501` procedente de una RPC se
+tratará como un fallo interno de configuración o permisos y nunca se presentará
+al usuario como una sesión vencida.
+
+La clave de idempotencia administrativa y el fingerprint del payload se
+resolverán dentro de la misma RPC que aplica la acción, vínculo o liquidación.
+Un replay idéntico devolverá el resultado previo sin incrementar versión ni
+duplicar eventos; reutilizar la clave con otra operación o payload será conflicto.
+
+`confirmManualRefund` recibirá el gasto adicional de devolución separado y el
+total que el administrador confirmó visualmente. El servicio recalculará el
+total desde el snapshot contractual y rechazará con
+`WITHDRAWAL_REFUND_TOTAL_MISMATCH` cualquier diferencia. `correctManualRefund`
+solo estará disponible sobre una liquidación completada y delegará en una RPC
+compensatoria e idempotente; nunca eliminará el evento de confirmación original.
+
+`inspectReturn` exigirá `returnItems` con `orderItemId`, `restockableQuantity` y
+`nonRestockableQuantity` para todos los ítems del pedido. El servicio delegará en
+`inspect_consumer_withdrawal_return`; la clasificación, la reposición de las
+unidades aptas, el movimiento de inventario, el evento y el cambio de estado se
+confirmarán o revertirán juntos. El cierre y la transición genérica de inspección
+quedarán bloqueados si falta esta resolución estructurada.
+
+## Reglas de aplicación
+
+- Registrar, identificar o vincular nunca cancelará pedidos, reintegrará dinero
+  ni modificará stock.
+- `request_status`, `return_status` y `refund_status` evolucionarán de manera
+  independiente. El cierre requerirá que todas las obligaciones aplicables estén
+  satisfechas.
+- La evaluación de plazo será orientativa y nunca rechazará automáticamente.
+- Un pedido no entregado usará la cancelación atómica existente. Un pedido
+  entregado conservará su estado y reingresará únicamente unidades inspeccionadas
+  como aptas mediante movimientos de inventario auditados.
+- La liquidación utilizará snapshots y monto efectivamente capturado e incluirá
+  todas las sumas contractuales cobradas, el eventual costo original de entrega
+  y el costo de retorno aplicable; nunca precios actuales o importes del navegador.
+- La restitución se coordinará de manera recíproca y simultánea. La inspección
+  posterior podrá decidir el reingreso de stock, pero no postergar arbitrariamente
+  el reintegro.
+- Efectivo y transferencia se confirmarán manualmente y de forma idempotente.
+
+## Compatibilidad futura con Mercado Pago
+
+El módulo de arrepentimientos dependerá de una interfaz de aplicación para pagos,
+no del SDK ni de DTO de Mercado Pago. Una implementación futura creará una
+operación outbox con importe, moneda, payment ID e idempotency key y ejecutará la
+llamada fuera de la transacción PostgreSQL.
+
+Los webhooks validarán autenticidad y solo despertarán una conciliación contra la
+API del proveedor. Timeout, notificaciones duplicadas o desordenadas y respuestas
+ambiguas no podrán producir un segundo reintegro. La falta de saldo, indisponibilidad
+o ventana vencida derivará a `manual_review`; nunca alterará una determinación
+`applicable`. Credenciales y payloads sensibles permanecerán exclusivamente en el
+Backend.
+
+## Antiabuso y observabilidad
+
+Turnstile admitirá una acción cerrada `consumer_withdrawal`. Será adaptativo; si
+el proveedor falla se aplicarán límites más estrictos sin impedir toda presentación.
+Las métricas usarán códigos y estados internos sin PII. Se probarán enumeración,
+replay, IDOR/BOLA, CSRF, XSS, concurrencia, bypass de RLS y redacción de logs.
+
 # Soft Delete
 
 Las siguientes entidades utilizarán eliminación lógica.

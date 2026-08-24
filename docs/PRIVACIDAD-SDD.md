@@ -7,11 +7,13 @@ La implementación debe respetar la arquitectura actual del proyecto, mantener e
 
 Contexto del proyecto
 
-La web solicita únicamente los siguientes datos personales durante el checkout:
+La web solicita los siguientes datos personales durante el checkout:
 
 Nombre
 Apellido
 Número de teléfono
+Observaciones opcionales
+Dirección, únicamente cuando se elige envío
 
 Estos datos se utilizan exclusivamente para:
 
@@ -30,7 +32,12 @@ NO envía publicidad;
 NO requiere registro de usuarios;
 NO permite crear cuentas de clientes;
 NO almacena tarjetas de crédito;
-NO almacena medios de pago;
+conserva el método de pago elegido y el estado del cobro, pero no credenciales ni
+datos de tarjetas;
+utiliza una cookie técnica `HttpOnly` para asociar pedidos al dispositivo y una
+pista local no sensible con el número del último pedido;
+procesa datos técnicos mínimos para seguridad, CSRF, rate limiting y CAPTCHA
+adaptativo;
 conserva los datos de clientes y pedidos dentro de la base de datos para mantener el historial comercial del negocio.
 
 La Política de Privacidad debe describir únicamente el comportamiento real de la aplicación.
@@ -77,13 +84,19 @@ Explicar que Margarita Arte y Deco respeta la privacidad de sus clientes y prote
 
 ## Datos que recopilamos
 
-Indicar claramente que únicamente se solicitan:
+Indicar claramente que se solicitan:
 
 - Nombre.
 - Apellido.
 - Número de teléfono.
+- Observaciones opcionales del pedido.
+- Dirección de entrega únicamente para envíos.
+- Método de pago elegido y datos operativos del pedido.
+- Cookies y huellas técnicas estrictamente necesarias para sesión anónima,
+  seguridad, prevención de abuso y recuperación.
 
-No mencionar datos que actualmente no se solicitan.
+No afirmar que se recopilan tarjetas, credenciales bancarias, publicidad o
+tracking comercial mientras esas funciones no existan.
 
 ## Finalidad del tratamiento
 
@@ -95,6 +108,7 @@ Explicar que los datos se utilizan exclusivamente para:
 - coordinar el retiro o la entrega;
 - responder consultas relacionadas con un pedido;
 - permitir la gestión interna del negocio mediante el Panel Administrativo.
+- proteger la consulta de pedidos y prevenir abuso o fraude.
 
 Aclarar expresamente que los datos no se utilizan con fines publicitarios o comerciales.
 
@@ -105,7 +119,8 @@ Explicar claramente que:
 - no se venden datos personales;
 - no se comparten con terceros para fines comerciales.
 
-No mencionar integraciones que actualmente no existen.
+Identificar a Supabase, Vercel y Turnstile según su uso real. No mencionar Mercado
+Pago como encargado efectivo hasta que la pasarela sea habilitada.
 
 ## Seguridad
 
@@ -253,3 +268,26 @@ Al finalizar debe existir:
 - enlace desde el footer;
 - componentes reutilizables para futuras páginas legales cuando resulte conveniente;
 - código limpio, modular, escalable y consistente con la arquitectura del proyecto.
+
+## Actualización obligatoria para activar el Botón de Arrepentimiento
+
+La Política de Privacidad publicada deberá actualizarse junto con la funcionalidad
+y describir, además de los pedidos:
+
+- número de pedido opcional, celular, comentario y código de solicitud;
+- finalidad de registrar, verificar, gestionar y auditar el arrepentimiento;
+- fingerprints HMAC e información técnica usada para idempotencia, seguridad,
+  prevención de abuso y CAPTCHA adaptativo;
+- relación opcional con el pedido, eventos, liquidación, devolución e inventario;
+- acceso limitado al administrador y procesamiento exclusivo mediante el Backend;
+- ausencia de códigos, teléfonos o comentarios en URLs, logs y analítica;
+- conservación sin purga automática durante la primera versión, hasta aprobar una
+  política jurídica de retención;
+- derechos de acceso, rectificación y eliminación sujetos a las obligaciones de
+  conservación aplicables;
+- Supabase, Turnstile y, cuando se implemente, Mercado Pago como proveedores
+  tecnológicos, indicando finalidad y alcance reales en ese momento.
+
+La consulta pública por código mostrará información mínima y no creará una cuenta,
+cookie ni Guest Session. El documento no afirmará que Mercado Pago procesa datos
+antes de que la integración esté efectivamente habilitada.

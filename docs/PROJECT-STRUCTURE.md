@@ -286,6 +286,8 @@ checkout/
 
 public-orders/
 
+consumer-withdrawals/
+
 gallery/
 
 faq/
@@ -642,6 +644,10 @@ patterns/
 
 /recuperar-pedido
 
+/arrepentimiento
+
+/arrepentimiento/consulta
+
 /nosotros
 
 /contacto
@@ -665,6 +671,10 @@ Nunca existirán rutas administrativas visibles.
 /admin/categories
 
 /admin/orders
+
+/admin/arrepentimientos
+
+/admin/arrepentimientos/:requestId
 
 /admin/customers
 

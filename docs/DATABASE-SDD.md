@@ -294,6 +294,7 @@ Campos mínimos
 - id
 - product_id
 - order_id, nullable
+- withdrawal_request_id, nullable
 - movement_type
 - quantity_delta
 - stock_before
@@ -308,8 +309,11 @@ Tipos permitidos
 - manual_adjustment
 - order_created
 - order_cancelled
+- consumer_withdrawal_return
 
 Los movimientos `order_created` y `order_cancelled` deberán ser únicos por pedido y producto. `quantity_delta` será negativo al descontar y positivo al reponer.
+Los movimientos `consumer_withdrawal_return` serán positivos, estarán relacionados
+con pedido y solicitud, y serán únicos por solicitud y producto.
 
 Inventory Movements no utilizará Soft Delete ni permitirá edición o eliminación desde la aplicación.
 
@@ -503,6 +507,96 @@ Campos mínimos
 Los registros no podrán editarse ni eliminarse desde la aplicación. `metadata`
 será un objeto JSON mínimo y nunca contendrá tokens, cookies, celulares, datos
 bancarios, contraseñas ni otros secretos.
+
+---
+
+# Arrepentimientos
+
+El modelo detallado se encuentra en `BOTON-ARREPENTIMIENTO-SDD.md`. La migración
+será aditiva y no modificará pedidos históricos.
+
+## Consumer Withdrawal Requests
+
+`consumer_withdrawal_requests` representará el expediente vigente:
+
+- UUID y relación opcional `order_id` con `ON DELETE RESTRICT`;
+- hash, sufijo y versión de clave del código público, sin almacenar el original;
+- referencia de pedido opcional y alternativa explícita cuando no se encuentra;
+- celular normalizado y fingerprint HMAC para identificación y antiabuso;
+- `request_status`, `return_status` y `refund_status` independientes;
+- `version` bigint para concurrencia optimista;
+- comentario, fundamento, origen y fechas operativas;
+- estimación de plazo con estado, base y fecha nullable, nunca rechazo automático;
+- snapshots nullable de `contract_concluded_at`, `right_informed_at` y versión
+  del aviso, para no confundir creación del pedido con celebración del contrato;
+- timestamps de presentación, constancia, revisión, recepción, inspección,
+  determinación de aplicabilidad y cierre.
+
+`request_status` admitirá `received`, `verification_pending`, `under_review`,
+`applicable`, `not_applicable` y `closed`. `return_status` admitirá `not_required`,
+`pending`, `received` e `inspected`. `refund_status` admitirá `not_required`,
+`pending`, `processing`, `succeeded`, `failed` y `manual_review`.
+
+## Consumer Withdrawal Return Items
+
+`consumer_withdrawal_return_items` conservará de forma append-only la resolución
+de inventario por ítem del pedido: solicitud, ítem, producto, cantidad vendida,
+cantidad apta, cantidad no apta, nota, actor y fecha. Aptas más no aptas deberá
+coincidir exactamente con la cantidad vendida. Existirá una sola resolución por
+solicitud e ítem y una sola reposición por solicitud y producto.
+
+## Consumer Withdrawal Events
+
+`consumer_withdrawal_events` será append-only y conservará solicitud, actor
+nullable, tipo, estados anterior/siguiente, razón saneada, metadata mínima y
+fecha. No admitirá `UPDATE` ni `DELETE` desde la aplicación.
+
+## Consumer Withdrawal Settlements
+
+`consumer_withdrawal_settlements` representará una única obligación económica
+completa por solicitud en el primer incremento. Conservará pedido, moneda `ARS`,
+total y monto capturado como snapshots, devolución contractual completa, costo
+original de entrega, costo de devolución, total,
+método manual, estado, referencia no sensible, actor y fechas. El total no podrá
+superar el importe capturado más los gastos reintegrables documentados.
+
+`consumer_withdrawal_settlement_corrections` conservará de forma append-only
+cada rectificación administrativa de una liquidación completada: liquidación y
+solicitud, gasto de devolución anterior y corregido, totales anterior y
+corregido, motivo, actor y fecha. La liquidación mantendrá el valor vigente para
+la operación, mientras la corrección y el evento preservarán la evidencia previa.
+
+Una futura operación técnica de Mercado Pago pertenecerá al módulo de pagos y se
+relacionará opcionalmente con la liquidación. Conservará proveedor, identificadores,
+importe, moneda, clave de idempotencia, estado, intentos y datos mínimos de
+conciliación; no reescribirá la liquidación ni `orders.payment_status`.
+
+## Idempotencia y antiabuso
+
+Una tabla específica almacenará únicamente hashes de claves de idempotencia,
+fingerprint canónico, solicitud asociada, versión de secreto y expiración. El
+código público se derivará con HMAC-SHA-256 y al menos 128 bits efectivos para
+permitir reintentos sin persistirlo en texto plano.
+
+Las mutaciones administrativas utilizarán una tabla de idempotencia separada con
+hash de clave, fingerprint del payload, solicitud, operación, versión resultante
+y expiración. La comprobación, la mutación y el registro de la clave ocurrirán en
+la misma RPC para impedir efectos duplicados o claves huérfanas.
+
+Los límites públicos usarán una tabla independiente con fingerprints HMAC de IP y
+contacto, ventanas, conteos, bloqueos y retención corta. Su purga nunca alcanzará
+solicitudes, liquidaciones o eventos.
+
+## Restricciones e índices de arrepentimientos
+
+- XOR entre número informado y alternativa `No encuentro mi número de pedido`;
+- hashes de longitud exacta, importes no negativos y sumas consistentes;
+- checks de fechas y guards de transición en RPC;
+- unicidad de código e idempotencia;
+- índices por estado/fecha, vencimientos operativos, pedido y fingerprint;
+- ninguna eliminación física ni propagación desde pedidos;
+- RLS habilitado y grants/revokes explícitos, sin acceso para `anon` o
+  `authenticated` y con acceso mínimo para `service_role`.
 
 ---
 
@@ -730,8 +824,36 @@ La creación y cancelación de pedidos con cambios de stock deberán implementar
 - `touch_guest_session`: actualiza el último acceso usando el reloj de PostgreSQL.
 - `revoke_guest_session`: revoca de forma idempotente una sesión anónima.
 - `purge_public_security_data`: purga sesiones e intentos vencidos; Supabase Cron la ejecutará diariamente.
+- `create_consumer_withdrawal`: registra solicitud, vínculo opcional, constancia
+  hasheada, idempotencia y eventos iniciales en una única transacción.
+- `transition_consumer_withdrawal`: bloquea el expediente, valida `version`,
+  aplica una transición válida y agrega el evento correspondiente.
+- `link_consumer_withdrawal_order`: vincula o corrige un único pedido con actor,
+  fundamento y concurrencia, sin modificar pedido, pago o stock.
+- `record_consumer_withdrawal_settlement`: registra o confirma la liquidación
+  manual exactamente una vez y actualiza `refund_status`.
+- `correct_consumer_withdrawal_settlement`: rectifica únicamente el gasto
+  adicional de devolución de una liquidación completada, valida el total
+  confirmado, incrementa la versión y agrega corrección y evento append-only.
+- `inspect_consumer_withdrawal_return`: bloquea solicitud y productos, exige la
+  resolución exacta de todos los ítems, incrementa solo el stock apto, registra
+  movimientos `consumer_withdrawal_return`, inspección, evento e idempotencia en
+  una única transacción. Un replay idéntico no repone stock nuevamente.
+- `record_consumer_withdrawal_settlement` bloqueará la solicitud y la
+  liquidación, pero no utilizará `FOR UPDATE` sobre `orders` cuando solo lea su
+  snapshot. `service_role` conservará únicamente `SELECT` directo sobre pedidos;
+  no se ampliarán permisos para satisfacer un bloqueo innecesario.
+- `purge_consumer_withdrawal_security_data`: elimina solo límites e idempotencias
+  vencidos, nunca solicitudes, liquidaciones o eventos.
+- `register_consumer_withdrawal_attempt`: incrementa atómicamente huellas HMAC de
+  IP y contacto y devuelve necesidad de CAPTCHA, bloqueo y tiempo de reintento.
 
 Las funciones que modifican pedidos o inventario deberán ser atómicas. Cualquier error deberá revertir la operación completa.
+
+Las RPC de arrepentimientos serán `SECURITY INVOKER`, revocarán `EXECUTE` a
+`PUBLIC`, `anon` y `authenticated`, y concederán exclusivamente los permisos
+necesarios a `service_role`. Ninguna RPC realizará llamadas de red. Los futuros
+reintegros externos usarán una operación outbox recuperable fuera de la transacción.
 
 La recuperación de acceso a un pedido deberá validar en el Backend el número de pedido y el snapshot `customer_phone_normalized` antes de insertar una nueva relación Guest Session Orders. La inserción deberá ser idempotente y nunca trasladará el pedido de una sesión a otra.
 

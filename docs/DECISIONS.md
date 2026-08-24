@@ -996,3 +996,49 @@ y completarán su metadata individual con los datos públicos del catálogo. Las
 rutas de pedidos, checkout y administración no dependerán únicamente de
 JavaScript para impedir la indexación. Cambiar al futuro dominio `.com` requerirá
 actualizar las dos variables de entorno y desplegar Frontend y Backend.
+
+---
+
+# ADR-044
+
+## Botón de Arrepentimiento independiente y compatible con proveedores de pago
+
+### Contexto
+
+La tienda debe ofrecer el canal obligatorio para revocar compras a distancia sin
+cuenta ni pasos desproporcionados. El flujo necesita constancia, identificación
+posterior, operación administrativa y trazabilidad, pero actualmente los cobros
+son manuales y Mercado Pago se incorporará en otro incremento.
+
+### Decisión
+
+Se implementará un módulo `consumer-withdrawals` independiente de Guest Sessions,
+pedidos y otros reclamos comerciales. Registrar o vincular una solicitud no
+modificará pedido, pago ni stock. La determinación de aplicabilidad, devolución
+física y reintegro se
+representarán mediante estados ortogonales y eventos append-only.
+
+El código público tendrá alta entropía, será recuperable mediante idempotencia y
+solo se almacenará hasheado. La API pública devolverá información mínima y la
+Administración será la única superficie para identificar pedidos y ejecutar
+acciones comerciales.
+
+Los reintegros manuales resolverán el primer incremento. Una futura integración
+con Mercado Pago dependerá de una interfaz de pagos y utilizará outbox,
+idempotencia, webhooks verificados y conciliación contra la API fuera de toda
+transacción PostgreSQL. Las restricciones técnicas del proveedor derivarán a
+resolución manual y no alterarán una determinación de aplicabilidad.
+
+### Justificación
+
+La separación evita que una credencial de consulta de pedidos se convierta en un
+requisito legal, impide efectos comerciales antes de la revisión y elimina estados
+combinatorios. El límite de proveedor permite incorporar Checkout Pro sin
+reescribir el expediente ni acoplarlo a DTO, SDK o disponibilidad externos.
+
+### Consecuencias
+
+Se agregarán rutas públicas y administrativas, tablas de solicitudes, eventos,
+liquidaciones, idempotencia y límites, además de RPC protegidas. El enlace será
+visible desde el primer acceso. Los documentos legales se publicarán únicamente
+cuando la funcionalidad esté habilitada y después de revisión profesional.
