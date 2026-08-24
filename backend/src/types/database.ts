@@ -159,13 +159,19 @@ type IInventoryMovementDatabaseRow = {
   created_at: string
   created_by: string | null
   id: string
-  movement_type: 'initial_stock' | 'manual_adjustment' | 'order_cancelled' | 'order_created'
+  movement_type:
+    | 'consumer_withdrawal_return'
+    | 'initial_stock'
+    | 'manual_adjustment'
+    | 'order_cancelled'
+    | 'order_created'
   order_id: string | null
   product_id: string
   quantity_delta: number
   reason: string | null
   stock_after: number
   stock_before: number
+  withdrawal_request_id: string | null
 }
 
 export interface IDatabase {

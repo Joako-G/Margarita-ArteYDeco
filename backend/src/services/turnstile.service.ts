@@ -9,7 +9,7 @@ import type {
   TurnstileVerificationResultType,
 } from '../types/turnstile.js'
 
-const TURNSTILE_ACTION = 'order_recovery'
+const TURNSTILE_ACTIONS = new Set(['consumer_withdrawal', 'order_recovery'])
 const TURNSTILE_SITEVERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify'
 const TURNSTILE_TIMEOUT_MS = 5_000
 
@@ -49,7 +49,8 @@ export class TurnstileService implements ITurnstileService {
       }
 
       if (
-        parsed.data.action !== TURNSTILE_ACTION
+        parsed.data.action !== (request.action ?? 'order_recovery')
+        || !TURNSTILE_ACTIONS.has(parsed.data.action)
         || parsed.data.hostname === undefined
         || !this.allowedHostnames.includes(parsed.data.hostname.toLowerCase())
       ) {
