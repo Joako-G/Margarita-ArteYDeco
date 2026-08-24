@@ -1,0 +1,178 @@
+.consumer-withdrawal {
+  min-height: calc(100vh - var(--space-12));
+  background: var(--color-surface-muted);
+}
+
+.consumer-withdrawal__container {
+  display: grid;
+  max-width: 760px;
+  gap: var(--space-3);
+}
+
+.consumer-withdrawal__heading {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.consumer-withdrawal__heading > div:last-child,
+.consumer-withdrawal__receipt {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.consumer-withdrawal__heading p,
+.consumer-withdrawal__receipt p,
+.consumer-withdrawal__support p,
+.consumer-withdrawal__error p,
+.consumer-withdrawal__status-result p {
+  max-width: 68ch;
+  margin: 0;
+  text-wrap: pretty;
+}
+
+.consumer-withdrawal__icon {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 auto;
+  place-items: center;
+  color: var(--color-primary-dark);
+  border-radius: var(--radius-round);
+  background: var(--color-primary-soft);
+}
+
+.consumer-withdrawal__card form {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.consumer-withdrawal__order-fields {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.consumer-withdrawal__order-fields legend {
+  margin-bottom: var(--space-2);
+  font-weight: 600;
+}
+
+.consumer-withdrawal__error {
+  display: flex;
+  gap: var(--space-1);
+  margin-bottom: var(--space-3);
+  padding: var(--space-2);
+  color: var(--color-error);
+  border-radius: var(--radius-input);
+  background: var(--color-error-soft);
+}
+
+.consumer-withdrawal__support,
+.consumer-withdrawal__status-result {
+  display: grid;
+  gap: var(--space-1);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
+.consumer-withdrawal__support a,
+.consumer-withdrawal__secondary-links a {
+  color: var(--color-primary-dark);
+  font-weight: 600;
+}
+
+.consumer-withdrawal__receipt {
+  gap: var(--space-2);
+}
+
+.consumer-withdrawal__receipt .consumer-withdrawal__icon {
+  color: var(--color-success);
+  background: var(--color-success-soft);
+}
+
+.consumer-withdrawal__code {
+  padding: var(--space-2);
+  overflow-wrap: anywhere;
+  color: var(--color-primary-dark);
+  border-radius: var(--radius-input);
+  background: var(--color-primary-soft);
+  font-size: var(--font-size-h3);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+
+.consumer-withdrawal__notice {
+  padding: var(--space-2);
+  color: var(--color-warning);
+  border-radius: var(--radius-input);
+  background: var(--color-warning-soft);
+}
+
+.consumer-withdrawal__actions,
+.consumer-withdrawal__secondary-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+}
+
+.consumer-withdrawal__actions a,
+.consumer-withdrawal__secondary-links a {
+  min-height: 44px;
+}
+
+.consumer-withdrawal__status-result {
+  padding: var(--space-3);
+  border: 0;
+  border-radius: var(--radius-card);
+  background: var(--color-primary-soft);
+}
+
+.consumer-withdrawal__status-result > span {
+  color: var(--color-primary-dark);
+  font-size: var(--font-size-caption);
+  font-weight: 700;
+}
+
+.consumer-withdrawal__status-result h2 {
+  margin: 0;
+}
+
+.consumer-withdrawal__status-result dl {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+}
+
+.consumer-withdrawal__status-result dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.consumer-withdrawal__status-result dd {
+  margin: 0;
+  text-align: right;
+}
+
+@media (max-width: 480px) {
+  .consumer-withdrawal__heading,
+  .consumer-withdrawal__status-result dl > div {
+    display: grid;
+  }
+
+  .consumer-withdrawal__actions,
+  .consumer-withdrawal__actions > *,
+  .consumer-withdrawal__card form > .ui-button {
+    width: 100%;
+  }
+
+  .consumer-withdrawal__status-result dd {
+    text-align: left;
+  }
+}

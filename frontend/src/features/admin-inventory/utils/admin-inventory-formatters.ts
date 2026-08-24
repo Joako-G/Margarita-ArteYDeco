@@ -6,6 +6,7 @@ const dateFormatter = new Intl.DateTimeFormat('es-AR', {
 })
 
 const MOVEMENT_LABELS: Record<AdminInventoryMovementType, string> = {
+  consumer_withdrawal_return: 'Reposición por arrepentimiento',
   initial_stock: 'Stock inicial',
   manual_adjustment: 'Ajuste manual',
   order_cancelled: 'Reposición por cancelación',

@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { Outlet } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 import { CartToast } from '@/features/cart/components/CartToast'
 import { CartAvailabilitySync } from '@/features/cart'
@@ -25,6 +26,9 @@ export function PublicLayout() {
       </a>
       <CartAvailabilitySync />
       <SiteHeader />
+      <div className="consumer-withdrawal-access">
+        <Link to="/arrepentimiento">BOTÓN DE ARREPENTIMIENTO</Link>
+      </div>
       <Outlet />
       <SiteFooter />
       <CartToast />

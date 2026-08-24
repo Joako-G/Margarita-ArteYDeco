@@ -322,6 +322,31 @@
   font-size: var(--font-size-small);
 }
 
+.checkout-summary__withdrawal-notice {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  color: var(--color-primary-dark);
+  border-radius: var(--radius-input);
+  background: var(--color-primary-soft);
+}
+
+.checkout-summary__withdrawal-notice p {
+  margin: 0;
+  font-size: var(--font-size-small);
+  text-wrap: pretty;
+}
+
+.checkout-summary__withdrawal-notice a {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 44px;
+  align-items: center;
+  color: inherit;
+  font-size: var(--font-size-caption);
+  font-weight: 700;
+}
+
 .checkout-summary__submit {
   width: 100%;
 }

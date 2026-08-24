@@ -1,7 +1,9 @@
 import { LockKeyhole } from 'lucide-react'
 import type { FieldErrors, UseFormRegister } from 'react-hook-form'
+import { Link } from 'react-router-dom'
 
 import productPlaceholderImage from '@/assets/images/product-placeholder.webp'
+import { routes } from '@/config/routes'
 import { useCartStore } from '@/features/cart'
 import { Button, DeferredImage, Divider, Typography } from '@/shared/components'
 import { formatPrice } from '@/shared/utils/format-price'
@@ -89,6 +91,14 @@ export function OrderSummary({
         Editar carrito
       </Button>
       <CheckoutTermsAcceptance errors={errors} register={register} />
+      <div className="checkout-summary__withdrawal-notice">
+        <strong>Derecho de revocación</strong>
+        <p>
+          En las compras online podés comunicar que te arrepentís dentro del plazo legal, sin
+          necesidad de explicar el motivo.
+        </p>
+        <Link to={routes.consumerWithdrawal}>BOTÓN DE ARREPENTIMIENTO</Link>
+      </div>
       <Button
         className="checkout-summary__submit"
         disabled={isSubmissionBlocked}
