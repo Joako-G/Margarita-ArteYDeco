@@ -27,6 +27,8 @@ test('genera título y descripción para los términos y condiciones', () => {
 test('evita indexar rutas transaccionales y administrativas', () => {
   assert.equal(getRouteMetadata('/checkout').robots, 'noindex, nofollow')
   assert.equal(getRouteMetadata('/pedido/PED-123').robots, 'noindex, nofollow')
+  assert.equal(getRouteMetadata('/arrepentimiento').robots, 'noindex, nofollow')
+  assert.equal(getRouteMetadata('/arrepentimiento/consulta').robots, 'noindex, nofollow')
   assert.equal(getRouteMetadata('/admin').robots, 'noindex, nofollow')
 })
 

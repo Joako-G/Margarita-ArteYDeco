@@ -35,6 +35,12 @@ const loadOrdersPage = async () => ({
 const loadOrderDetailPage = async () => ({
   Component: (await import('@/pages/Admin/Orders/Detail')).AdminOrderDetailPage,
 })
+const loadConsumerWithdrawalsPage = async () => ({
+  Component: (await import('@/pages/Admin/ConsumerWithdrawals')).AdminConsumerWithdrawalsPage,
+})
+const loadConsumerWithdrawalDetailPage = async () => ({
+  Component: (await import('@/pages/Admin/ConsumerWithdrawals/Detail')).AdminConsumerWithdrawalDetailPage,
+})
 const loadCustomersPage = async () => ({
   Component: (await import('@/pages/Admin/Customers')).AdminCustomersPage,
 })
@@ -70,6 +76,8 @@ export const adminRoutes: RouteObject[] = [
           { path: 'categorias/:categoryId/editar', lazy: loadCategoryFormPage },
           { path: 'pedidos', lazy: loadOrdersPage },
           { path: 'pedidos/:orderId', lazy: loadOrderDetailPage },
+          { path: 'arrepentimientos', lazy: loadConsumerWithdrawalsPage },
+          { path: 'arrepentimientos/:requestId', lazy: loadConsumerWithdrawalDetailPage },
           { path: 'clientes', lazy: loadCustomersPage },
           { path: 'clientes/:customerId', lazy: loadCustomerDetailPage },
           { path: 'configuracion', lazy: loadSettingsPage },

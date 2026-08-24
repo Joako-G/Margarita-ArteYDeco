@@ -309,6 +309,92 @@ La creación de un pedido descuenta el stock. Al cancelar un pedido, el sistema 
 
 ---
 
+# Arrepentimientos
+
+Objetivo
+
+Gestionar las solicitudes públicas y de contingencia desde su recepción hasta el
+cierre, sin alterar manualmente la base de datos y conservando trazabilidad.
+
+## Navegación y alertas
+
+- Incorporar `Arrepentimientos` después de `Pedidos` en navegación desktop,
+  Drawer tablet y grupo Gestión móvil.
+- Mostrar un contador accesible de solicitudes nuevas.
+- Integrar en Dashboard una alerta persistente para casos sin revisar, próximos a
+  vencer o con reintegro en `failed`/`manual_review`.
+
+## Listado
+
+La ruta `/admin/arrepentimientos` permitirá buscar por código administrativo o
+pedido, filtrar por estado, vinculación y cumplimiento, ordenar y paginar. Los
+filtros se conservarán en la URL. Desktop utilizará tabla semántica y, por debajo
+de 1024 px, fichas equivalentes sin scroll horizontal.
+
+## Detalle
+
+La ruta `/admin/arrepentimientos/:requestId` mostrará:
+
+- un siguiente paso recomendado y un recorrido visible desde la identificación
+  del pedido hasta el cierre, sin reemplazar el criterio del administrador;
+- decisión, devolución y reintegro como estados independientes;
+- prioridad y revisión de plazo sin rechazo automático;
+- pedido vinculado y acceso a su detalle;
+- identificación de pedido mediante candidatos privados sin preselección;
+- comentario original renderizado como texto;
+- devolución, inspección, liquidación e inventario en bloques separados;
+- timeline inmutable y acciones calculadas por el Backend;
+- compositor manual de WhatsApp para verificación o coordinación posterior.
+
+El teléfono se mostrará solo cuando sea necesario para operar. Los candidatos
+mostrarán número, fecha, resumen de productos, total, estado, entrega y pago. La
+interfaz aclarará que abrir WhatsApp no verifica identidad ni cambia estados.
+
+Cuando exista un pedido vinculado, el detalle mostrará juntos su estado
+operativo, estado de pago, medio, total cobrado y acceso al pedido. Si el pago
+está confirmado, el resumen mostrará el importe contractual a reintegrar antes
+de que exista una liquidación, siempre calculado por el Backend desde el snapshot
+del pedido.
+
+## Acciones
+
+El Panel podrá iniciar revisión, solicitar verificación, vincular o corregir el
+pedido, determinar aplicabilidad o no aplicabilidad con fundamento, coordinar y recibir la devolución,
+finalizar inspección, registrar o confirmar reintegro manual, registrar stock y
+cerrar. Las acciones usarán `expectedVersion`, idempotencia y confirmación cuando
+afecten decisión, dinero, devolución o inventario.
+
+`Revisar productos y resolver el stock` mostrará cada producto y su cantidad
+vendida. El administrador completará deliberadamente unidades aptas y no aptas;
+ningún valor quedará preseleccionado. La suma deberá coincidir con lo vendido y
+la confirmación indicará que solo las aptas vuelven al stock.
+
+Cada confirmación explicará cuándo corresponde usarla y su efecto. Los campos
+mantendrán labels visibles y agregarán placeholders con ejemplos no sensibles;
+los placeholders nunca reemplazarán el label. `Confirmar dinero devuelto` se
+presentará únicamente como constancia de una devolución ya realizada y mostrará
+el importe y medio original antes de confirmar.
+
+El gasto de devolución comenzará en cero y permanecerá oculto hasta que el
+administrador indique expresamente que la persona pagó un gasto adicional para
+devolver el producto. La interfaz aclarará que el total de la compra ya está
+incluido, mostrará el cálculo actualizado y exigirá confirmar el total exacto.
+El Backend rechazará cualquier total que no coincida con el desglose.
+
+Cuando una liquidación completada contenga un error de carga, el Panel ofrecerá
+`Rectificar importe registrado`. La acción exigirá un motivo, mostrará el valor
+actual y el corregido, y conservará ambos en el historial; no implicará un nuevo
+movimiento de dinero ni reabrirá el caso.
+
+El cierre permanecerá bloqueado mientras exista cancelación, devolución o
+reintegro obligatorio pendiente. La indisponibilidad futura de Mercado Pago se
+mostrará como acción requerida y habilitará resolución manual; nunca cambiará una
+aplicabilidad a no aplicabilidad.
+
+Las fechas y horas operativas ingresadas en Administración, incluida la recepción
+de contingencias, se mostrarán e interpretarán exclusivamente con la zona
+`America/Argentina/Buenos_Aires`.
+
 # Configuración
 
 Objetivo

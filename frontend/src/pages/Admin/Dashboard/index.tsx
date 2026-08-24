@@ -11,6 +11,7 @@ import {
   useAdminDashboard,
 } from '@/features/admin-dashboard'
 import { Button } from '@/shared/components'
+import { ConsumerWithdrawalAttention } from '@/features/admin-consumer-withdrawals'
 import { getApiErrorStatus } from '@/shared/services/api/errors'
 
 import '@/features/admin-dashboard/admin-dashboard.css'
@@ -58,6 +59,7 @@ export function AdminDashboardPage() {
 
       {dashboard.data ? (
         <div className="admin-dashboard__content">
+          <ConsumerWithdrawalAttention />
           <DashboardOverview metrics={dashboard.data.metrics} />
           <div className="admin-dashboard__operational-grid">
             <DashboardRecentOrders

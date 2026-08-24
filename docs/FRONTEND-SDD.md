@@ -14,7 +14,11 @@ sin autorización.
 
 - `/pedido/:orderNumber` mostrará una confirmación recuperada desde la API y protegida por la sesión anónima del navegador.
 - `/recuperar-pedido` mostrará el formulario alternativo de número de pedido y celular.
+- `/arrepentimiento` mostrará el formulario público y la constancia inmediata.
+- `/arrepentimiento/consulta` permitirá una consulta puntual mediante código.
 - El número de pedido será un identificador de navegación, no una credencial. Nunca se incluirán tokens en rutas ni query strings.
+- Las rutas de arrepentimiento serán lazy-loaded y `noindex, nofollow`. El código
+  público nunca se incluirá en la URL.
 
 ## 4. Layouts
 
@@ -170,6 +174,37 @@ Flujo:
 - En la consulta pública, el estado interno `delivered` se mostrará como "Enviado" cuando el método de entrega sea envío. La administración conservará la etiqueta operativa "Entregado".
 - WhatsApp continuará siendo una acción manual para enviar el comprobante, no un mecanismo de recuperación.
 
+### Botón de Arrepentimiento
+
+- `PublicLayout` mostrará una franja compacta inmediatamente debajo del Header con
+  el texto exacto `BOTÓN DE ARREPENTIMIENTO`, visible sin abrir menús en todos los
+  breakpoints y rutas públicas. El Footer repetirá el acceso dentro de Información.
+- La franja usará únicamente tokens existentes, no será flotante, no ocultará
+  contenido, tendrá área interactiva mínima de 44 px y no usará animación decorativa.
+- `/arrepentimiento` tendrá un único `h1`, explicación breve, formulario React
+  Hook Form + Zod, acceso a consulta, canal alternativo y enlaces legales.
+- El formulario solicitará número de pedido o `No encuentro mi número de pedido`,
+  celular obligatorio y comentario opcional. No mostrará pedidos, aunque exista
+  Guest Session, ni solicitará motivo, fotografías, cuenta o login.
+- Turnstile aparecerá únicamente cuando el Backend lo solicite. HTTP `429` no se
+  reintentará automáticamente.
+- Después del éxito, el formulario se reemplazará por una constancia enfocada con
+  código completo, fecha local, próximos pasos y acciones `Copiar código`,
+  `Consultar estado` y `Volver a la tienda`.
+- El código y la respuesta permanecerán solo en memoria. No se persistirán en
+  Zustand, TanStack Query persistida, cookies, analytics o `localStorage`.
+- `/arrepentimiento/consulta` enviará el código por body mediante Axios y mostrará
+  únicamente el estado público, fechas y próximo paso. Recargar exigirá ingresarlo
+  nuevamente y no creará ni modificará sesiones.
+- Existencia del pedido, coincidencia del celular y revisión de plazo producirán
+  respuestas visualmente indistinguibles.
+- Se reutilizarán `Container`, `Section`, `Typography`, `Input`, `TextArea`,
+  `Checkbox`, `Button`, `FieldMessage` y componentes de CAPTCHA existentes. El
+  formulario no imitará la composición extensa de las páginas legales.
+- Labels, ayudas y errores estarán asociados; los cambios de estado se anunciarán,
+  el éxito recibirá foco y el flujo funcionará sin overflow desde 360 px, con
+  contraste AA y `prefers-reduced-motion`.
+
 ## 6. Panel Administrativo
 
 ### Login
@@ -250,6 +285,27 @@ Flujo:
 - Incluir "Recordar transferencia" únicamente para transferencias con pago pendiente.
 - Ofrecer un compositor con mensajes predefinidos y editables antes de abrir WhatsApp.
 - El uso de WhatsApp no deberá cambiar estados ni asumir que el mensaje fue enviado o leído.
+
+### Arrepentimientos
+
+- `/admin/arrepentimientos` ofrecerá listado paginado con búsqueda, estado,
+  vinculación, cumplimiento y orden serializados en la URL.
+- En desktop usará tabla semántica; por debajo de 1024 px, fichas etiquetadas sin
+  scroll horizontal. Mostrará código administrativo, fecha, estado, pedido o
+  `Sin identificar`, plazo de primera revisión y última actualización.
+- El Dashboard y la navegación mostrarán alertas persistentes y contador de casos
+  sin revisar dentro de las superficies existentes, sin métricas decorativas.
+- El detalle separará evaluación, devolución, liquidación y stock; incluirá
+  timeline append-only y solo las acciones devueltas por el Backend.
+- Los candidatos de pedido serán una lista accesible sin selección predeterminada.
+  Vincular o corregir exigirá confirmación, nota y `expectedVersion`.
+- Teléfono, comentario y candidatos solo se mostrarán cuando sean necesarios para
+  operar. El texto libre se renderizará como texto, nunca como HTML.
+- Acciones financieras, devolución, inspección, inventario, determinación de
+  aplicabilidad y cierre
+  requerirán confirmación explícita. Ninguna llamada a WhatsApp modificará estado.
+- `request_status`, `return_status` y `refund_status` se comunicarán por separado
+  mediante texto y Badge semántico, nunca solo color.
 
 ### Clientes
 

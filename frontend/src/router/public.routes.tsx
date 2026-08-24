@@ -28,6 +28,12 @@ const loadPrivacyPolicyPage = async () => ({
 const loadTermsAndConditionsPage = async () => ({
   Component: (await import('@/pages/Legal/TermsAndConditions')).TermsAndConditionsPage,
 })
+const loadConsumerWithdrawalPage = async () => ({
+  Component: (await import('@/pages/ConsumerWithdrawal')).ConsumerWithdrawalPage,
+})
+const loadConsumerWithdrawalStatusPage = async () => ({
+  Component: (await import('@/pages/ConsumerWithdrawal/Status')).ConsumerWithdrawalStatusPage,
+})
 
 export const publicRoutes: RouteObject[] = [
   {
@@ -56,6 +62,14 @@ export const publicRoutes: RouteObject[] = [
       {
         path: 'recuperar-pedido',
         lazy: loadRecoverOrderRoute,
+      },
+      {
+        path: 'arrepentimiento',
+        lazy: loadConsumerWithdrawalPage,
+      },
+      {
+        path: 'arrepentimiento/consulta',
+        lazy: loadConsumerWithdrawalStatusPage,
       },
       {
         path: 'politica-de-privacidad',

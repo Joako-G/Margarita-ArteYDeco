@@ -474,6 +474,59 @@ Los mensajes son predefinidos pero deben poder editarse antes de enviarlos.
 
 ---
 
+# Botón de Arrepentimiento
+
+El tono será cercano, directo y preciso. No se utilizará lenguaje intimidatorio,
+no se pedirá justificar la decisión y no se presentará la revisión como una
+autorización discrecional del comercio.
+
+Textos públicos aprobados como base:
+
+- Acceso: `BOTÓN DE ARREPENTIMIENTO`.
+- H1: `Solicitá el arrepentimiento de una compra`.
+- Introducción: `Completá estos datos para registrar tu solicitud. No necesitás
+  crear una cuenta ni explicar el motivo.`
+- Ayuda del pedido: `Si lo tenés, nos ayuda a encontrar tu compra más rápido.`
+- Alternativa: `No encuentro mi número de pedido`.
+- Validación: `Ingresá el número de pedido o marcá que no lo encontrás.`
+- Celular: `Celular utilizado en la compra`.
+- Comentario: `Comentario (opcional)` y ayuda `No necesitás justificar tu solicitud.`
+- Acción principal: `Enviar solicitud`.
+- Éxito: `Recibimos tu solicitud`.
+- Constancia: `Guardá este código para consultar el estado de tu solicitud.`
+- Aclaración: `La constancia acredita que recibimos tu solicitud. Verificaremos
+  la identidad, el alcance y los próximos pasos para coordinar las restituciones.`
+- Acciones: `Copiar código`, `Consultar estado` y `Volver a la tienda`.
+- Sin identificación: `Estamos identificando tu pedido`.
+- Detalle: `Tu solicitud fue registrada correctamente. Nos comunicaremos con vos
+  si necesitamos confirmar información.`
+- Sin número: `Nos comunicaremos para identificar la compra que querés cancelar o
+  devolver.`
+- Contingencia: `Si el formulario no funciona, escribinos por WhatsApp para que
+  registremos tu solicitud y te informemos el código.`
+- Error genérico: `No pudimos procesar la solicitud en este momento. Intentá
+  nuevamente.`
+- Rate limit: `Recibimos varios intentos. Esperá unos minutos o utilizá el canal
+  alternativo de atención.`
+
+Los estados públicos usarán etiquetas comprensibles. Si se determina que no
+corresponde, se mostrará una explicación pública clara y el canal para solicitar
+revisión o formular un reclamo, sin exponer notas internas, verificaciones ni
+errores del proveedor de pago. Para Administración, los
+textos serán operativos: `Sin identificar`, `Requiere revisión de plazo`,
+`Reintegro pendiente`, `Requiere acción manual` y `Obligaciones completadas`.
+
+El detalle administrativo evitará mostrar nombres internos de eventos o términos
+como `withdrawal`, `acknowledgement`, `inmutable`, `status` o `payload`. Usará
+acciones concretas como `Solicitud recibida`, `Código de seguimiento generado`,
+`Revisión iniciada`, `Continuar con la cancelación o devolución` e `Indicar que
+no corresponde`. Las notas aclararán quién puede verlas y qué ocurrirá después
+de confirmar.
+
+El sitio identificará `Atención al cliente`, su canal alternativo y horario. Los
+textos jurídicos definitivos deberán recibir revisión profesional antes de
+publicarse.
+
 # Panel Administrativo
 
 Todo el contenido será funcional.

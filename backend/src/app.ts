@@ -21,6 +21,7 @@ import { createAdminOrderRouter } from './routes/admin-orders.routes.js'
 import { createAdminProductRouter } from './routes/admin-products.routes.js'
 import { createAdminProfileRouter } from './routes/admin-profile.routes.js'
 import { createAdminSettingsRouter } from './routes/admin-settings.routes.js'
+import { createAdminConsumerWithdrawalRouter } from './routes/admin-consumer-withdrawals.routes.js'
 import { createOrderRouter } from './routes/orders.routes.js'
 import { createPublicRouter } from './routes/public.routes.js'
 
@@ -45,6 +46,7 @@ export function createApp(
   app.use('/api', createHealthRouter())
   app.use('/api/admin/auth', createAdminAuthRouter(dependencies, env))
   app.use('/api/admin/categories', createAdminCategoryRouter(dependencies, env))
+  app.use('/api/admin/consumer-withdrawals', createAdminConsumerWithdrawalRouter(dependencies, env))
   app.use('/api/admin/customers', createAdminCustomerRouter(dependencies, env))
   app.use('/api/admin/dashboard', createAdminDashboardRouter(dependencies, env))
   app.use('/api/admin/orders', createAdminOrderRouter(dependencies, env))

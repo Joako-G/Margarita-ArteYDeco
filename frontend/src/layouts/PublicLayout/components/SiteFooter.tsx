@@ -18,6 +18,7 @@ const FOOTER_LINKS = [
 ]
 
 const LEGAL_LINKS = [
+  { href: '/arrepentimiento', label: 'BOTÓN DE ARREPENTIMIENTO' },
   { href: '/politica-de-privacidad', label: 'Política de Privacidad' },
   { href: '/terminos-y-condiciones', label: 'Términos y Condiciones' },
 ]

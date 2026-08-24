@@ -10,6 +10,10 @@ import {
 test('formats movement labels and signed quantities for the history', () => {
   assert.equal(getInventoryMovementLabel('order_created'), 'Venta')
   assert.equal(getInventoryMovementLabel('order_cancelled'), 'Reposición por cancelación')
+  assert.equal(
+    getInventoryMovementLabel('consumer_withdrawal_return'),
+    'Reposición por arrepentimiento',
+  )
   assert.equal(formatQuantityDelta(4), '+4')
   assert.equal(formatQuantityDelta(-2), '-2')
 })

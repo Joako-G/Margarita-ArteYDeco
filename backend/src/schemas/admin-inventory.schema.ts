@@ -24,6 +24,7 @@ export const adminInventoryMovementRowsSchema = z.array(z.strictObject({
   created_at: z.iso.datetime({ offset: true }),
   id: z.uuid(),
   movement_type: z.enum([
+    'consumer_withdrawal_return',
     'initial_stock',
     'manual_adjustment',
     'order_cancelled',

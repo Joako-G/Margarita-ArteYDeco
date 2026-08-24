@@ -1,4 +1,5 @@
 export type InventoryMovementType =
+  | 'consumer_withdrawal_return'
   | 'initial_stock'
   | 'manual_adjustment'
   | 'order_cancelled'

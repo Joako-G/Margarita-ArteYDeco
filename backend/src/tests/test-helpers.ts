@@ -14,6 +14,8 @@ import { ProductController } from '../controllers/products.controller.js'
 import { PublicOrderController } from '../controllers/public-orders.controller.js'
 import { SettingsController } from '../controllers/settings.controller.js'
 import { SitemapController } from '../controllers/sitemap.controller.js'
+import { ConsumerWithdrawalController } from '../controllers/consumer-withdrawals.controller.js'
+import { AdminConsumerWithdrawalController } from '../controllers/admin-consumer-withdrawals.controller.js'
 import type { IApplicationDependencies } from '../config/dependencies.js'
 import type { IEnv } from '../config/env.js'
 import type { ICategoryService } from '../services/categories.service.js'
@@ -32,6 +34,8 @@ import { CsrfService } from '../services/csrf.service.js'
 import type { IOrderService } from '../services/orders.service.js'
 import type { ISettingsService } from '../services/settings.service.js'
 import { SitemapService } from '../services/sitemap.service.js'
+import type { IConsumerWithdrawalService } from '../services/consumer-withdrawals.service.js'
+import type { IAdminConsumerWithdrawalService } from '../services/admin-consumer-withdrawals.service.js'
 
 export const TEST_ADMIN_ORIGIN = 'http://localhost:5173'
 
@@ -218,10 +222,23 @@ export function createTestDependencies(
       throw new Error('Admin profile service mock was not configured')
     },
   },
+  consumerWithdrawalService: IConsumerWithdrawalService = {
+    create: async () => { throw new Error('Consumer withdrawal service mock was not configured') },
+    getStatus: async () => { throw new Error('Consumer withdrawal service mock was not configured') },
+  },
+  adminConsumerWithdrawalService: IAdminConsumerWithdrawalService = {
+    createContingency: async () => { throw new Error('Admin consumer withdrawal service mock was not configured') },
+    executeAction: async () => { throw new Error('Admin consumer withdrawal service mock was not configured') },
+    getById: async () => { throw new Error('Admin consumer withdrawal service mock was not configured') },
+    getOrderCandidates: async () => { throw new Error('Admin consumer withdrawal service mock was not configured') },
+    linkOrder: async () => { throw new Error('Admin consumer withdrawal service mock was not configured') },
+    list: async () => { throw new Error('Admin consumer withdrawal service mock was not configured') },
+  },
 ): IApplicationDependencies {
   const csrfService = new CsrfService(TEST_ENV.securityHmacSecret)
 
   return {
+    adminConsumerWithdrawalController: new AdminConsumerWithdrawalController(adminConsumerWithdrawalService),
     adminAuthController: new AdminAuthController(adminAuthService, TEST_ENV.adminSessionMaxAgeMs),
     adminAuthService,
     adminCategoryController: new AdminCategoryController(adminCategoryService),
@@ -234,6 +251,7 @@ export function createTestDependencies(
     adminProfileService,
     adminSettingsController: new AdminSettingsController(adminSettingsService),
     categoryController: new CategoryController(categoryService, 60),
+    consumerWithdrawalController: new ConsumerWithdrawalController(consumerWithdrawalService),
     csrfController: new CsrfController(csrfService),
     csrfService,
     orderController: new OrderController(orderService),

@@ -4,6 +4,8 @@ import { ShieldCheck } from 'lucide-react'
 import { env } from '@/config/env'
 import { Spinner } from '@/shared/components'
 
+import '../public-orders.css'
+
 const TURNSTILE_SCRIPT_URL = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'
 
 interface ITurnstileRenderOptions {
@@ -28,6 +30,7 @@ declare global {
 }
 
 interface ITurnstileChallengeProps {
+  action?: 'consumer_withdrawal' | 'order_recovery'
   onTokenChange: (token: string | null) => void
 }
 
@@ -63,7 +66,7 @@ function loadTurnstileScript(): Promise<void> {
   })
 }
 
-export function TurnstileChallenge({ onTokenChange }: ITurnstileChallengeProps) {
+export function TurnstileChallenge({ action = 'order_recovery', onTokenChange }: ITurnstileChallengeProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [hasError, setHasError] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
@@ -78,7 +81,7 @@ export function TurnstileChallenge({ onTokenChange }: ITurnstileChallengeProps) 
         if (!isActive || containerRef.current === null || window.turnstile === undefined) return
 
         widgetId = window.turnstile.render(containerRef.current, {
-          action: 'order_recovery',
+          action,
           callback: (token) => {
             if (!isActive) return
             onTokenChange(token)
@@ -110,7 +113,7 @@ export function TurnstileChallenge({ onTokenChange }: ITurnstileChallengeProps) 
 
       if (widgetId !== null) window.turnstile?.remove(widgetId)
     }
-  }, [onTokenChange])
+  }, [action, onTokenChange])
 
   return (
     <div className="order-recovery__challenge">

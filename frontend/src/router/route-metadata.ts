@@ -9,6 +9,7 @@ const DEFAULT_DESCRIPTION =
   'Materiales, herramientas y accesorios para manualidades, decoración y proyectos creativos.'
 
 const ADMIN_TITLES: Array<[pathPrefix: string, label: string]> = [
+  ['/admin/arrepentimientos', 'Arrepentimientos'],
   ['/admin/configuracion', 'Configuración'],
   ['/admin/categorias', 'Categorías'],
   ['/admin/productos', 'Productos'],
@@ -48,6 +49,14 @@ export function getRouteMetadata(pathname: string): IRouteMetadata {
       description: DEFAULT_DESCRIPTION,
       robots: 'noindex, nofollow',
       title: `Recuperar pedido | ${BRAND_NAME}`,
+    }
+  }
+
+  if (pathname === '/arrepentimiento' || pathname === '/arrepentimiento/consulta') {
+    return {
+      description: 'Registrá o consultá una solicitud de arrepentimiento de compra.',
+      robots: 'noindex, nofollow',
+      title: `${pathname.endsWith('/consulta') ? 'Consultar solicitud' : 'Botón de Arrepentimiento'} | ${BRAND_NAME}`,
     }
   }
 

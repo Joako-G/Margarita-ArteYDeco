@@ -262,6 +262,94 @@ Frontend utilizará la variante local oficial como respaldo.
 
 ---
 
+# Derecho de Arrepentimiento
+
+## Acceso y presentación
+
+- Toda ruta pública mostrará, desde el primer acceso y en un lugar destacado, un
+  enlace denominado exactamente `BOTÓN DE ARREPENTIMIENTO`.
+- El cliente podrá presentar una solicitud sin crear una cuenta, iniciar sesión,
+  recuperar un pedido ni conservar una Guest Session vigente.
+- El número de pedido será opcional. Si el cliente no lo encuentra, podrá indicarlo
+  expresamente sin impedir la presentación.
+- El celular será obligatorio como dato mínimo de contacto y verificación. No se
+  exigirán motivo, fotografías, documentación ni selección pública de pedidos.
+- Toda entrada sintácticamente válida generará una constancia aunque el pedido no
+  exista, el celular no coincida o el plazo requiera revisión.
+- La constancia y su código público se emitirán inmediatamente. En ningún caso se
+  superará el máximo normativo de 24 horas.
+- El código será opaco, de alta entropía, no secuencial y no se almacenará en texto
+  plano ni en URLs, cookies, logs, analítica o `localStorage`.
+
+## Evaluación y alcance
+
+- Registrar una solicitud acredita su recepción y el ejercicio comunicado. La
+  revisión posterior verifica identidad, alcance temporal y excepciones legales;
+  no constituye una autorización discrecional del comercio ni modifica por sí
+  sola el pedido, el pago o el stock.
+- El alcance inicial será la revocación completa de un único pedido. Los
+  arrepentimientos parciales quedan fuera del primer incremento.
+- La estimación operativa considerará diez días corridos y aplicará el criterio
+  más favorable al consumidor entre celebración y entrega. Los vencimientos en
+  días inhábiles y los casos sin evidencia de información adecuada requerirán
+  revisión administrativa.
+- El sistema nunca declarará automáticamente la improcedencia por plazo,
+  categoría, uso, estado del pedido ni posible excepción. Toda determinación de
+  `not_applicable` exigirá revisión, fundamento legal y una explicación pública
+  comprensible con canal de reconsideración o reclamo.
+- Los productos estándar actuales quedan alcanzados por el flujo. Una futura
+  excepción por personalización, naturaleza, consumo efectivo, perecibilidad o
+  destino de reventa se evaluará por pedido y artículo.
+
+## Resolución, devolución y reintegro
+
+- La decisión administrativa, la devolución física y el reintegro económico
+  mantendrán estados independientes y un historial append-only.
+- Un pedido no entregado podrá cancelarse mediante el flujo vigente, restaurando
+  stock exactamente una vez. Un pedido `picked_up` o `delivered` conservará su
+  estado histórico.
+- Las unidades entregadas solo volverán al stock después de recibirse e
+  inspeccionarse. La inspección registrará por producto las unidades recibidas,
+  aptas y no aptas; únicamente las aptas para reventa incrementarán existencias.
+  Cada solicitud y producto podrá reingresar stock una sola vez. El caso no podrá
+  cerrarse hasta registrar esta resolución, incluso cuando ninguna unidad sea apta.
+  La inspección de inventario no podrá utilizarse para demorar arbitrariamente
+  la restitución recíproca y simultánea de las prestaciones.
+- El ejercicio procedente no generará gastos para el consumidor. El negocio
+  coordinará o reintegrará el costo razonable de devolución cuando corresponda.
+- El reintegro comprenderá todas las sumas efectivamente cobradas por el contrato,
+  incluido un eventual costo original de entrega, más el costo de devolución que
+  corresponda. Se calculará desde snapshots, nunca desde precios actuales ni
+  importes enviados por el Frontend.
+- Efectivo y transferencia utilizarán inicialmente un reintegro manual auditado.
+  No se almacenarán CBU, alias ni datos bancarios completos del cliente.
+- El costo de devolución será siempre un gasto adicional documentado y nunca una
+  repetición del total contractual. La confirmación mostrará y validará el
+  desglose completo antes de registrar el reintegro.
+- Un importe de reintegro ya confirmado solo podrá rectificarse mediante una
+  acción compensatoria con motivo, actor y valores anterior y corregido. La
+  rectificación no eliminará ni reescribirá el historial previo.
+- Una futura integración con Mercado Pago será asíncrona, idempotente y conciliable.
+  Sus caídas, límites o rechazos técnicos no podrán alterar una solicitud
+  determinada como aplicable;
+  el caso continuará por revisión y resolución manual.
+
+## Administración y atención
+
+- Solo el administrador autenticado podrá identificar pedidos, determinar si el
+  derecho resulta aplicable o no aplicable con fundamento,
+  registrar devoluciones, confirmar reintegros, modificar stock o cerrar casos.
+- Una solicitud sin pedido identificado seguirá siendo válida. Los candidatos se
+  mostrarán exclusivamente en Administración y nunca quedarán preseleccionados.
+- WhatsApp será un canal de contingencia cuando el formulario no funcione y podrá
+  utilizarse para coordinación posterior. Abrirlo no modificará estados ni probará
+  que un mensaje fue enviado o leído.
+- El sitio informará el área responsable de Atención al cliente, un canal
+  alternativo y horarios compatibles con la normativa y la operación comercial.
+- Solicitudes, liquidaciones y eventos no tendrán eliminación desde el Panel.
+
+---
+
 # Soft Delete
 
 Las siguientes entidades utilizarán eliminación lógica:

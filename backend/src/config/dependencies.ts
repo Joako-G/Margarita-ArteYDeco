@@ -16,6 +16,8 @@ import { ProductController } from '../controllers/products.controller.js'
 import { PublicOrderController } from '../controllers/public-orders.controller.js'
 import { SettingsController } from '../controllers/settings.controller.js'
 import { SitemapController } from '../controllers/sitemap.controller.js'
+import { ConsumerWithdrawalController } from '../controllers/consumer-withdrawals.controller.js'
+import { AdminConsumerWithdrawalController } from '../controllers/admin-consumer-withdrawals.controller.js'
 import { CategoryRepository } from '../repositories/categories.repository.js'
 import { AdminCategoryRepository } from '../repositories/admin-categories.repository.js'
 import { AdminCustomerRepository } from '../repositories/admin-customers.repository.js'
@@ -31,6 +33,7 @@ import { ProductRepository } from '../repositories/products.repository.js'
 import { RecoveryRepository } from '../repositories/recovery.repository.js'
 import { SettingsRepository } from '../repositories/settings.repository.js'
 import { StorageRepository } from '../repositories/storage.repository.js'
+import { ConsumerWithdrawalRepository } from '../repositories/consumer-withdrawals.repository.js'
 import { CategoryService } from '../services/categories.service.js'
 import { AdminCategoryService } from '../services/admin-categories.service.js'
 import { AdminCustomerService } from '../services/admin-customers.service.js'
@@ -54,10 +57,14 @@ import { SitemapService } from '../services/sitemap.service.js'
 import { StorageService } from '../services/storage.service.js'
 import { TurnstileService } from '../services/turnstile.service.js'
 import { CatalogImageService } from '../services/catalog-image.service.js'
+import { ConsumerWithdrawalProtectionService } from '../services/consumer-withdrawal-protection.service.js'
+import { ConsumerWithdrawalService } from '../services/consumer-withdrawals.service.js'
+import { AdminConsumerWithdrawalService } from '../services/admin-consumer-withdrawals.service.js'
 import type { IEnv } from './env.js'
 import { createSupabaseClient } from './supabase.js'
 
 export interface IApplicationDependencies {
+  adminConsumerWithdrawalController: AdminConsumerWithdrawalController
   adminAuthController: AdminAuthController
   adminAuthService: IAdminAuthService
   adminCategoryController: AdminCategoryController
@@ -70,6 +77,7 @@ export interface IApplicationDependencies {
   adminProfileService: IAdminProfileService
   adminSettingsController: AdminSettingsController
   categoryController: CategoryController
+  consumerWithdrawalController: ConsumerWithdrawalController
   csrfController: CsrfController
   csrfService: ICsrfService
   orderController: OrderController
@@ -166,8 +174,31 @@ export function createApplicationDependencies(
       windowMs: env.recoveryWindowMs,
     },
   )
+  const consumerWithdrawalRepository = new ConsumerWithdrawalRepository(supabase)
+  const consumerWithdrawalProtection = new ConsumerWithdrawalProtectionService(env.securityHmacSecret)
+  const withdrawalTurnstile = new TurnstileService(
+    env.turnstileSecretKey,
+    env.turnstileAllowedHostnames,
+    logger,
+  )
+  const consumerWithdrawalService = new ConsumerWithdrawalService(
+    consumerWithdrawalRepository,
+    consumerWithdrawalProtection,
+    withdrawalTurnstile,
+    {
+      blockDurationMs: env.recoveryBlockDurationMs,
+      captchaThreshold: env.recoveryCaptchaThreshold,
+      maxAttempts: env.recoveryMaxAttempts,
+      windowMs: env.recoveryWindowMs,
+    },
+  )
+  const adminConsumerWithdrawalService = new AdminConsumerWithdrawalService(
+    consumerWithdrawalRepository,
+    consumerWithdrawalProtection,
+  )
 
   return {
+    adminConsumerWithdrawalController: new AdminConsumerWithdrawalController(adminConsumerWithdrawalService),
     adminAuthController: new AdminAuthController(adminAuthService, env.adminSessionMaxAgeMs),
     adminAuthService,
     adminCategoryController: new AdminCategoryController(adminCategoryService),
@@ -180,6 +211,7 @@ export function createApplicationDependencies(
     adminProfileService,
     adminSettingsController: new AdminSettingsController(adminSettingsService),
     categoryController: new CategoryController(categoryService, env.publicCacheMaxAgeSeconds),
+    consumerWithdrawalController: new ConsumerWithdrawalController(consumerWithdrawalService),
     csrfController: new CsrfController(csrfService),
     csrfService,
     orderController: new OrderController(orderService),

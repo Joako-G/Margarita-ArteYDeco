@@ -1248,7 +1248,17 @@ Sistema en producción.
 
 ## Próximas funcionalidades
 
-- Mercado Pago
+- [x] **13.1 — Botón de Arrepentimiento (implementación local).** Se implementó
+  el alcance técnico de `BOTON-ARREPENTIMIENTO-SDD.md`: migración aditiva, API
+  pública, constancia y consulta, módulo administrativo, devolución, liquidación
+  manual, stock, seguridad y pruebas locales.
+- [ ] **13.1.1 — Habilitación productiva.** Requiere dictamen final de un abogado
+  o abogada matriculada, configuración productiva de secretos/CAPTCHA, prueba de
+  aceptación y despliegue supervisado. No se aplicaron cambios a Supabase remoto.
+- [ ] **13.2 — Mercado Pago Checkout Pro.** Incorporar pagos y reintegros mediante
+  entidades propias, outbox, idempotencia, webhooks verificados y conciliación.
+  Deberá consumir el contrato desacoplado del módulo de arrepentimientos sin
+  reescribir sus expedientes o liquidaciones.
 - Cupones
 - Promociones
 - Wishlist

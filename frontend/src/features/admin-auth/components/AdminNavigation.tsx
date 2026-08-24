@@ -1,13 +1,15 @@
-import { Boxes, ClipboardList, LayoutDashboard, Settings, Shapes, Users } from 'lucide-react'
+import { Boxes, ClipboardList, LayoutDashboard, RotateCcw, Settings, Shapes, Users } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 
 import { routes } from '@/config/routes'
+import { useConsumerWithdrawalAttentionCount } from '@/features/admin-consumer-withdrawals'
 
 interface IAdminNavigationProps {
   onNavigate?: () => void
 }
 
 function AdminManagementItems({ onNavigate }: IAdminNavigationProps) {
+  const { count } = useConsumerWithdrawalAttentionCount()
   return (
     <>
       <p className="admin-navigation__label">Gestión</p>
@@ -40,6 +42,17 @@ function AdminManagementItems({ onNavigate }: IAdminNavigationProps) {
       >
         <ClipboardList aria-hidden="true" size={19} />
         Pedidos
+      </NavLink>
+      <NavLink
+        className={({ isActive }) =>
+          `admin-navigation__item${isActive ? ' admin-navigation__item--active' : ''}`
+        }
+        onClick={onNavigate}
+        to={routes.adminConsumerWithdrawals}
+      >
+        <RotateCcw aria-hidden="true" size={19} />
+        Arrepentimientos
+        {count > 0 ? <span aria-label={`${count} solicitudes requieren atención`} className="admin-navigation__count">{count}</span> : null}
       </NavLink>
       <NavLink
         className={({ isActive }) =>
