@@ -10,11 +10,6 @@
   margin: 0;
 }
 
-.admin-order-detail__reference {
-  color: var(--color-primary-dark);
-  font-size: var(--font-size-small);
-}
-
 .admin-order-detail__feedback,
 .admin-order-detail__operation,
 .admin-order-detail__panel,
@@ -69,23 +64,27 @@
 }
 
 .admin-order-detail__status {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, max-content));
   gap: var(--space-2);
   margin-top: var(--space-2);
+}
+
+.admin-order-detail__status-item {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-1);
+}
+
+.admin-order-detail__status-item > span {
+  color: var(--color-primary-dark);
+  font-size: var(--font-size-caption);
+  font-weight: 600;
 }
 
 .admin-order-detail__status-badge {
   font-size: var(--font-size-body);
   font-weight: 600;
-}
-
-.admin-order-detail__payment-info {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-1);
 }
 
 .admin-order-detail__payment-method {

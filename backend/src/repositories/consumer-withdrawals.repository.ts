@@ -98,10 +98,13 @@ interface ISettlementCorrectionInput {
 }
 
 interface IOrderRefundSnapshot {
+  contractConcludedAt: string | null
+  deliveredAt: string | null
   deliveryMethod: 'pickup' | 'shipping'
   method: 'bank_transfer' | 'cash'
   orderNumber: string
   paymentStatus: 'paid' | 'pending' | 'rejected'
+  pickedUpAt: string | null
   status: string
   total: number
 }
@@ -492,7 +495,17 @@ export class ConsumerWithdrawalRepository implements IConsumerWithdrawalReposito
 
   public async findOrderRefundSnapshot(orderId: string): Promise<IOrderRefundSnapshot | null> {
     const { data, error } = await this.database.from('orders')
-      .select('order_number,status,payment_status,total,payment_method,delivery_method')
+      .select(`
+        order_number,
+        status,
+        payment_status,
+        total,
+        payment_method,
+        delivery_method,
+        contract_concluded_at,
+        picked_up_at,
+        delivered_at
+      `)
       .eq('id', orderId).maybeSingle()
     if (error !== null) throw new RepositoryError('No fue posible calcular el reintegro')
     if (data === null) return null
@@ -504,14 +517,20 @@ export class ConsumerWithdrawalRepository implements IConsumerWithdrawalReposito
       || !['bank_transfer', 'cash'].includes(String(method))
       || !['pickup', 'shipping'].includes(String(data.delivery_method))
       || !['paid', 'pending', 'rejected'].includes(String(data.payment_status))
+      || (data.contract_concluded_at !== null && typeof data.contract_concluded_at !== 'string')
+      || (data.delivered_at !== null && typeof data.delivered_at !== 'string')
+      || (data.picked_up_at !== null && typeof data.picked_up_at !== 'string')
     ) {
       throw new RepositoryError('El pedido devolvió datos de reintegro inválidos')
     }
     return {
+      contractConcludedAt: data.contract_concluded_at,
+      deliveredAt: data.delivered_at,
       deliveryMethod: data.delivery_method as 'pickup' | 'shipping',
       method: method as 'bank_transfer' | 'cash',
       orderNumber: String(data.order_number),
       paymentStatus: data.payment_status as 'paid' | 'pending' | 'rejected',
+      pickedUpAt: data.picked_up_at,
       status: String(data.status),
       total,
     }

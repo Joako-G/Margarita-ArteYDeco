@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { CircleAlert, CircleCheck, Settings } from 'lucide-react'
+import { CircleAlert, CircleCheck } from 'lucide-react'
 
 import { useRefreshAdminSessionOnUnauthorized } from '@/features/admin-auth'
 import { AdminPageHeader } from '@/features/admin-auth/components/AdminPageHeader'
@@ -13,6 +13,7 @@ import {
   useUpdateAdminSettings,
 } from '@/features/admin-settings'
 import type { AdminSettingsFormType } from '@/features/admin-settings'
+import type { AdminSettingsTabType } from '@/features/admin-settings/components/AdminSettingsForm'
 import { Button, Skeleton } from '@/shared/components'
 import { getApiErrorCode, getApiErrorStatus } from '@/shared/services/api/errors'
 
@@ -36,6 +37,7 @@ export function AdminSettingsPage() {
   const updateSettings = useUpdateAdminSettings()
   const logoMutation = useAdminSettingsLogo()
   const [feedback, setFeedback] = useState<FeedbackType>(null)
+  const [activeTab, setActiveTab] = useState<AdminSettingsTabType>('identity')
   useRefreshAdminSessionOnUnauthorized(settings.error ?? updateSettings.error ?? logoMutation.error)
 
   useEffect(() => {
@@ -120,15 +122,33 @@ export function AdminSettingsPage() {
     <main aria-labelledby="admin-settings-title" className="admin-page admin-settings">
       <AdminPageHeader
         currentLabel="Configuración"
-        description="Actualizá la información que ven tus clientes y los datos que usás para cobrar y organizar el negocio."
+        description="Actualizá los datos de tu negocio."
         sectionLabel="Negocio"
         title="Configuración"
         titleId="admin-settings-title"
       />
 
-      <div className="admin-settings__scope-note">
-        <Settings aria-hidden="true" size={22} />
-        <p>Los cambios se usarán en las próximas compras y comunicaciones. Los pedidos anteriores conservarán sus importes y datos originales.</p>
+      <div aria-label="Secciones de configuración" className="admin-settings__tabs" role="tablist">
+        {([
+          ['identity', 'Identidad'],
+          ['local', 'Local'],
+          ['payments', 'Cobros'],
+          ['inventory', 'Inventario'],
+          ['social', 'Redes'],
+        ] as const).map(([value, label]) => (
+          <button
+            aria-controls={`settings-panel-${value}`}
+            aria-selected={activeTab === value}
+            className="admin-settings__tab"
+            id={`settings-tab-${value}`}
+            key={value}
+            onClick={() => setActiveTab(value)}
+            role="tab"
+            type="button"
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       {feedback ? (
@@ -140,23 +160,27 @@ export function AdminSettingsPage() {
         </div>
       ) : null}
 
-      <AdminSettingsLogoForm
-        isBlocked={updateSettings.isPending}
-        isRemoving={logoMutation.isPending && logoMutation.variables.action === 'remove'}
-        isReplacing={logoMutation.isPending && logoMutation.variables.action === 'replace'}
-        key={`logo-${settings.data.updatedAt}`}
-        onRemove={handleRemoveLogo}
-        onReplace={handleReplaceLogo}
-        settings={settings.data}
-      />
+      <div aria-labelledby={`settings-tab-${activeTab}`} className="admin-settings__tab-panel" id={`settings-panel-${activeTab}`} role="tabpanel" tabIndex={0}>
+        <AdminSettingsLogoForm
+          isBlocked={updateSettings.isPending}
+          isRemoving={logoMutation.isPending && logoMutation.variables.action === 'remove'}
+          isReplacing={logoMutation.isPending && logoMutation.variables.action === 'replace'}
+          key={`logo-${settings.data.updatedAt}`}
+          onRemove={handleRemoveLogo}
+          onReplace={handleReplaceLogo}
+          settings={settings.data}
+          activeTab={activeTab}
+        />
 
-      <AdminSettingsForm
-        isBlocked={logoMutation.isPending}
-        isSubmitting={updateSettings.isPending}
-        key={`form-${settings.data.updatedAt}`}
-        onSubmit={handleUpdate}
-        settings={settings.data}
-      />
+        <AdminSettingsForm
+          isBlocked={logoMutation.isPending}
+          isSubmitting={updateSettings.isPending}
+          key={`form-${settings.data.updatedAt}`}
+          onSubmit={handleUpdate}
+          settings={settings.data}
+          activeTab={activeTab}
+        />
+      </div>
     </main>
   ) : null
 }

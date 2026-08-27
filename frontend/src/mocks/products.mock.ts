@@ -5,10 +5,14 @@ import type { IProduct } from '@/shared/types/catalog'
 
 const MOCK_DATE = '2026-07-25T12:00:00.000Z'
 
-function createProduct(product: Omit<IProduct, 'createdAt' | 'updatedAt'>): IProduct {
+function createProduct(
+  product: Omit<IProduct, 'createdAt' | 'discountPercentage' | 'salePrice' | 'updatedAt'>,
+): IProduct {
   return {
     ...product,
     createdAt: MOCK_DATE,
+    discountPercentage: 0,
+    salePrice: product.price,
     updatedAt: MOCK_DATE,
   }
 }

@@ -61,9 +61,13 @@ export interface IAdminOrderDetail extends IAdminOrderListItem {
     mapsUrl: string
   }
   canCancel: boolean
+  contractConcludedAt: string | null
+  deliveredAt: string | null
   discount: number
   items: readonly {
+    listUnitPrice: number
     productName: string
+    productDiscountPercentage: number
     quantity: number
     subtotal: number
     unitPrice: number

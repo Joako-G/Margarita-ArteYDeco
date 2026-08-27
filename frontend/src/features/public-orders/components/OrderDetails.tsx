@@ -70,6 +70,11 @@ export function OrderDetails({ isForgetting, onForget, order }: IOrderDetailsPro
                   <span>
                     {item.quantity} × {formatPrice(item.unitPrice)}
                   </span>
+                  {item.productDiscountPercentage > 0 ? (
+                    <small>
+                      Antes {formatPrice(item.listUnitPrice)} · {item.productDiscountPercentage}% de descuento
+                    </small>
+                  ) : null}
                 </div>
                 <strong>{formatPrice(item.lineTotal)}</strong>
               </li>

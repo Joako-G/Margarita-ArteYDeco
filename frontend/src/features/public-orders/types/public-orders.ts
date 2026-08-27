@@ -28,8 +28,10 @@ export interface IOrderConfirmation {
     shippingAddress: string | null
   }
   items: {
+    listUnitPrice: number
     lineTotal: number
     name: string
+    productDiscountPercentage: number
     quantity: number
     unitPrice: number
   }[]

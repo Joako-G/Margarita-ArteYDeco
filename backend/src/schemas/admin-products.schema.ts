@@ -27,12 +27,14 @@ export const adminProductRowsSchema = z.array(z.strictObject({
     name: z.string().trim().min(1),
   }),
   category_id: z.uuid(),
+  discount_percentage: z.coerce.number().min(0).lt(100),
   id: z.uuid(),
   image_path: z.string().trim().min(1).nullable(),
   is_active: z.boolean(),
   is_featured: z.boolean(),
   name: z.string().trim().min(1),
   price: z.coerce.number().positive(),
+  sale_price: z.coerce.number().positive(),
   slug: z.string().trim().min(1),
   stock_quantity: z.coerce.number().int().nonnegative(),
   updated_at: z.iso.datetime({ offset: true }),
@@ -41,21 +43,39 @@ export const adminProductRowsSchema = z.array(z.strictObject({
 const adminProductMutationFields = {
   categoryId: z.uuid(),
   description: z.string().trim().max(2_000).nullable(),
+  discountPercentage: z.number().min(0).lt(100).refine(
+    (value) => Math.abs(value * 100 - Math.round(value * 100)) < Number.EPSILON * 100,
+    'El descuento admite hasta dos decimales',
+  ),
   isActive: z.boolean(),
   isFeatured: z.boolean(),
   name: z.string().trim().min(2).max(120),
   price: z.number().positive().max(9_999_999_999.99),
 }
 
+function validateSalePrice(
+  product: { discountPercentage: number; price: number },
+  context: z.RefinementCtx,
+): void {
+  const salePrice = Math.round(product.price * (100 - product.discountPercentage)) / 100
+  if (salePrice <= 0) {
+    context.addIssue({
+      code: 'custom',
+      message: 'El descuento deja el precio final en cero',
+      path: ['discountPercentage'],
+    })
+  }
+}
+
 export const adminProductCreateSchema = z.strictObject({
   ...adminProductMutationFields,
   stockQuantity: z.number().int().nonnegative().max(2_147_483_647),
-})
+}).superRefine(validateSalePrice)
 
 export const adminProductUpdateSchema = z.strictObject({
   ...adminProductMutationFields,
   expectedUpdatedAt: z.iso.datetime({ offset: true }),
-})
+}).superRefine(validateSalePrice)
 
 export const adminProductImageMutationSchema = z.strictObject({
   expectedUpdatedAt: z.iso.datetime({ offset: true }),
@@ -93,12 +113,14 @@ export const adminProductDetailRowSchema = z.strictObject({
   }),
   category_id: z.uuid(),
   description: z.string().nullable(),
+  discount_percentage: z.coerce.number().min(0).lt(100),
   id: z.uuid(),
   image_path: z.string().trim().min(1).nullable(),
   is_active: z.boolean(),
   is_featured: z.boolean(),
   name: z.string().trim().min(1),
   price: z.coerce.number().positive(),
+  sale_price: z.coerce.number().positive(),
   slug: z.string().trim().min(1),
   stock_quantity: z.coerce.number().int().nonnegative(),
   updated_at: z.iso.datetime({ offset: true }),

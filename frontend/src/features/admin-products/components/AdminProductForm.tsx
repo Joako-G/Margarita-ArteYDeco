@@ -28,6 +28,7 @@ function getDefaultValues(product?: IAdminProductDetail): AdminProductFormType {
   return {
     categoryId: product?.category.id ?? '',
     description: product?.description ?? '',
+    discountPercentage: product ? String(product.discountPercentage) : '0',
     image: undefined,
     isActive: product?.isActive ?? true,
     isFeatured: product?.isFeatured ?? false,
@@ -59,6 +60,7 @@ export function AdminProductForm({
   })
   const name = useWatch({ control, name: 'name' })
   const price = useWatch({ control, name: 'price' })
+  const discountPercentage = useWatch({ control, name: 'discountPercentage' })
   const selectedImage = useWatch({ control, name: 'image' })
   const removeCurrentImage = useWatch({ control, name: 'removeCurrentImage' })
   const previewUrl = useMemo(
@@ -81,6 +83,8 @@ export function AdminProductForm({
   const currentImageUrl = removeCurrentImage ? null : product?.imageUrl ?? null
   const displayedImage = previewUrl ?? currentImageUrl ?? productPlaceholderImage
   const numericPrice = Number(price.replace(',', '.'))
+  const numericDiscount = Number(discountPercentage.replace(',', '.'))
+  const salePrice = Math.round(numericPrice * (100 - numericDiscount)) / 100
 
   const groupedCategories = {
     art: categories.filter((category) => category.catalogArea === 'art'),
@@ -163,6 +167,16 @@ export function AdminProductForm({
                 {...register('price')}
               />
               <Input
+                error={errors.discountPercentage?.message}
+                helpText="Usá 0 para publicar el producto sin oferta."
+                inputMode="decimal"
+                label="Descuento del producto (%)"
+                placeholder="Ej.: 15"
+                {...register('discountPercentage')}
+              />
+            </div>
+            <div className="admin-product-form__row">
+              <Input
                 disabled={isEditing}
                 error={errors.stockQuantity?.message}
                 helpText={isEditing ? 'Para cambiar las unidades, usá la sección de inventario que aparece más abajo.' : 'Cantidad disponible al crear el producto.'}
@@ -229,7 +243,13 @@ export function AdminProductForm({
               <PackageCheck aria-hidden="true" size={20} />
               <div>
                 <strong>{name.trim() || 'Producto sin nombre'}</strong>
-                <span>{numericPrice > 0 ? formatPrice(numericPrice) : 'Precio pendiente'}</span>
+                <span>
+                  {numericPrice > 0 && salePrice > 0
+                    ? numericDiscount > 0
+                      ? `Oferta: ${formatPrice(salePrice)} · Antes ${formatPrice(numericPrice)}`
+                      : formatPrice(numericPrice)
+                    : 'Precio pendiente'}
+                </span>
               </div>
             </div>
           </section>

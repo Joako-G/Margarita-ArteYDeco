@@ -68,6 +68,7 @@ export function AdminProductFormPage() {
     const payload = {
       categoryId: values.categoryId,
       description: values.description.trim() || null,
+      discountPercentage: Number(values.discountPercentage.replace(',', '.')),
       isActive: values.isActive,
       isFeatured: values.isFeatured,
       name: values.name.trim(),

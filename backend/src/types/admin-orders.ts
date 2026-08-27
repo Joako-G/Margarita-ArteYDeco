@@ -29,6 +29,7 @@ export interface IAdminOrderFilters {
 }
 
 export interface IAdminOrderRecord {
+  contractConcludedAt: string | null
   createdAt: string
   customerFirstName: string
   customerLastName: string
@@ -36,6 +37,7 @@ export interface IAdminOrderRecord {
   customerPhoneNormalized: string
   deliveryMethod: DeliveryMethodType
   discount: number
+  deliveredAt: string | null
   id: string
   itemCount: number
   notes: string | null
@@ -51,7 +53,9 @@ export interface IAdminOrderRecord {
 }
 
 export interface IAdminOrderItemRecord {
+  listUnitPrice: number
   productName: string
+  productDiscountPercentage: number
   quantity: number
   subtotal: number
   unitPrice: number
@@ -101,6 +105,8 @@ export interface IAdminOrderDetailDto extends IAdminOrderListItemDto {
     mapsUrl: string
   }
   canCancel: boolean
+  contractConcludedAt: string | null
+  deliveredAt: string | null
   discount: number
   items: readonly IAdminOrderItemRecord[]
   notes: string

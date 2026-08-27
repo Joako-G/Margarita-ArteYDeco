@@ -1,3 +1,4 @@
+import { RotateCcw, Save } from 'lucide-react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 
@@ -67,9 +68,11 @@ export function AdminCustomerForm({ customer, isSubmitting, onSubmit }: IAdminCu
       </div>
       <div className="admin-customer-form__actions">
         <Button disabled={!isDirty || isSubmitting} onClick={() => reset()} type="button" variant="ghost">
+          <RotateCcw aria-hidden="true" size={17} />
           Descartar cambios
         </Button>
         <Button disabled={!isDirty} isLoading={isSubmitting} loadingText="Guardando…" type="submit">
+          <Save aria-hidden="true" size={17} />
           Guardar cambios
         </Button>
       </div>

@@ -228,6 +228,8 @@
 
 .admin-order-table__payment .ui-badge {
   width: fit-content;
+  max-width: none;
+  white-space: nowrap;
 }
 
 .admin-order-table__numeric {
@@ -760,7 +762,7 @@
 
 @media (min-width: 64rem) {
   .admin-order-filters {
-    grid-template-columns: minmax(14rem, 1.5fr) repeat(4, minmax(9rem, 1fr));
+    grid-template-columns: minmax(14rem, 1.5fr) repeat(3, minmax(9rem, 1fr));
   }
 
   .admin-order-filters > .ui-field:first-child {

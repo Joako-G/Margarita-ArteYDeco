@@ -38,4 +38,7 @@ export interface ICreateOrderRequest {
   shippingAddress: string
 }
 
-export type CheckoutCartItemType = Pick<ICartItem, 'id' | 'image' | 'name' | 'price' | 'quantity'>
+export type CheckoutCartItemType = Pick<
+  ICartItem,
+  'discountPercentage' | 'id' | 'image' | 'name' | 'price' | 'quantity' | 'salePrice'
+>

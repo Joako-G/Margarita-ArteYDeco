@@ -164,6 +164,7 @@ describe('AdminProductService', () => {
     const result = await service.create({
       categoryId: createdProduct.categoryId,
       description: null,
+      discountPercentage: 0,
       isActive: true,
       isFeatured: false,
       name: createdProduct.name,

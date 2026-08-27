@@ -86,12 +86,14 @@ export class AdminProductService implements IAdminProductService {
       items: page.items.map((product) => ({
         catalogArea: product.catalogArea,
         category: { id: product.categoryId, name: product.categoryName },
+        discountPercentage: product.discountPercentage,
         id: product.id,
         imageUrl: product.imagePath === null ? null : imageUrls.get(product.imagePath) ?? null,
         isActive: product.isActive,
         isFeatured: product.isFeatured,
         name: product.name,
         price: product.price,
+        salePrice: product.salePrice,
         slug: product.slug,
         stockQuantity: product.stockQuantity,
         stockStatus: getStockStatus(product.stockQuantity, page.lowStockThreshold),
@@ -127,6 +129,7 @@ export class AdminProductService implements IAdminProductService {
       const product = await this.repository.create({ ...input, slug })
       this.audit('product_created', product.id, actorProfileId, {
         categoryId: input.categoryId,
+        discountPercentage: input.discountPercentage,
         initialStock: input.stockQuantity,
       })
       return this.toDetail(product)
@@ -141,7 +144,7 @@ export class AdminProductService implements IAdminProductService {
     input: AdminProductUpdateRequestType,
     actorProfileId: string,
   ): Promise<IAdminProductDetailDto> {
-    await this.requireProduct(productId)
+    const current = await this.requireProduct(productId)
     await this.validateCategory(input.categoryId, input.isActive)
 
     try {
@@ -154,6 +157,8 @@ export class AdminProductService implements IAdminProductService {
 
       this.audit('product_updated', product.id, actorProfileId, {
         categoryId: input.categoryId,
+        discountPercentage: input.discountPercentage,
+        previousDiscountPercentage: current.discountPercentage,
       })
       return this.toDetail(product)
     } catch (error) {
@@ -289,12 +294,14 @@ export class AdminProductService implements IAdminProductService {
       catalogArea: product.catalogArea,
       category: { id: product.categoryId, name: product.categoryName },
       description: product.description ?? '',
+      discountPercentage: product.discountPercentage,
       id: product.id,
       imageUrl: product.imagePath === null ? null : imageUrls.get(product.imagePath) ?? null,
       isActive: product.isActive,
       isFeatured: product.isFeatured,
       name: product.name,
       price: product.price,
+      salePrice: product.salePrice,
       slug: product.slug,
       stockQuantity: product.stockQuantity,
       updatedAt: product.updatedAt,

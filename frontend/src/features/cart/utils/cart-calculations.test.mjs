@@ -12,6 +12,8 @@ const CART_ITEMS = [
     id: 'product-1',
     name: 'Molde de rosas',
     price: 12500,
+    discountPercentage: 20,
+    salePrice: 10000,
     quantity: 2,
     isActive: true,
     stockQuantity: 8,
@@ -20,6 +22,8 @@ const CART_ITEMS = [
     id: 'product-2',
     name: 'Pincel liner fino',
     price: 4200,
+    discountPercentage: 0,
+    salePrice: 4200,
     quantity: 1,
     isActive: true,
     stockQuantity: 1,
@@ -28,9 +32,9 @@ const CART_ITEMS = [
 
 test('calcula subtotal, descuento y total del carrito', () => {
   assert.deepEqual(calculateCartTotals(CART_ITEMS), {
-    subtotal: 29200,
+    subtotal: 24200,
     discount: 0,
-    total: 29200,
+    total: 24200,
   })
 })
 

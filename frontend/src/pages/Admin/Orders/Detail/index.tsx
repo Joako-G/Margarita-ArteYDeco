@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import {
   ArrowLeft,
+  CalendarClock,
   CircleAlert,
   CircleCheck,
-  Clock,
   PackageCheck,
   Phone,
   Trash2,
@@ -73,6 +73,10 @@ function AdminOrderContent({ order }: IAdminOrderContentProps) {
   const status = ORDER_STATUS_DETAILS[order.status]
   const payment = PAYMENT_STATUS_DETAILS[order.paymentStatus]
   const displayNumber = getOrderDisplayNumber(order.orderNumber)
+  const completedAt = order.deliveryMethod === 'shipping' ? order.deliveredAt : order.pickedUpAt
+  const isCompleted = order.deliveryMethod === 'shipping'
+    ? order.status === 'delivered'
+    : order.status === 'picked_up'
   const hasSingleProduct = order.items.length === 1
   const hasDiscount = order.discount > 0
 
@@ -120,10 +124,6 @@ function AdminOrderContent({ order }: IAdminOrderContentProps) {
         titleId="admin-order-title"
       />
 
-      <p className="admin-order-detail__reference">
-        Referencia: {order.orderNumber}
-      </p>
-
       {feedback ? (
         <div className={`admin-order-detail__feedback admin-order-detail__feedback--${feedback.type}`} role={feedback.type === 'error' ? 'alert' : 'status'}>
           {feedback.type === 'success'
@@ -135,12 +135,19 @@ function AdminOrderContent({ order }: IAdminOrderContentProps) {
 
       <section aria-labelledby="order-operation-title" className="admin-order-detail__operation">
         <div>
-          <h2 id="order-operation-title">Qué sigue con este pedido</h2>
+          <h2 id="order-operation-title">Estado del pedido y del pago</h2>
           <div className="admin-order-detail__status">
-            <Badge className="admin-order-detail__status-badge" variant={status.variant}>{status.label}</Badge>
-            <div className="admin-order-detail__payment-info">
+            <div className="admin-order-detail__status-item">
+              <span>Estado del pedido</span>
+              <Badge className="admin-order-detail__status-badge" variant={status.variant}>{status.label}</Badge>
+            </div>
+            <div className="admin-order-detail__status-item">
+              <span>Estado del pago</span>
               <Badge variant={payment.variant}>{payment.label}</Badge>
-              <span className="admin-order-detail__payment-method">{PAYMENT_METHOD_LABELS[order.paymentMethod]}</span>
+            </div>
+            <div className="admin-order-detail__status-item">
+              <span>Medio de pago</span>
+              <strong className="admin-order-detail__payment-method">{PAYMENT_METHOD_LABELS[order.paymentMethod]}</strong>
             </div>
           </div>
         </div>
@@ -172,7 +179,6 @@ function AdminOrderContent({ order }: IAdminOrderContentProps) {
       <div className="admin-order-detail__grid">
         <section aria-labelledby="order-products-title" className="admin-order-detail__panel admin-order-detail__products">
           <div className="admin-order-detail__panel-heading">
-            <p className="admin-order-detail__section-label">Productos</p>
             <h2 id="order-products-title">
               {hasSingleProduct ? 'Producto' : `${order.itemCount} productos`}
             </h2>
@@ -183,6 +189,11 @@ function AdminOrderContent({ order }: IAdminOrderContentProps) {
                 <div>
                   <strong>{item.productName}</strong>
                   <span>{item.quantity} × {formatPrice(item.unitPrice)}</span>
+                  {item.productDiscountPercentage > 0 ? (
+                    <small>
+                      Antes {formatPrice(item.listUnitPrice)} · {item.productDiscountPercentage}% de descuento
+                    </small>
+                  ) : null}
                 </div>
                 <strong>{formatPrice(item.subtotal)}</strong>
               </div>
@@ -201,7 +212,6 @@ function AdminOrderContent({ order }: IAdminOrderContentProps) {
 
         <section aria-labelledby="order-customer-title" className="admin-order-detail__panel admin-order-detail__customer">
           <div className="admin-order-detail__panel-heading">
-            <p className="admin-order-detail__section-label">Cliente</p>
             <h2 id="order-customer-title">Información de contacto</h2>
           </div>
           <div className="admin-order-customer">
@@ -221,14 +231,6 @@ function AdminOrderContent({ order }: IAdminOrderContentProps) {
                 <span className="admin-order-customer__value">{order.customer.phone}</span>
               </div>
             </div>
-            <div className="admin-order-customer__row">
-              <div className="admin-order-customer__icon">
-                <Clock aria-hidden="true" size={20} />
-              </div>
-              <div className="admin-order-customer__info">
-                <span className="admin-order-customer__value">{order.business.businessHours}</span>
-              </div>
-            </div>
           </div>
           {order.notes ? (
             <div className="admin-order-detail__notes">
@@ -240,7 +242,6 @@ function AdminOrderContent({ order }: IAdminOrderContentProps) {
 
         <section aria-labelledby="order-delivery-title" className="admin-order-detail__panel">
           <div className="admin-order-detail__panel-heading">
-            <p className="admin-order-detail__section-label">Entrega</p>
             <h2 id="order-delivery-title">Cómo recibe el pedido</h2>
           </div>
           <div className="admin-order-customer">
@@ -263,15 +264,32 @@ function AdminOrderContent({ order }: IAdminOrderContentProps) {
                 </div>
               </div>
             ) : null}
+            {isCompleted ? (
+              <div className="admin-order-customer__row">
+                <div className="admin-order-customer__icon">
+                  <CalendarClock aria-hidden="true" size={20} />
+                </div>
+                <div className="admin-order-customer__info">
+                  <span className="admin-order-detail__section-label">
+                    {order.deliveryMethod === 'shipping' ? 'Entregado el' : 'Retirado el'}
+                  </span>
+                  {completedAt ? (
+                    <time className="admin-order-customer__value" dateTime={completedAt}>
+                      {formatAdminOrderDate(completedAt)}
+                    </time>
+                  ) : (
+                    <span className="admin-order-customer__value">Sin fecha registrada</span>
+                  )}
+                </div>
+              </div>
+            ) : null}
           </div>
         </section>
       </div>
 
       <section aria-labelledby="order-whatsapp-title" className="admin-order-detail__panel admin-order-detail__whatsapp">
         <div className="admin-order-detail__panel-heading">
-          <p className="admin-order-detail__section-label">Comunicación</p>
           <h2 id="order-whatsapp-title">Contactar al cliente</h2>
-          <p>Podés modificar el mensaje antes de abrir la conversación.</p>
         </div>
         <AdminWhatsAppComposer key={order.updatedAt} order={order} />
       </section>

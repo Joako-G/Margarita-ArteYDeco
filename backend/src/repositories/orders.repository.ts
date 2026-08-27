@@ -132,7 +132,14 @@ export class OrderRepository implements IOrderRepository {
         .maybeSingle(),
       this.client
         .from('order_items')
-        .select('product_name, quantity, unit_price, subtotal')
+        .select(`
+          product_name,
+          quantity,
+          list_unit_price,
+          product_discount_percentage,
+          unit_price,
+          subtotal
+        `)
         .eq('order_id', orderId)
         .order('created_at', { ascending: true }),
     ])
@@ -159,7 +166,9 @@ export class OrderRepository implements IOrderRepository {
       deliveryMethod: parsedOrder.data.delivery_method,
       discount: parsedOrder.data.discount,
       items: parsedItems.data.map((item) => ({
+        listUnitPrice: item.list_unit_price,
         productName: item.product_name,
+        productDiscountPercentage: item.product_discount_percentage,
         quantity: item.quantity,
         subtotal: item.subtotal,
         unitPrice: item.unit_price,

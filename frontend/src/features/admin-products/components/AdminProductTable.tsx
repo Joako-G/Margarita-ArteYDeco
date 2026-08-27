@@ -70,6 +70,22 @@ function useAdminProductListLayout() {
   return layout
 }
 
+function AdminProductPrice({ product }: { product: IAdminProduct }) {
+  if (product.discountPercentage === 0) {
+    return <strong className="admin-product-price__current">{formatPrice(product.price)}</strong>
+  }
+
+  return (
+    <span className="admin-product-price">
+      <span>
+        <del>{formatPrice(product.price)}</del>{' '}
+        <strong className="admin-product-price__current">{formatPrice(product.salePrice)}</strong>
+      </span>
+      <Badge variant="warning">Oferta · {product.discountPercentage}%</Badge>
+    </span>
+  )
+}
+
 function AdminProductCard({
   product,
   onDeleteRequest,
@@ -104,7 +120,7 @@ function AdminProductCard({
       <div className="admin-product-card__body">
         <div className="admin-product-card__main">
           <h3 className="admin-product-card__name">{product.name}</h3>
-          <p className="admin-product-card__price">{formatPrice(product.price)}</p>
+          <p className="admin-product-card__price"><AdminProductPrice product={product} /></p>
         </div>
 
         <div className="admin-product-card__stock">
@@ -215,7 +231,9 @@ function AdminProductHorizontalCard({
       <div className="admin-product-horizontal-card__content">
         <div className="admin-product-horizontal-card__main">
           <h3 className="admin-product-horizontal-card__name">{product.name}</h3>
-          <p className="admin-product-horizontal-card__price">{formatPrice(product.price)}</p>
+          <p className="admin-product-horizontal-card__price">
+            <AdminProductPrice product={product} />
+          </p>
         </div>
 
         <div className="admin-product-horizontal-card__blocks">
@@ -401,9 +419,9 @@ export function AdminProductTable({
                   </span>
                 </td>
                 <td data-label="Precio">
-                  <strong className="admin-product-table__numeric">
-                    {formatPrice(product.price)}
-                  </strong>
+                  <span className="admin-product-table__numeric">
+                    <AdminProductPrice product={product} />
+                  </span>
                 </td>
                 <td data-label="Stock">
                   <span className="admin-product-table__stock">

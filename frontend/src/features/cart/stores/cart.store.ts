@@ -32,6 +32,31 @@ function createCartItem(product: IProduct, quantity: number): ICartItem {
   }
 }
 
+function migrateCartState(persistedState: unknown): ICartStore {
+  if (persistedState === null || typeof persistedState !== 'object') {
+    return { items: [] } as unknown as ICartStore
+  }
+
+  const state = persistedState as { items?: unknown[] }
+  const items = Array.isArray(state.items)
+    ? state.items.map((item) => {
+        if (item === null || typeof item !== 'object') return item
+        const product = item as { discountPercentage?: unknown; price?: unknown; salePrice?: unknown }
+        const price = typeof product.price === 'number' ? product.price : 0
+
+        return {
+          ...item,
+          discountPercentage: typeof product.discountPercentage === 'number'
+            ? product.discountPercentage
+            : 0,
+          salePrice: typeof product.salePrice === 'number' ? product.salePrice : price,
+        }
+      })
+    : []
+
+  return { ...persistedState, items } as unknown as ICartStore
+}
+
 export const useCartStore = create<ICartStore>()(
   persist(
     (set) => ({
@@ -113,8 +138,10 @@ export const useCartStore = create<ICartStore>()(
         })),
     }),
     {
+      migrate: migrateCartState,
       name: 'margarita-shopping-cart',
       partialize: (state) => ({ items: state.items }),
+      version: 1,
     },
   ),
 )

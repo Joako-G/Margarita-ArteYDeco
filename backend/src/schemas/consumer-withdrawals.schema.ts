@@ -50,7 +50,7 @@ export const adminConsumerWithdrawalFiltersSchema = z.strictObject({
     'all', 'applicable', 'closed', 'not_applicable', 'received', 'under_review',
     'verification_pending',
   ]).default('all'),
-  sort: z.enum(['newest', 'oldest', 'urgent']).default('urgent'),
+  sort: z.enum(['newest', 'oldest', 'urgent']).default('newest'),
 })
 
 export const adminConsumerWithdrawalActionSchema = z.strictObject({

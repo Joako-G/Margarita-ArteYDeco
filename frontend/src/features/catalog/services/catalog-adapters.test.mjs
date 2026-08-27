@@ -36,6 +36,8 @@ test('preserves public product stock and nullable images', () => {
     isFeatured: true,
     name: 'Pincel fino',
     price: 4200,
+    discountPercentage: 15,
+    salePrice: 3570,
     slug: 'pincel-fino',
     stockQuantity: 0,
     updatedAt: '2026-08-02T10:00:00.000Z',
@@ -44,4 +46,6 @@ test('preserves public product stock and nullable images', () => {
   assert.equal(product.image, null)
   assert.equal(product.isActive, true)
   assert.equal(product.stockQuantity, 0)
+  assert.equal(product.discountPercentage, 15)
+  assert.equal(product.salePrice, 3570)
 })

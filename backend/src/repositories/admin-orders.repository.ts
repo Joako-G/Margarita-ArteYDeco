@@ -67,6 +67,7 @@ function mapOrder(row: unknown): IAdminOrderRecord {
   }
 
   return {
+    contractConcludedAt: parsed.data.contract_concluded_at,
     createdAt: parsed.data.created_at,
     customerFirstName: parsed.data.customer_first_name,
     customerLastName: parsed.data.customer_last_name,
@@ -74,6 +75,7 @@ function mapOrder(row: unknown): IAdminOrderRecord {
     customerPhoneNormalized: parsed.data.customer_phone_normalized,
     deliveryMethod: parsed.data.delivery_method,
     discount: parsed.data.discount,
+    deliveredAt: parsed.data.delivered_at,
     id: parsed.data.id,
     itemCount: parsed.data.order_items[0]?.count ?? 0,
     notes: parsed.data.notes,
@@ -104,7 +106,9 @@ const ADMIN_ORDER_SELECT = `
   payment_status,
   delivery_method,
   shipping_address,
+  contract_concluded_at,
   picked_up_at,
+  delivered_at,
   notes,
   created_at,
   updated_at,
@@ -187,7 +191,14 @@ export class AdminOrderRepository implements IAdminOrderRepository {
   public async findItems(orderId: string): Promise<readonly IAdminOrderItemRecord[]> {
     const { data, error } = await this.client
       .from('order_items')
-      .select('product_name,quantity,unit_price,subtotal')
+      .select(`
+        product_name,
+        quantity,
+        list_unit_price,
+        product_discount_percentage,
+        unit_price,
+        subtotal
+      `)
       .eq('order_id', orderId)
       .order('created_at', { ascending: true })
 
@@ -195,7 +206,9 @@ export class AdminOrderRepository implements IAdminOrderRepository {
     const rows = adminOrderItemRowsSchema.safeParse(data)
     if (!rows.success) throw new RepositoryError('Los productos del pedido devolvieron un formato inválido')
     return rows.data.map((item) => ({
+      listUnitPrice: item.list_unit_price,
       productName: item.product_name,
+      productDiscountPercentage: item.product_discount_percentage,
       quantity: item.quantity,
       subtotal: item.subtotal,
       unitPrice: item.unit_price,

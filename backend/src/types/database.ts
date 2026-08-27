@@ -24,6 +24,7 @@ type ICategoryDatabaseRow = {
   created_at: string
   deleted_at: string | null
   description: string | null
+  discount_percentage: number
   display_order: number
   id: string
   image_path: string
@@ -44,6 +45,7 @@ type IProductDatabaseRow = {
   is_featured: boolean
   name: string
   price: number
+  sale_price: number
   slug: string
   stock_quantity: number
   updated_at: string
@@ -93,6 +95,7 @@ type IGuestSessionDatabaseRow = {
 }
 
 type IOrderDatabaseRow = {
+  contract_concluded_at: string | null
   created_at: string
   customer_first_name: string
   customer_id: string
@@ -101,6 +104,7 @@ type IOrderDatabaseRow = {
   customer_phone_normalized: string
   delivery_method: 'pickup' | 'shipping'
   discount: number
+  delivered_at: string | null
   id: string
   notes: string | null
   order_number: string
@@ -117,9 +121,11 @@ type IOrderDatabaseRow = {
 type IOrderItemDatabaseRow = {
   created_at: string
   id: string
+  list_unit_price: number
   order_id: string
   product_id: string
   product_name: string
+  product_discount_percentage: number
   quantity: number
   subtotal: number
   unit_price: number

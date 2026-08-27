@@ -12,7 +12,7 @@ export interface ICartTotals {
 
 export type CartAvailabilityStatusType = 'checking' | 'error' | 'ready'
 export type CartAvailabilityChangeReasonType =
-  'invalid_quantity' | 'out_of_stock' | 'stock_reduced' | 'unavailable'
+  'invalid_quantity' | 'out_of_stock' | 'price_changed' | 'stock_reduced' | 'unavailable'
 
 export interface ICartAvailabilityChange {
   currentQuantity: number

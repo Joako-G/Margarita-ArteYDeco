@@ -11,8 +11,10 @@ import {
   type AdminSettingsLogoFormType,
 } from '../schemas/admin-settings-form.schema'
 import type { IAdminSettings } from '../types/admin-settings'
+import type { AdminSettingsTabType } from './AdminSettingsForm'
 
 interface IAdminSettingsLogoFormProps {
+  activeTab: AdminSettingsTabType
   isBlocked: boolean
   isRemoving: boolean
   isReplacing: boolean
@@ -22,6 +24,7 @@ interface IAdminSettingsLogoFormProps {
 }
 
 export function AdminSettingsLogoForm({
+  activeTab,
   isBlocked,
   isRemoving,
   isReplacing,
@@ -55,13 +58,11 @@ export function AdminSettingsLogoForm({
   const isUsingFallback = settings.logoUrl === null && previewUrl === null
 
   return (
-    <section aria-labelledby="settings-logo-title" className="admin-settings__panel admin-settings-logo">
+    <section aria-labelledby="settings-logo-title" className="admin-settings__panel admin-settings-logo" hidden={activeTab !== 'identity'}>
       <div className="admin-settings__section-heading">
         <div>
-          <p>Marca</p>
-          <h2 id="settings-logo-title">Logo público</h2>
+            <h2 id="settings-logo-title">Logo</h2>
         </div>
-        <span>Si no cargás uno, la tienda seguirá mostrando el logo oficial.</span>
       </div>
 
       <div className="admin-settings-logo__preview">
@@ -78,7 +79,7 @@ export function AdminSettingsLogoForm({
               accept="image/jpeg,image/png,image/webp"
               disabled={isBlocked}
               error={errors.logo?.message}
-              helpText="JPG, PNG o WebP de hasta 5 MB. Conservaremos sus proporciones."
+              helpText="JPG, PNG o WebP de hasta 5 MB."
               label={settings.logoUrl ? 'Reemplazar logo' : 'Cargar logo'}
               name={name}
               onBlur={onBlur}

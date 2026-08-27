@@ -14,11 +14,13 @@ export interface IPublicProductDto {
   categoryId: string
   createdAt: string
   description: string
+  discountPercentage: number
   id: string
   imageUrl: string | null
   isFeatured: boolean
   name: string
   price: number
+  salePrice: number
   slug: string
   stockQuantity: number
   updatedAt: string

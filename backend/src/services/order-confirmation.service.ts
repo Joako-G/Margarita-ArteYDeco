@@ -35,8 +35,10 @@ export class OrderConfirmationService implements IOrderConfirmationService {
         shippingAddress: order.shippingAddress,
       },
       items: order.items.map((item) => ({
+        listUnitPrice: item.listUnitPrice,
         lineTotal: item.subtotal,
         name: item.productName,
+        productDiscountPercentage: item.productDiscountPercentage,
         quantity: item.quantity,
         unitPrice: item.unitPrice,
       })),

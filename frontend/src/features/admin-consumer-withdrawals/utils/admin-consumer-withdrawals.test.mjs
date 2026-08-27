@@ -9,6 +9,7 @@ import {
   getAdminConsumerWithdrawalActionErrorMessage,
   getAdminConsumerWithdrawalEventCopy,
   getAdminConsumerWithdrawalGuidance,
+  getAdminConsumerWithdrawalProgress,
   getArgentinaDateTimeLocal,
   parseAdminConsumerWithdrawalFilters,
 } from './admin-consumer-withdrawals.ts'
@@ -51,7 +52,7 @@ test('normaliza filtros inválidos con valores operativos seguros', () => {
   const filters = parseAdminConsumerWithdrawalFilters(new URLSearchParams('page=-2&status=invalid'))
   assert.equal(filters.page, 1)
   assert.equal(filters.status, 'all')
-  assert.equal(filters.sort, 'urgent')
+  assert.equal(filters.sort, 'newest')
 })
 
 test('serializa filtros distintos de los predeterminados', () => {
@@ -119,6 +120,30 @@ test('explica el próximo paso y diferencia iniciar de confirmar un reintegro', 
   assert.match(
     getAdminConsumerWithdrawalActionCopy('correctManualRefund').description,
     /valor anterior seguirá visible/,
+  )
+})
+
+test('marca los pasos como completos solo después de alcanzar cada etapa', () => {
+  const newRequest = {
+    order: null,
+    refund: { status: 'not_required' },
+    requestStatus: 'received',
+    return: { status: 'not_required' },
+  }
+  const initialProgress = getAdminConsumerWithdrawalProgress(newRequest)
+  const completedProgress = getAdminConsumerWithdrawalProgress({
+    ...newRequest,
+    order: { id: 'order-1' },
+    requestStatus: 'closed',
+  })
+
+  assert.deepEqual(
+    initialProgress.map((step) => step.done),
+    [false, false, false, false, false, false],
+  )
+  assert.deepEqual(
+    completedProgress.map((step) => step.done),
+    [true, true, true, true, true, true],
   )
 })
 

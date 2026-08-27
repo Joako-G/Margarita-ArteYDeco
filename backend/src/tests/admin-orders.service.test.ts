@@ -7,6 +7,7 @@ import { AdminOrderService } from '../services/admin-orders.service.js'
 import type { IAdminOrderRecord } from '../types/admin-orders.js'
 
 const ORDER: IAdminOrderRecord = {
+  contractConcludedAt: null,
   createdAt: '2026-08-03T12:00:00.000Z',
   customerFirstName: 'Ana',
   customerLastName: 'Pérez',
@@ -14,6 +15,7 @@ const ORDER: IAdminOrderRecord = {
   customerPhoneNormalized: '5491155551234',
   deliveryMethod: 'pickup',
   discount: 1200,
+  deliveredAt: null,
   id: '3a2b9148-7dbf-4b88-a47f-296205f5e4de',
   itemCount: 2,
   notes: 'Retira por la tarde',
@@ -34,7 +36,14 @@ function createRepository(overrides: Partial<IAdminOrderRepository> = {}): IAdmi
     cancel: vi.fn(),
     findById: vi.fn().mockResolvedValue(ORDER),
     findItems: vi.fn().mockResolvedValue([
-      { productName: 'Pinceles', quantity: 2, subtotal: 10800, unitPrice: 5400 },
+      {
+        listUnitPrice: 6000,
+        productDiscountPercentage: 10,
+        productName: 'Pinceles',
+        quantity: 2,
+        subtotal: 10800,
+        unitPrice: 5400,
+      },
     ]),
     findPage: vi.fn(),
     transition: vi.fn(),
@@ -80,6 +89,26 @@ describe('AdminOrderService', () => {
     expect(result.pagination).toMatchObject({ totalItems: 12, totalPages: 2 })
     expect(result.items[0]).toMatchObject({ orderNumber: ORDER.orderNumber, itemCount: 2 })
     expect(JSON.stringify(result)).not.toContain('customerPhoneNormalized')
+  })
+
+  it('exposes the administrative dates used to review a withdrawal request', async () => {
+    const completedOrder = {
+      ...ORDER,
+      contractConcludedAt: '2026-08-03T13:00:00.000Z',
+      deliveredAt: '2026-08-05T18:30:00.000Z',
+      deliveryMethod: 'shipping' as const,
+      status: 'delivered' as const,
+    }
+    const repository = createRepository({ findById: vi.fn().mockResolvedValue(completedOrder) })
+    const service = new AdminOrderService(repository, createSettingsRepository(), logger)
+
+    const result = await service.getById(ORDER.id)
+
+    expect(result).toMatchObject({
+      contractConcludedAt: completedOrder.contractConcludedAt,
+      deliveredAt: completedOrder.deliveredAt,
+      pickedUpAt: null,
+    })
   })
 
   it('confirms a transfer payment without changing the order status', async () => {
