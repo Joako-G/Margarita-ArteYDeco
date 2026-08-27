@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { CircleAlert, CircleCheck, Users } from 'lucide-react'
+import { CircleAlert, CircleCheck, RefreshCw, Users } from 'lucide-react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 
 import { useRefreshAdminSessionOnUnauthorized } from '@/features/admin-auth'
@@ -73,8 +73,6 @@ export function AdminCustomersPage() {
     <main aria-labelledby="admin-customers-title" className="admin-page admin-customers">
       <AdminPageHeader
         currentLabel="Clientes"
-        description="Consultá datos de contacto e historial de compras sin alterar los pedidos anteriores."
-        sectionLabel="Gestión"
         title="Clientes"
         titleId="admin-customers-title"
       />
@@ -88,11 +86,7 @@ export function AdminCustomersPage() {
 
       <section aria-labelledby="admin-customer-filters-title" className="admin-customers__filters-panel">
         <div className="admin-customers__section-heading">
-          <div>
-            <p className="admin-customers__section-label">Directorio</p>
-            <h2 id="admin-customer-filters-title">Buscar y ordenar</h2>
-          </div>
-          <p>Los clientes se crean automáticamente al confirmar su primera compra.</p>
+          <h2 id="admin-customer-filters-title">Filtros</h2>
         </div>
         <AdminCustomerFilters
           filters={filters}
@@ -103,10 +97,7 @@ export function AdminCustomersPage() {
 
       <section aria-labelledby="admin-customer-list-title" className="admin-customers__list-panel">
         <div className="admin-customers__list-heading">
-          <div>
-            <p className="admin-customers__section-label">Resultados</p>
-            <h2 id="admin-customer-list-title">Listado de clientes</h2>
-          </div>
+          <h2 id="admin-customer-list-title">Clientes</h2>
           {pagination ? (
             <p aria-live="polite" className="admin-customers__result-count">
               {pagination.totalItems} {pagination.totalItems === 1 ? 'cliente' : 'clientes'}
@@ -123,7 +114,10 @@ export function AdminCustomersPage() {
               <h2>No pudimos cargar los clientes</h2>
               <p>Revisá que el backend esté disponible e intentá nuevamente.</p>
             </div>
-            <Button onClick={() => void customers.refetch()} variant="secondary">Reintentar</Button>
+            <Button onClick={() => void customers.refetch()} variant="secondary">
+              <RefreshCw aria-hidden="true" size={17} />
+              Reintentar
+            </Button>
           </div>
         ) : null}
 

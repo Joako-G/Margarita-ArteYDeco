@@ -12,6 +12,10 @@
   background: var(--color-surface);
 }
 
+.admin-withdrawals__list-panel {
+  padding: 0;
+}
+
 .admin-withdrawals__dashboard-alert {
   display: flex;
   align-items: center;
@@ -34,6 +38,13 @@
   justify-content: space-between;
   gap: var(--space-2);
   margin-bottom: var(--space-3);
+}
+
+.admin-withdrawals__list-panel > .admin-withdrawals__heading {
+  margin-bottom: 0;
+  padding: var(--space-3);
+  background: var(--color-surface-muted);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .admin-withdrawals__heading p,
@@ -59,6 +70,13 @@
   gap: var(--space-2);
 }
 
+.admin-withdrawals__result-count {
+  color: var(--color-primary-dark);
+  font-size: var(--font-size-small);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
 .admin-withdrawals__filter-actions,
 .admin-withdrawal-detail__actions,
 .admin-withdrawal-detail__modal-actions {
@@ -79,17 +97,30 @@
 
 .admin-withdrawals__table th,
 .admin-withdrawals__table td {
-  padding: var(--space-2);
+  padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--color-border);
   text-align: left;
-  vertical-align: top;
+  vertical-align: middle;
+}
+
+.admin-withdrawals__table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.admin-withdrawals__table .ui-badge {
+  width: fit-content;
+  max-width: none;
+  white-space: nowrap;
 }
 
 .admin-withdrawals__table th {
   color: var(--color-primary-dark);
   background: var(--color-surface-muted);
   font-size: var(--font-size-caption);
+  font-weight: 700;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .admin-withdrawals__attention {
@@ -105,8 +136,21 @@
   min-height: 44px;
   align-items: center;
   gap: var(--space-1);
+  padding-inline: var(--space-1);
   color: var(--color-primary-dark);
   font-weight: 600;
+  white-space: nowrap;
+  text-decoration: none;
+  border-radius: var(--radius-button);
+}
+
+.admin-withdrawals__detail-link:hover {
+  background: var(--color-primary-soft);
+}
+
+.admin-withdrawals__detail-link:focus-visible {
+  outline: 3px solid var(--color-primary-dark);
+  outline-offset: 2px;
 }
 
 .admin-withdrawals__error,
@@ -145,17 +189,22 @@
 .admin-withdrawal-detail__summary {
   display: grid;
   gap: var(--space-3);
+  background: var(--color-surface-muted);
 }
 
 .admin-withdrawal-detail__statuses {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
 }
 
 .admin-withdrawal-detail__statuses > div {
   display: grid;
   gap: var(--space-1);
+  min-width: 0;
+  padding: var(--space-2);
+  border-radius: var(--radius-input);
+  background: var(--color-surface);
 }
 
 .admin-withdrawal-detail__statuses span {
@@ -163,17 +212,35 @@
   font-weight: 600;
 }
 
+.admin-withdrawal-detail__statuses .ui-badge {
+  justify-self: start;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
 .admin-withdrawal-detail__next-step {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
+  min-width: 0;
   background: var(--color-primary-soft);
 }
 
 .admin-withdrawal-detail__next-step > div {
   display: grid;
+  min-width: 0;
   gap: var(--space-1);
+}
+
+.admin-withdrawal-detail__next-step h2 {
+  margin: 0;
+  text-wrap: balance;
+}
+
+.admin-withdrawal-detail__next-step .ui-button {
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .admin-withdrawal-detail__next-step > div > p:last-child {
@@ -183,10 +250,82 @@
   font-weight: 400;
 }
 
+.admin-withdrawal-detail__deadline {
+  display: grid;
+  gap: var(--space-3);
+  background: var(--color-surface);
+}
+
+.admin-withdrawal-detail__deadline-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.admin-withdrawal-detail__deadline-heading > div {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.admin-withdrawal-detail__deadline-heading p,
+.admin-withdrawal-detail__deadline-heading h2 {
+  margin: 0;
+}
+
+.admin-withdrawal-detail__deadline-heading p {
+  color: var(--color-primary-dark);
+  font-size: var(--font-size-caption);
+  font-weight: 700;
+}
+
+.admin-withdrawal-detail .admin-withdrawal-detail__deadline-dates {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.admin-withdrawal-detail .admin-withdrawal-detail__deadline-dates > div {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-input);
+  background: var(--color-surface-muted);
+}
+
+.admin-withdrawal-detail__deadline-dates dt {
+  color: var(--color-primary-dark);
+  font-size: var(--font-size-caption);
+  font-weight: 600;
+}
+
+.admin-withdrawal-detail__deadline-dates dd {
+  color: var(--color-text);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.45;
+  text-align: right;
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+}
+
+.admin-withdrawal-detail__deadline-note {
+  max-width: 75ch;
+  color: var(--color-primary-dark) !important;
+  font-size: var(--font-size-small) !important;
+  font-weight: 400 !important;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
 .admin-withdrawal-detail__progress {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: var(--space-1);
+  gap: var(--space-2);
   margin: var(--space-3) 0 0;
   padding: 0;
   list-style: none;
@@ -197,6 +336,7 @@
   justify-items: center;
   gap: var(--space-1);
   min-width: 0;
+  padding: var(--space-1);
   color: var(--color-warning);
   text-align: center;
 }
@@ -208,17 +348,23 @@
   place-items: center;
   border: 1px solid currentColor;
   border-radius: var(--radius-round);
+  background: var(--color-warning-soft);
   font-weight: 700;
 }
 
 .admin-withdrawal-detail__progress li p {
   margin: 0;
   font-size: var(--font-size-caption);
+  line-height: 1.35;
   overflow-wrap: anywhere;
 }
 
 .admin-withdrawal-detail__progress li.is-complete {
   color: var(--color-success);
+}
+
+.admin-withdrawal-detail__progress li.is-complete span {
+  background: var(--color-success-soft);
 }
 
 .admin-withdrawal-detail__grid {
@@ -421,6 +567,39 @@
   .admin-withdrawal-detail__return-quantities {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .admin-withdrawals__table th:nth-child(1),
+  .admin-withdrawals__table td:nth-child(1) { width: 14%; }
+
+  .admin-withdrawals__table th:nth-child(2),
+  .admin-withdrawals__table td:nth-child(2) { width: 19%; }
+
+  .admin-withdrawals__table th:nth-child(3),
+  .admin-withdrawals__table td:nth-child(3) { width: 15%; }
+
+  .admin-withdrawals__table th:nth-child(4),
+  .admin-withdrawals__table td:nth-child(4) { width: 17%; }
+
+  .admin-withdrawals__table th:nth-child(5),
+  .admin-withdrawals__table td:nth-child(5) { width: 22%; }
+
+  .admin-withdrawals__table th:last-child,
+  .admin-withdrawals__table td:last-child { width: 13%; }
+
+  .admin-withdrawals__table tbody tr:hover {
+    background: var(--color-surface-muted);
+  }
+}
+
+@media (min-width: 1024px) {
+  .admin-withdrawal-detail__summary {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+
+  .admin-withdrawal-detail__summary .admin-withdrawals__attention {
+    grid-column: 1 / -1;
+  }
 }
 
 @media (max-width: 1023px) {
@@ -444,7 +623,9 @@
 
   .admin-withdrawals__table tbody {
     display: grid;
+    padding: var(--space-3);
     gap: var(--space-2);
+    background: var(--color-surface-muted);
   }
 
   .admin-withdrawals__table tr {
@@ -466,17 +647,82 @@
     font-size: var(--font-size-caption);
     font-weight: 700;
   }
+
+  .admin-withdrawals__table td:last-child {
+    display: block;
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .admin-withdrawals__table td:last-child::before {
+    display: none;
+  }
+
+  .admin-withdrawals__table td[data-label='Estado'] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .admin-withdrawals__detail-link {
+    width: 100%;
+    justify-content: center;
+    white-space: normal;
+  }
 }
 
 @media (max-width: 480px) {
+  .admin-withdrawals__panel,
+  .admin-withdrawal-detail__summary {
+    padding: var(--space-2);
+  }
+
+  .admin-withdrawals__list-panel {
+    padding: 0;
+  }
+
+  .admin-withdrawal-detail__statuses {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .admin-withdrawal-detail__statuses > div {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+
   .admin-withdrawal-detail__next-step {
     align-items: stretch;
     flex-direction: column;
   }
 
+  .admin-withdrawal-detail__next-step .ui-button {
+    width: 100%;
+    white-space: normal;
+  }
+
   .admin-withdrawal-detail__progress {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .admin-withdrawal-detail .admin-withdrawal-detail__deadline-dates {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .admin-withdrawal-detail .admin-withdrawal-detail__deadline-dates > div {
+    gap: var(--space-1);
+  }
+
+  .admin-withdrawal-detail__deadline-dates dd {
+    text-align: left;
+  }
+
+  .admin-withdrawal-detail__deadline-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .admin-withdrawal-detail__deadline-heading .ui-badge {
+    align-self: flex-start;
+  }
+
   .admin-withdrawals__dashboard-alert { align-items: flex-start; flex-direction: column; }
   .admin-withdrawals__filter-actions,
   .admin-withdrawals__filter-actions > *,

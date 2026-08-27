@@ -21,6 +21,7 @@ export function ProductCard({ catalogArea, headingLevel = 'h2', product }: IProd
   const [quantity, setQuantity] = useState(1)
   const addItem = useCartStore((state) => state.addItem)
   const isOutOfStock = product.stockQuantity === 0
+  const isOnSale = product.discountPercentage > 0
   const isLowStock = product.stockQuantity > 0 && product.stockQuantity <= 3
   const isNew =
     NEW_PRODUCT_REFERENCE_DATE - new Date(product.createdAt).getTime() <= NEW_PRODUCT_WINDOW
@@ -61,19 +62,14 @@ export function ProductCard({ catalogArea, headingLevel = 'h2', product }: IProd
         >
           {catalogArea === 'art' ? 'Para crear' : 'Terminado a mano'}
         </Badge>
-        {isOutOfStock ? (
-          <Badge className="product-card__badge" variant="error">
-            Sin stock
-          </Badge>
-        ) : product.isFeatured ? (
-          <Badge className="product-card__badge" variant="neutral">
-            Destacado
-          </Badge>
-        ) : isNew ? (
-          <Badge className="product-card__badge product-card__badge--new" variant="success">
-            Nuevo
-          </Badge>
-        ) : null}
+        <div className="product-card__badges">
+          {isOutOfStock ? <Badge variant="error">Sin stock</Badge> : null}
+          {isOnSale ? <Badge variant="warning">Oferta · {product.discountPercentage}%</Badge> : null}
+          {!isOutOfStock && product.isFeatured ? <Badge variant="neutral">Destacado</Badge> : null}
+          {!isOutOfStock && !product.isFeatured && isNew ? (
+            <Badge className="product-card__badge--new" variant="success">Nuevo</Badge>
+          ) : null}
+        </div>
       </div>
 
       <div className="product-card__content">
@@ -81,7 +77,16 @@ export function ProductCard({ catalogArea, headingLevel = 'h2', product }: IProd
           {product.name}
         </Typography>
         <Typography variant="small">{product.description}</Typography>
-        <p className="product-card__price">{formatPrice(product.price)}</p>
+        {isOnSale ? (
+          <div className="product-card__price-group">
+            <span className="product-card__price-label">Antes</span>
+            <del>{formatPrice(product.price)}</del>
+            <span className="product-card__price-label">Ahora</span>
+            <p className="product-card__price">{formatPrice(product.salePrice)}</p>
+          </div>
+        ) : (
+          <p className="product-card__price">{formatPrice(product.price)}</p>
+        )}
         <p
           className={
             isOutOfStock

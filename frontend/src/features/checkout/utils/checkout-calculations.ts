@@ -1,8 +1,8 @@
 import type { ICheckoutTotals, PaymentMethodType } from '../types/checkout'
 
 interface ICheckoutPricedItem {
-  price: number
   quantity: number
+  salePrice: number
 }
 
 export function calculateCheckoutTotals(
@@ -10,7 +10,7 @@ export function calculateCheckoutTotals(
   paymentMethod: PaymentMethodType,
   transferDiscount: number,
 ): ICheckoutTotals {
-  const subtotal = items.reduce((total, item) => total + item.price * item.quantity, 0)
+  const subtotal = items.reduce((total, item) => total + item.salePrice * item.quantity, 0)
   const discountPercentage = paymentMethod === 'transfer' ? transferDiscount : 0
   const discount = Math.round((subtotal * discountPercentage) / 100)
 

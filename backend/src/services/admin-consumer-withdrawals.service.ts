@@ -111,6 +111,16 @@ export class AdminConsumerWithdrawalService implements IAdminConsumerWithdrawalS
       ...this.mapListItem(record),
       availableActions: getAvailableActions(record),
       comment: record.customerComment,
+      deadline: {
+        contractConcludedAt: orderSnapshot?.contractConcludedAt ?? null,
+        fulfillmentAt: orderSnapshot === null
+          ? null
+          : orderSnapshot.deliveryMethod === 'shipping'
+            ? orderSnapshot.deliveredAt
+            : orderSnapshot.pickedUpAt,
+        legalDeadlineAt: record.legalDeadlineAt,
+        status: record.legalTimeStatus,
+      },
       evaluation: {
         internalReason: record.resolutionReason,
         publicExplanation: record.publicExplanation,

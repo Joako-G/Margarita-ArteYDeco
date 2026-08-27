@@ -75,13 +75,6 @@ export function AdminOrderFilters({ filters, onApply, onClear }: IAdminOrderFilt
   const paymentStatusRegister = register('paymentStatus', {
     onChange: isCompact ? applyFilters : undefined,
   })
-  const sortRegister = register('sort', {
-    onChange: isCompact ? applyFilters : undefined,
-  })
-  const pageSizeRegister = register('pageSize', {
-    onChange: isCompact ? applyFilters : undefined,
-  })
-
   const advancedFilters = (
     <>
       <Select label="Estado del pedido" {...statusRegister}>
@@ -105,17 +98,6 @@ export function AdminOrderFilters({ filters, onApply, onClear }: IAdminOrderFilt
         <option value="paid">Confirmado</option>
         <option value="rejected">Rechazado</option>
       </Select>
-      <Select label="Ordenar por" {...sortRegister}>
-        <option value="newest">Más recientes primero</option>
-        <option value="oldest">Más antiguos primero</option>
-        <option value="totalDesc">Mayor importe primero</option>
-        <option value="totalAsc">Menor importe primero</option>
-      </Select>
-      <Select label="Resultados por página" {...pageSizeRegister}>
-        <option value="10">10 pedidos</option>
-        <option value="20">20 pedidos</option>
-        <option value="50">50 pedidos</option>
-      </Select>
     </>
   )
 
@@ -132,7 +114,7 @@ export function AdminOrderFilters({ filters, onApply, onClear }: IAdminOrderFilt
           className="admin-order-filters__search-input"
           error={errors.search?.message}
           label="Buscar pedido"
-          placeholder="Ej.: 000123, María o 11 2345-6789"
+          placeholder="Número, cliente o celular"
           type="search"
           {...register('search')}
         />

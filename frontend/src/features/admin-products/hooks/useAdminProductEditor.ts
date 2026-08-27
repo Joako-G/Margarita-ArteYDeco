@@ -71,6 +71,7 @@ export function useUpdateAdminProduct() {
       let product = await adminProductsService.updateProduct(input.productId, {
         categoryId: input.payload.categoryId,
         description: input.payload.description,
+        discountPercentage: input.payload.discountPercentage,
         expectedUpdatedAt: input.currentUpdatedAt,
         isActive: input.payload.isActive,
         isFeatured: input.payload.isFeatured,

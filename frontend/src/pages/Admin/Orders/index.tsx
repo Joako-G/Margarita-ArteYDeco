@@ -68,7 +68,7 @@ export function AdminOrdersPage() {
     <main aria-labelledby="admin-orders-title" className="admin-page admin-orders">
       <AdminPageHeader
         currentLabel="Pedidos"
-        description="Revisá las ventas, confirmá los pagos y acompañá cada pedido hasta su retiro o entrega."
+        description="Consultá ventas, pagos y entregas."
         sectionLabel="Gestión"
         title="Pedidos"
         titleId="admin-orders-title"
@@ -76,11 +76,7 @@ export function AdminOrdersPage() {
 
       <section aria-labelledby="admin-order-filters-title" className="admin-orders__filters-panel">
         <div className="admin-orders__section-heading">
-          <div>
-            <p className="admin-orders__section-label">Pedidos</p>
-            <h2 id="admin-order-filters-title">Buscar y filtrar</h2>
-          </div>
-          <p>Filtrá por cliente, estado, método de pago y fecha para encontrar pedidos rápidamente.</p>
+          <h2 id="admin-order-filters-title">Filtros</h2>
         </div>
         <AdminOrderFilters
           filters={filters}
@@ -91,10 +87,7 @@ export function AdminOrdersPage() {
 
       <section aria-labelledby="admin-order-list-title" className="admin-orders__list-panel">
         <div className="admin-orders__list-heading">
-          <div>
-            <p className="admin-orders__section-label">Pedidos encontrados</p>
-            <h2 id="admin-order-list-title">Listado de pedidos</h2>
-          </div>
+          <h2 id="admin-order-list-title">Pedidos</h2>
           {pagination ? (
             <p aria-live="polite" className="admin-orders__result-count">
               {pagination.totalItems} {pagination.totalItems === 1 ? 'pedido' : 'pedidos'}
@@ -136,8 +129,8 @@ export function AdminOrdersPage() {
               </Button>
             ) : undefined}
             description={hasFilters
-              ? 'Probá con otros datos o eliminá alguno de los filtros.'
-              : 'Los nuevos pedidos aparecerán aquí cuando se confirmen desde la tienda.'}
+              ? 'Probá con otros filtros.'
+              : 'Todavía no hay pedidos.'}
             icon={<ClipboardList size={34} />}
             title={hasFilters ? 'No encontramos coincidencias' : 'Todavía no hay pedidos'}
           />

@@ -6,8 +6,8 @@ import { routes } from '@/config/routes'
 interface IAdminPageHeaderProps {
   actions?: ReactNode
   currentLabel: string
-  description: string
-  sectionLabel: string
+  description?: string
+  sectionLabel?: string
   title: string
   titleId: string
 }
@@ -29,9 +29,9 @@ export function AdminPageHeader({
       </nav>
       <div className="admin-page-heading">
         <div>
-          <p className="admin-page__eyebrow">{sectionLabel}</p>
+          {sectionLabel ? <p className="admin-page__eyebrow">{sectionLabel}</p> : null}
           <h1 id={titleId}>{title}</h1>
-          <p className="admin-page__intro">{description}</p>
+          {description ? <p className="admin-page__intro">{description}</p> : null}
         </div>
         {actions ? <div className="admin-page-heading__actions">{actions}</div> : null}
       </div>

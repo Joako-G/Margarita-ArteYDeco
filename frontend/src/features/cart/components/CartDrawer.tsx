@@ -112,7 +112,15 @@ export function CartDrawer() {
                       <Trash2 aria-hidden="true" size={18} strokeWidth={2} />
                     </IconButton>
                   </div>
-                  <p className="shopping-cart__item-price">{formatPrice(item.price)}</p>
+                  {item.discountPercentage > 0 ? (
+                    <p className="shopping-cart__item-price">
+                      <del>{formatPrice(item.price)}</del>{' '}
+                      <strong>{formatPrice(item.salePrice)}</strong>
+                      <span> · {item.discountPercentage}% de descuento</span>
+                    </p>
+                  ) : (
+                    <p className="shopping-cart__item-price">{formatPrice(item.price)}</p>
+                  )}
                   <p className="shopping-cart__item-availability">
                     {getItemAvailabilityLabel(item)}
                   </p>

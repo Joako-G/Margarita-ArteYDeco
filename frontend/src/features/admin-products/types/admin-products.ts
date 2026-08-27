@@ -19,12 +19,14 @@ export interface IAdminProduct {
     id: string
     name: string
   }
+  discountPercentage: number
   id: string
   imageUrl: string | null
   isActive: boolean
   isFeatured: boolean
   name: string
   price: number
+  salePrice: number
   slug: string
   stockQuantity: number
   stockStatus: Exclude<AdminProductStockFilterType, 'all'>
@@ -57,12 +59,14 @@ export interface IAdminProductDetail {
     name: string
   }
   description: string
+  discountPercentage: number
   id: string
   imageUrl: string | null
   isActive: boolean
   isFeatured: boolean
   name: string
   price: number
+  salePrice: number
   slug: string
   stockQuantity: number
   updatedAt: string
@@ -71,6 +75,7 @@ export interface IAdminProductDetail {
 export interface IAdminProductCreatePayload {
   categoryId: string
   description: string | null
+  discountPercentage: number
   isActive: boolean
   isFeatured: boolean
   name: string

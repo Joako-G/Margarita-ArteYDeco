@@ -51,7 +51,9 @@ export interface IOrderConfirmationRow {
   deliveryMethod: DeliveryMethodType
   discount: number
   items: readonly {
+    listUnitPrice: number
     productName: string
+    productDiscountPercentage: number
     quantity: number
     subtotal: number
     unitPrice: number
@@ -87,8 +89,10 @@ export interface IPublicOrderConfirmationDto {
     shippingAddress: string | null
   }
   items: readonly {
+    listUnitPrice: number
     lineTotal: number
     name: string
+    productDiscountPercentage: number
     quantity: number
     unitPrice: number
   }[]

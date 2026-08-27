@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ArrowLeft, CircleAlert, CircleCheck, Trash2, Users } from 'lucide-react'
+import { ArrowLeft, CircleAlert, CircleCheck, Eye, RefreshCw, Trash2, Users } from 'lucide-react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
 import { routes } from '@/config/routes'
@@ -97,7 +97,7 @@ function AdminCustomerContent({ customer, onOrdersPageChange }: IAdminCustomerCo
           </Link>
         )}
         currentLabel={`${customer.firstName} ${customer.lastName}`}
-        description={`${customer.orderCount} ${customer.orderCount === 1 ? 'pedido asociado' : 'pedidos asociados'} · Cliente desde ${formatDate(customer.createdAt)}.`}
+        description={`${customer.orderCount} ${customer.orderCount === 1 ? 'pedido' : 'pedidos'}`}
         sectionLabel="Cliente"
         title={`${customer.firstName} ${customer.lastName}`}
         titleId="admin-customer-title"
@@ -115,10 +115,9 @@ function AdminCustomerContent({ customer, onOrdersPageChange }: IAdminCustomerCo
       <section aria-labelledby="customer-data-title" className="admin-customer-detail__panel">
         <div className="admin-customer-detail__panel-heading">
           <div>
-            <p className="admin-customer-detail__label">Información actual</p>
             <h2 id="customer-data-title">Datos de contacto</h2>
           </div>
-          <p>Los pedidos anteriores conservarán los datos que tenían al momento de la compra.</p>
+          <p>Los pedidos anteriores mantienen los datos originales.</p>
         </div>
         <AdminCustomerForm
           customer={customer}
@@ -131,10 +130,11 @@ function AdminCustomerContent({ customer, onOrdersPageChange }: IAdminCustomerCo
       <section aria-labelledby="customer-orders-title" className="admin-customer-detail__panel admin-customer-detail__orders">
         <div className="admin-customer-detail__panel-heading">
           <div>
-            <p className="admin-customer-detail__label">Historial comercial</p>
             <h2 id="customer-orders-title">Pedidos</h2>
           </div>
-          <p>{customer.orders.pagination.totalItems} en total</p>
+          <p>
+            {customer.orders.pagination.totalItems} {customer.orders.pagination.totalItems === 1 ? 'pedido' : 'pedidos'}
+          </p>
         </div>
 
         {customer.orders.items.length ? (
@@ -147,7 +147,7 @@ function AdminCustomerContent({ customer, onOrdersPageChange }: IAdminCustomerCo
                     <th scope="col">Estado</th>
                     <th scope="col">Pago</th>
                     <th scope="col">Total</th>
-                    <th scope="col"><span className="sr-only">Acciones</span></th>
+                    <th scope="col">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -157,17 +157,24 @@ function AdminCustomerContent({ customer, onOrdersPageChange }: IAdminCustomerCo
                     return (
                       <tr key={order.id}>
                         <td data-label="Pedido">
-                          <strong>{order.orderNumber}</strong>
-                          <time dateTime={order.createdAt}>{formatDate(order.createdAt)}</time>
+                          <span className="admin-customer-orders__stacked">
+                            <strong>{order.orderNumber}</strong>
+                            <time dateTime={order.createdAt}>{formatDate(order.createdAt)}</time>
+                          </span>
                         </td>
                         <td data-label="Estado"><Badge variant={status.variant}>{status.label}</Badge></td>
                         <td data-label="Pago">
-                          <Badge variant={payment.variant}>{payment.label}</Badge>
-                          <span>{PAYMENT_METHOD_LABELS[order.paymentMethod]}</span>
+                          <span className="admin-customer-orders__payment">
+                            <Badge variant={payment.variant}>{payment.label}</Badge>
+                            <span>{PAYMENT_METHOD_LABELS[order.paymentMethod]}</span>
+                          </span>
                         </td>
                         <td data-label="Total"><strong>{formatPrice(order.total)}</strong></td>
                         <td data-label="Acciones">
-                          <Link to={routes.adminOrderDetail(order.id)}>Ver pedido</Link>
+                          <Link to={routes.adminOrderDetail(order.id)}>
+                            <Eye aria-hidden="true" size={17} />
+                            Ver pedido
+                          </Link>
                         </td>
                       </tr>
                     )
@@ -194,12 +201,12 @@ function AdminCustomerContent({ customer, onOrdersPageChange }: IAdminCustomerCo
 
       <section aria-labelledby="customer-delete-title" className="admin-customer-detail__danger">
         <div>
-          <h2 id="customer-delete-title">Dar de baja al cliente</h2>
-          <p>Lo quita de las consultas habituales, pero conserva íntegro su historial comercial.</p>
+          <h2 id="customer-delete-title">Ocultar cliente</h2>
+          <p>Dejará de aparecer en el listado, pero conservará todo su historial.</p>
         </div>
         <Button disabled={lifecycle.isPending} onClick={() => setIsDeleteOpen(true)} variant="ghost">
           <Trash2 aria-hidden="true" size={18} />
-          Dar de baja
+          Ocultar cliente
         </Button>
       </section>
 
@@ -215,10 +222,10 @@ function AdminCustomerContent({ customer, onOrdersPageChange }: IAdminCustomerCo
         )}
         isOpen={isDeleteOpen}
         onClose={() => { if (!lifecycle.isPending) setIsDeleteOpen(false) }}
-        title="Dar de baja al cliente"
+        title="Ocultar cliente"
       >
         <p>
-          <strong>{customer.firstName} {customer.lastName}</strong> dejará de aparecer en el directorio.
+          <strong>{customer.firstName} {customer.lastName}</strong> dejará de aparecer en el listado.
           Sus {customer.orderCount} {customer.orderCount === 1 ? 'pedido se conservará' : 'pedidos se conservarán'}.
           Si vuelve a comprar con el mismo celular, el registro se restaurará automáticamente.
         </p>
@@ -259,7 +266,10 @@ export function AdminCustomerDetailPage() {
           <p>Volvé al listado o intentá nuevamente.</p>
           <div>
             <Link className="ui-button ui-button--secondary" to={routes.adminCustomers}>Volver a clientes</Link>
-            <Button onClick={() => void customer.refetch()}>Reintentar</Button>
+          <Button onClick={() => void customer.refetch()}>
+            <RefreshCw aria-hidden="true" size={17} />
+            Reintentar
+          </Button>
           </div>
         </div>
       </main>

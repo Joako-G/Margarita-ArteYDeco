@@ -45,6 +45,20 @@ export function reconcileCartItems(
       return []
     }
 
+    if (
+      currentProduct.price !== item.price
+      || currentProduct.discountPercentage !== item.discountPercentage
+      || currentProduct.salePrice !== item.salePrice
+    ) {
+      changes.push({
+        currentQuantity: item.quantity,
+        previousQuantity: item.quantity,
+        productId: item.id,
+        productName: currentProduct.name,
+        reason: 'price_changed',
+      })
+    }
+
     const normalizedQuantity = Number.isFinite(item.quantity) ? Math.trunc(item.quantity) : 1
     const nextQuantity = Math.min(Math.max(normalizedQuantity, 1), currentProduct.stockQuantity)
 
@@ -77,6 +91,10 @@ export function getCartAvailabilityChangeMessage(change: ICartAvailabilityChange
     const unitLabel = change.currentQuantity === 1 ? 'unidad disponible' : 'unidades disponibles'
 
     return `La cantidad de ${change.productName} se ajustó a ${change.currentQuantity} ${unitLabel}.`
+  }
+
+  if (change.reason === 'price_changed') {
+    return `Actualizamos el precio o la oferta de ${change.productName}. Revisá el nuevo importe.`
   }
 
   return `Corregimos la cantidad de ${change.productName} a ${change.currentQuantity}.`

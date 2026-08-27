@@ -53,6 +53,12 @@ export interface IAdminConsumerWithdrawalEvent {
 export interface IAdminConsumerWithdrawalDetail extends IAdminConsumerWithdrawalListItem {
   availableActions: readonly string[]
   comment: string | null
+  deadline: {
+    contractConcludedAt: string | null
+    fulfillmentAt: string | null
+    legalDeadlineAt: string | null
+    status: 'apparently_in_time' | 'review_required' | 'unknown'
+  }
   evaluation: { internalReason: string | null; publicExplanation: string | null }
   order: {
     deliveryMethod: 'pickup' | 'shipping'

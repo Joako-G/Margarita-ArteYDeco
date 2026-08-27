@@ -21,6 +21,8 @@ export class ProductRepository implements IProductRepository {
         slug,
         description,
         price,
+        discount_percentage,
+        sale_price,
         stock_quantity,
         image_path,
         is_featured,
@@ -60,13 +62,13 @@ export class ProductRepository implements IProductRepository {
         break
       case 'priceAsc':
         query = query
-          .order('price', { ascending: true })
+          .order('sale_price', { ascending: true })
           .order('name', { ascending: true })
           .order('id', { ascending: true })
         break
       case 'priceDesc':
         query = query
-          .order('price', { ascending: false })
+          .order('sale_price', { ascending: false })
           .order('name', { ascending: true })
           .order('id', { ascending: true })
         break
@@ -95,11 +97,13 @@ export class ProductRepository implements IProductRepository {
       categoryId: row.category_id,
       createdAt: row.created_at,
       description: row.description,
+      discountPercentage: row.discount_percentage,
       id: row.id,
       imagePath: row.image_path,
       isFeatured: row.is_featured,
       name: row.name,
       price: row.price,
+      salePrice: row.sale_price,
       slug: row.slug,
       stockQuantity: row.stock_quantity,
       updatedAt: row.updated_at,

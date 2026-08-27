@@ -106,17 +106,17 @@ test('calcula el descuento por transferencia desde la configuración', () => {
   assert.deepEqual(
     calculateCheckoutTotals(
       [
-        { price: 12500, quantity: 2 },
-        { price: 4200, quantity: 1 },
+        { price: 12500, salePrice: 10000, quantity: 2 },
+        { price: 4200, salePrice: 4200, quantity: 1 },
       ],
       'transfer',
       10,
     ),
     {
-      subtotal: 29200,
-      discount: 2920,
+      subtotal: 24200,
+      discount: 2420,
       discountPercentage: 10,
-      total: 26280,
+      total: 21780,
     },
   )
 })

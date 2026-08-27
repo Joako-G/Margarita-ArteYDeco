@@ -1,3 +1,4 @@
+import { RotateCcw, Search } from 'lucide-react'
 import { useEffect } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
@@ -41,20 +42,26 @@ export function AdminCustomerFilters({ filters, onApply, onClear }: IAdminCustom
         type="search"
         {...register('search')}
       />
-      <Select label="Mostrar primero" {...register('sort')}>
+      <Select label="Ordenar por" {...register('sort')}>
         <option value="nameAsc">Nombre A–Z</option>
         <option value="nameDesc">Nombre Z–A</option>
         <option value="newest">Más recientes</option>
         <option value="oldest">Más antiguos</option>
       </Select>
-      <Select label="Clientes por página" {...register('pageSize')}>
+      <Select label="Por página" {...register('pageSize')}>
         <option value="10">10 por página</option>
         <option value="20">20 por página</option>
         <option value="50">50 por página</option>
       </Select>
       <div className="admin-customer-filters__actions">
-        <Button onClick={onClear} type="button" variant="ghost">Limpiar</Button>
-        <Button type="submit">Aplicar filtros</Button>
+        <Button onClick={onClear} type="button" variant="ghost">
+          <RotateCcw aria-hidden="true" size={17} />
+          Limpiar
+        </Button>
+        <Button type="submit">
+          <Search aria-hidden="true" size={17} />
+          Buscar
+        </Button>
       </div>
     </form>
   )

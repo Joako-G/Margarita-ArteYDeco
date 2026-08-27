@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ArrowLeft, CircleAlert, CircleCheck, Clock3 } from 'lucide-react'
+import { ArrowLeft, Check, CircleAlert, CircleCheck, Clock3 } from 'lucide-react'
 import { useForm, useWatch } from 'react-hook-form'
 import { Link, useParams } from 'react-router-dom'
 
@@ -17,6 +17,7 @@ import {
   getAdminConsumerWithdrawalActionErrorMessage,
   getAdminConsumerWithdrawalEventCopy,
   getAdminConsumerWithdrawalGuidance,
+  getAdminConsumerWithdrawalProgress,
   REFUND_STATUS_LABELS,
   REQUEST_STATUS_LABELS,
   RETURN_STATUS_LABELS,
@@ -34,6 +35,18 @@ import { ORDER_STATUS_DETAILS } from '@/shared/utils/order-status'
 import { buildWhatsAppUrl } from '@/shared/utils/whatsapp'
 
 import '@/features/admin-consumer-withdrawals/admin-consumer-withdrawals.css'
+
+const DEADLINE_STATUS_DETAILS = {
+  apparently_in_time: { label: 'Dentro del plazo estimado', variant: 'success' },
+  review_required: { label: 'Requiere revisión', variant: 'warning' },
+  unknown: { label: 'Sin cálculo automático', variant: 'neutral' },
+} as const
+
+function AdminDateValue({ emptyText, value }: { emptyText: string; value: string | null }) {
+  return value ? (
+    <time dateTime={value}>{formatConsumerWithdrawalDate(value)}</time>
+  ) : emptyText
+}
 
 function AdminConsumerWithdrawalContent({ request }: { request: IAdminConsumerWithdrawalDetail }) {
   const actionMutation = useAdminConsumerWithdrawalAction(request.id)
@@ -60,6 +73,7 @@ function AdminConsumerWithdrawalContent({ request }: { request: IAdminConsumerWi
   )
   const actionCopy = getAdminConsumerWithdrawalActionCopy(selectedAction)
   const guidance = getAdminConsumerWithdrawalGuidance(request)
+  const progress = getAdminConsumerWithdrawalProgress(request)
   const orderedActions = [...request.availableActions].sort((first, second) => {
     if (first === guidance.recommendedAction) return -1
     if (second === guidance.recommendedAction) return 1
@@ -81,14 +95,19 @@ function AdminConsumerWithdrawalContent({ request }: { request: IAdminConsumerWi
       : request.return.status === 'not_required'
         ? 'No hace falta recibir productos. Gestioná únicamente el reintegro indicado.'
         : 'Coordiná la recepción del producto y el reintegro sin demoras. El stock se actualizará al registrar la inspección.'
-  const progress = [
-    { done: request.order !== null, label: 'Pedido identificado' },
-    { done: !['received', 'verification_pending'].includes(request.requestStatus), label: 'Revisión iniciada' },
-    { done: ['applicable', 'not_applicable', 'closed'].includes(request.requestStatus), label: 'Decisión registrada' },
-    { done: ['not_required', 'inspected'].includes(request.return.status), label: 'Devolución resuelta' },
-    { done: ['not_required', 'succeeded'].includes(request.refund.status), label: 'Dinero resuelto' },
-    { done: request.requestStatus === 'closed' || request.requestStatus === 'not_applicable', label: 'Caso finalizado' },
-  ]
+  const deadline = request.deadline ?? {
+    contractConcludedAt: null,
+    fulfillmentAt: null,
+    legalDeadlineAt: null,
+    status: request.isDeadlineReviewRequired ? 'review_required' as const : 'unknown' as const,
+  }
+  const deadlineStatus = DEADLINE_STATUS_DETAILS[deadline.status]
+  const fulfillmentLabel = request.order?.deliveryMethod === 'shipping'
+    ? 'Entrega del pedido'
+    : 'Retiro en el local'
+  const fulfillmentEmptyText = request.order?.deliveryMethod === 'shipping'
+    ? 'Todavía no entregado'
+    : 'Todavía no retirado'
 
   async function handleAction(values: AdminConsumerWithdrawalActionFormType) {
     if (selectedAction === null) return
@@ -169,7 +188,37 @@ function AdminConsumerWithdrawalContent({ request }: { request: IAdminConsumerWi
         {request.isDeadlineReviewRequired ? <p className="admin-withdrawals__attention">Revisá manualmente la fecha de compra y entrega. Este aviso no rechaza la solicitud.</p> : null}
       </section>
       <section className="admin-withdrawals__panel admin-withdrawal-detail__next-step" aria-labelledby="withdrawal-next-step-title"><div><p>Siguiente paso recomendado</p><h2 id="withdrawal-next-step-title">{guidance.title}</h2><p>{guidance.description}</p></div>{request.phone ? <a className="ui-button ui-button--secondary" href={buildWhatsAppUrl(request.phone, `Hola, te contactamos de Margarita Arte & Deco por tu solicitud ${request.administrativeCode}.`)} rel="noreferrer" target="_blank">Coordinar por WhatsApp</a> : null}</section>
-      <section className="admin-withdrawals__panel" aria-labelledby="withdrawal-progress-title"><p>Recorrido del caso</p><h2 id="withdrawal-progress-title">Qué falta para terminar</h2><ol className="admin-withdrawal-detail__progress">{progress.map((step, index) => <li className={step.done ? 'is-complete' : ''} key={step.label}><span aria-hidden="true">{step.done ? '✓' : index + 1}</span><p>{step.label}</p></li>)}</ol></section>
+      <section className="admin-withdrawals__panel admin-withdrawal-detail__deadline" aria-labelledby="withdrawal-deadline-title">
+        <div className="admin-withdrawal-detail__deadline-heading">
+          <div>
+            <p>Información para revisar</p>
+            <h2 id="withdrawal-deadline-title">Plazo de arrepentimiento</h2>
+          </div>
+          <Badge variant={deadlineStatus.variant}>{deadlineStatus.label}</Badge>
+        </div>
+        <dl className="admin-withdrawal-detail__deadline-dates">
+          <div>
+            <dt>Compra confirmada</dt>
+            <dd><AdminDateValue emptyText="Todavía no confirmada" value={deadline.contractConcludedAt} /></dd>
+          </div>
+          <div>
+            <dt>{fulfillmentLabel}</dt>
+            <dd><AdminDateValue emptyText={fulfillmentEmptyText} value={deadline.fulfillmentAt} /></dd>
+          </div>
+          <div>
+            <dt>Solicitud presentada</dt>
+            <dd><AdminDateValue emptyText="Sin fecha registrada" value={request.submittedAt} /></dd>
+          </div>
+          <div>
+            <dt>Vencimiento estimado</dt>
+            <dd><AdminDateValue emptyText="Requiere revisión manual" value={deadline.legalDeadlineAt} /></dd>
+          </div>
+        </dl>
+        <p className="admin-withdrawal-detail__deadline-note">
+          Estas fechas orientan la revisión administrativa. Nunca impiden que la persona presente su solicitud.
+        </p>
+      </section>
+      <section className="admin-withdrawals__panel" aria-labelledby="withdrawal-progress-title"><p>Recorrido del caso</p><h2 id="withdrawal-progress-title">Qué falta para terminar</h2><ol className="admin-withdrawal-detail__progress">{progress.map((step, index) => <li className={step.done ? 'is-complete' : ''} key={step.label}><span aria-label={step.done ? `${step.label}: completado` : `${step.label}: pendiente`}>{step.done ? <Check aria-hidden="true" size={18} strokeWidth={2.5} /> : index + 1}</span><p>{step.label}</p></li>)}</ol></section>
       <div className="admin-withdrawal-detail__grid">
         <section className="admin-withdrawals__panel" aria-labelledby="withdrawal-identification-title"><p>Datos de la compra</p><h2 id="withdrawal-identification-title">Pedido y cliente</h2><dl><div><dt>Pedido</dt><dd>{request.order ? <Link to={routes.adminOrderDetail(request.order.id)}>{request.order.orderNumber}</Link> : 'Todavía no identificado'}</dd></div>{request.order && orderStatus ? <div><dt>Estado del pedido</dt><dd><Badge variant={orderStatus.variant}>{orderStatus.label}</Badge></dd></div> : null}{request.order && paymentStatus ? <div><dt>Estado del pago</dt><dd><Badge variant={paymentStatus.variant}>{paymentStatus.label}</Badge></dd></div> : null}{request.order ? <><div><dt>Medio de pago</dt><dd>{PAYMENT_METHOD_LABELS[request.order.paymentMethod]}</dd></div><div><dt>{request.order.paymentStatus === 'paid' ? 'Total cobrado' : 'Total del pedido'}</dt><dd>{formatPrice(request.order.total)}</dd></div></> : null}{request.phone ? <div><dt>Celular</dt><dd>{request.phone}</dd></div> : null}</dl>{request.comment ? <><h3>Comentario de la persona</h3><p className="admin-withdrawal-detail__comment">{request.comment}</p></> : null}</section>
         <section className="admin-withdrawals__panel" aria-labelledby="withdrawal-refund-title"><p>Dinero a devolver</p><h2 id="withdrawal-refund-title">Resumen del reintegro</h2><dl><div><dt>Total pagado</dt><dd>{formatPrice(request.refund.contractAmount)}</dd></div><div><dt>Envío de la compra</dt><dd>{formatPrice(request.refund.originalShippingAmount)}</dd></div><div><dt>Costo de devolución</dt><dd>{formatPrice(request.refund.returnShippingAmount)}</dd></div><div><dt>Total a devolver</dt><dd><strong>{formatPrice(request.refund.totalAmount)}</strong></dd></div></dl><p>{refundGuidance}</p></section>

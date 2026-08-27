@@ -84,7 +84,9 @@ export const orderRowSchema = z.strictObject({
 })
 
 export const orderItemRowsSchema = z.array(z.strictObject({
+  list_unit_price: z.coerce.number().positive(),
   product_name: z.string().min(1),
+  product_discount_percentage: z.coerce.number().min(0).lt(100),
   quantity: z.coerce.number().int().positive(),
   subtotal: z.coerce.number().positive(),
   unit_price: z.coerce.number().positive(),

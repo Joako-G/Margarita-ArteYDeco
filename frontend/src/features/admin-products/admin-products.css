@@ -987,3 +987,20 @@
     width: 13%;
   }
 }
+.admin-product-price {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.admin-product-price del {
+  color: var(--color-text);
+  font-size: var(--font-size-caption);
+  font-weight: 400;
+}
+
+.admin-product-price__current {
+  color: var(--color-primary-dark);
+  font-variant-numeric: tabular-nums;
+}

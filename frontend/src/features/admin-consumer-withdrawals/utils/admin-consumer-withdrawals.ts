@@ -25,7 +25,7 @@ export function argentinaDateTimeLocalToIso(value: string): string {
 }
 
 export const DEFAULT_ADMIN_CONSUMER_WITHDRAWAL_FILTERS: IAdminConsumerWithdrawalFilters = {
-  compliance: 'all', linkage: 'all', page: 1, pageSize: 10, sort: 'urgent', status: 'all',
+  compliance: 'all', linkage: 'all', page: 1, pageSize: 10, sort: 'newest', status: 'all',
 }
 
 export const REQUEST_STATUS_LABELS = {
@@ -257,6 +257,31 @@ export function getAdminConsumerWithdrawalGuidance(request: IAdminConsumerWithdr
   }
 }
 
+export function getAdminConsumerWithdrawalProgress(request: IAdminConsumerWithdrawalDetail) {
+  const isDecisionRegistered = ['applicable', 'closed', 'not_applicable'].includes(
+    request.requestStatus,
+  )
+  const isReviewStarted = isDecisionRegistered || request.requestStatus === 'under_review'
+
+  return [
+    { done: request.order !== null, label: 'Pedido identificado' },
+    { done: isReviewStarted, label: 'Revisión iniciada' },
+    { done: isDecisionRegistered, label: 'Decisión registrada' },
+    {
+      done: isDecisionRegistered && ['inspected', 'not_required'].includes(request.return.status),
+      label: 'Devolución resuelta',
+    },
+    {
+      done: isDecisionRegistered && ['not_required', 'succeeded'].includes(request.refund.status),
+      label: 'Dinero resuelto',
+    },
+    {
+      done: ['closed', 'not_applicable'].includes(request.requestStatus),
+      label: 'Caso finalizado',
+    },
+  ] as const
+}
+
 export function getAdminConsumerWithdrawalActionErrorMessage(code: string | null): string {
   switch (code) {
     case 'WITHDRAWAL_UPDATE_CONFLICT':
@@ -300,7 +325,7 @@ export function parseAdminConsumerWithdrawalFilters(params: URLSearchParams): IA
     status: ['received', 'verification_pending', 'under_review', 'applicable', 'not_applicable', 'closed'].includes(status ?? '') ? status as IAdminConsumerWithdrawalFilters['status'] : 'all',
     linkage: ['linked', 'unlinked'].includes(linkage ?? '') ? linkage as IAdminConsumerWithdrawalFilters['linkage'] : 'all',
     compliance: ['attention', 'on_time'].includes(compliance ?? '') ? compliance as IAdminConsumerWithdrawalFilters['compliance'] : 'all',
-    sort: ['newest', 'oldest'].includes(sort ?? '') ? sort as IAdminConsumerWithdrawalFilters['sort'] : 'urgent',
+    sort: ['newest', 'oldest', 'urgent'].includes(sort ?? '') ? sort as IAdminConsumerWithdrawalFilters['sort'] : 'newest',
   }
 }
 
@@ -310,12 +335,16 @@ export function buildAdminConsumerWithdrawalSearchParams(filters: IAdminConsumer
   if (filters.status !== 'all') params.set('status', filters.status)
   if (filters.linkage !== 'all') params.set('linkage', filters.linkage)
   if (filters.compliance !== 'all') params.set('compliance', filters.compliance)
-  if (filters.sort !== 'urgent') params.set('sort', filters.sort)
+  if (filters.sort !== 'newest') params.set('sort', filters.sort)
   if (filters.page !== 1) params.set('page', String(filters.page))
   if (filters.pageSize !== 10) params.set('pageSize', String(filters.pageSize))
   return params
 }
 
 export function formatConsumerWithdrawalDate(value: string) {
-  return new Intl.DateTimeFormat('es-AR', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
+  return new Intl.DateTimeFormat('es-AR', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    timeZone: ARGENTINA_TIME_ZONE,
+  }).format(new Date(value))
 }

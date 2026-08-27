@@ -14,6 +14,8 @@ function createProduct(overrides = {}) {
     isFeatured: false,
     name: 'Molde de rosas',
     price: 12500,
+    discountPercentage: 0,
+    salePrice: 12500,
     slug: 'molde-de-rosas',
     stockQuantity: 8,
     updatedAt: '2026-08-02T10:00:00.000Z',
@@ -29,15 +31,31 @@ function createCartItem(overrides = {}) {
   }
 }
 
-test('actualiza los datos del producto sin informar cambios cuando la cantidad sigue vigente', () => {
+test('actualiza el precio y comunica el cambio aunque la cantidad siga vigente', () => {
   const result = reconcileCartItems(
-    [createCartItem({ price: 10000 })],
-    [createProduct({ price: 12500 })],
+    [createCartItem({ price: 10000, salePrice: 10000 })],
+    [createProduct({ price: 12500, salePrice: 12500 })],
   )
 
   assert.equal(result.items[0].price, 12500)
   assert.equal(result.items[0].quantity, 2)
-  assert.deepEqual(result.changes, [])
+  assert.equal(result.changes[0].reason, 'price_changed')
+  assert.equal(
+    getCartAvailabilityChangeMessage(result.changes[0]),
+    'Actualizamos el precio o la oferta de Molde de rosas. Revisá el nuevo importe.',
+  )
+})
+
+test('reconcilia una oferta nueva y conserva la cantidad elegida', () => {
+  const result = reconcileCartItems(
+    [createCartItem()],
+    [createProduct({ discountPercentage: 20, salePrice: 10000 })],
+  )
+
+  assert.equal(result.items[0].discountPercentage, 20)
+  assert.equal(result.items[0].salePrice, 10000)
+  assert.equal(result.items[0].quantity, 2)
+  assert.equal(result.changes[0].reason, 'price_changed')
 })
 
 test('reduce la cantidad al stock actual y comunica el nuevo máximo', () => {

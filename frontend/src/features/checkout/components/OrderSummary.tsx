@@ -53,10 +53,16 @@ export function OrderSummary({
             <div>
               <h3>{item.name}</h3>
               <p>
-                {item.quantity} × {formatPrice(item.price)}
+                {item.quantity} × {formatPrice(item.salePrice)}
               </p>
+              {item.discountPercentage > 0 ? (
+                <small>
+                  <del>{formatPrice(item.price)}</del>{' '}
+                  · {item.discountPercentage}% de descuento
+                </small>
+              ) : null}
             </div>
-            <strong>{formatPrice(item.price * item.quantity)}</strong>
+            <strong>{formatPrice(item.salePrice * item.quantity)}</strong>
           </li>
         ))}
       </ul>

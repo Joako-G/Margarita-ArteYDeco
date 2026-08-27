@@ -1,7 +1,7 @@
 import type { ICartItem, ICartTotals } from '../types/cart'
 
 export function calculateCartTotals(items: ICartItem[]): ICartTotals {
-  const subtotal = items.reduce((total, item) => total + item.price * item.quantity, 0)
+  const subtotal = items.reduce((total, item) => total + item.salePrice * item.quantity, 0)
 
   return {
     subtotal,

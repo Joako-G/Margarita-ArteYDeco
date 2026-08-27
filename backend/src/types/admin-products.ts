@@ -24,12 +24,14 @@ export interface IAdminProductRow {
   catalogArea: CatalogAreaType
   categoryId: string
   categoryName: string
+  discountPercentage: number
   id: string
   imagePath: string | null
   isActive: boolean
   isFeatured: boolean
   name: string
   price: number
+  salePrice: number
   slug: string
   stockQuantity: number
   updatedAt: string
@@ -55,6 +57,7 @@ export interface IAdminProductRecord extends IAdminProductRow {
 export interface IAdminProductMutationInput {
   categoryId: string
   description: string | null
+  discountPercentage: number
   isActive: boolean
   isFeatured: boolean
   name: string
@@ -96,12 +99,14 @@ export interface IAdminProductDetailDto {
     name: string
   }
   description: string
+  discountPercentage: number
   id: string
   imageUrl: string | null
   isActive: boolean
   isFeatured: boolean
   name: string
   price: number
+  salePrice: number
   slug: string
   stockQuantity: number
   updatedAt: string
@@ -116,10 +121,12 @@ export interface IAdminProductListDto {
     }
     id: string
     imageUrl: string | null
+    discountPercentage: number
     isActive: boolean
     isFeatured: boolean
     name: string
     price: number
+    salePrice: number
     slug: string
     stockQuantity: number
     stockStatus: 'inStock' | 'lowStock' | 'outOfStock'

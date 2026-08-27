@@ -32,6 +32,7 @@ export const adminOrderFiltersSchema = z.strictObject({
 })
 
 const adminOrderRowFields = {
+  contract_concluded_at: z.iso.datetime({ offset: true }).nullable(),
   created_at: z.iso.datetime({ offset: true }),
   customer_first_name: z.string().trim().min(1),
   customer_last_name: z.string().trim().min(1),
@@ -39,6 +40,7 @@ const adminOrderRowFields = {
   customer_phone_normalized: z.string().regex(/^[1-9][0-9]{7,14}$/),
   delivery_method: z.enum(['pickup', 'shipping']),
   discount: z.coerce.number().nonnegative(),
+  delivered_at: z.iso.datetime({ offset: true }).nullable(),
   id: z.uuid(),
   notes: z.string().nullable(),
   order_number: z.string().trim().min(1),
@@ -60,7 +62,9 @@ export const adminOrderRowsSchema = z.array(z.strictObject({
 export const adminOrderRowSchema = z.strictObject(adminOrderRowFields)
 
 export const adminOrderItemRowsSchema = z.array(z.strictObject({
+  list_unit_price: z.coerce.number().positive(),
   product_name: z.string().trim().min(1),
+  product_discount_percentage: z.coerce.number().min(0).lt(100),
   quantity: z.coerce.number().int().positive(),
   subtotal: z.coerce.number().positive(),
   unit_price: z.coerce.number().positive(),

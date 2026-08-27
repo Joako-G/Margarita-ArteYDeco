@@ -10,6 +10,7 @@ import { buildWhatsAppUrl } from '../../../shared/utils/whatsapp.ts'
 const dateTimeFormatter = new Intl.DateTimeFormat('es-AR', {
   dateStyle: 'medium',
   timeStyle: 'short',
+  timeZone: 'America/Argentina/Buenos_Aires',
 })
 
 export const PAYMENT_METHOD_LABELS: Record<AdminPaymentMethodType, string> = {
