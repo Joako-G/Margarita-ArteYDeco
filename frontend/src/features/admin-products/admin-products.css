@@ -241,6 +241,7 @@
 
 .admin-product-table__stock .ui-badge {
   width: fit-content;
+  white-space: nowrap;
 }
 
 .admin-product-table .ui-switch {
@@ -971,16 +972,36 @@
 }
 
 @media (min-width: 80rem) {
+  .admin-product-table table {
+    table-layout: fixed;
+  }
+
   .admin-product-table th:first-child {
-    width: 29%;
+    width: 20%;
   }
 
   .admin-product-table th:nth-child(2) {
-    width: 17%;
+    width: 14%;
+  }
+
+  .admin-product-table th:nth-child(3) {
+    width: 10%;
+  }
+
+  .admin-product-table th:nth-child(4) {
+    width: 12%;
+  }
+
+  .admin-product-table th:nth-child(5) {
+    width: 12%;
+  }
+
+  .admin-product-table th:nth-child(6) {
+    width: 10%;
   }
 
   .admin-product-table th:nth-child(7) {
-    width: 14%;
+    width: 9%;
   }
 
   .admin-product-table th:last-child {
