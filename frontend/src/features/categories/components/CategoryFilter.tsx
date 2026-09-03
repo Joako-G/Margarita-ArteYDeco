@@ -130,61 +130,63 @@ export function CategoryFilter({
         ref={categoryFilterRef}
         role="group"
       >
-        <button
-          aria-label={`Ver ${allLabel.toLocaleLowerCase('es-AR')}`}
-          aria-pressed={selectedSlug === 'all'}
-          className={`category-filter__item category-filter__item--all${
-            selectedSlug === 'all' ? ' category-filter__item--selected' : ''
-          }`}
-          disabled={isDisabled}
-          onClick={() => onSelect('all')}
-          type="button"
-        >
-          <span className="category-filter__visual">
-            <LayoutGrid aria-hidden="true" size={32} strokeWidth={2} />
-            {selectedSlug === 'all' && <SelectionCheck />}
-          </span>
-          <span className="category-filter__details">
-            <span className="category-filter__name">{allLabel}</span>
-            <span className="category-filter__count">{formatProductCount(totalProductCount)}</span>
-          </span>
-        </button>
+        <div className="category-filter__track">
+          <button
+            aria-label={`Ver ${allLabel.toLocaleLowerCase('es-AR')}`}
+            aria-pressed={selectedSlug === 'all'}
+            className={`category-filter__item category-filter__item--all${
+              selectedSlug === 'all' ? ' category-filter__item--selected' : ''
+            }`}
+            disabled={isDisabled}
+            onClick={() => onSelect('all')}
+            type="button"
+          >
+            <span className="category-filter__visual">
+              <LayoutGrid aria-hidden="true" size={32} strokeWidth={2} />
+              {selectedSlug === 'all' && <SelectionCheck />}
+            </span>
+            <span className="category-filter__details">
+              <span className="category-filter__name">{allLabel}</span>
+              <span className="category-filter__count">{formatProductCount(totalProductCount)}</span>
+            </span>
+          </button>
 
-        {categories.map((category) => {
-          const isSelected = selectedSlug === category.slug
-          const productCount = productCountByCategory[category.id] ?? 0
+          {categories.map((category) => {
+            const isSelected = selectedSlug === category.slug
+            const productCount = productCountByCategory[category.id] ?? 0
 
-          return (
-            <button
-              aria-label={`Ver productos de ${category.name}`}
-              aria-pressed={isSelected}
-              className={`category-filter__item${
-                isSelected ? ' category-filter__item--selected' : ''
-              }`}
-              disabled={isDisabled}
-              key={category.id}
-              onClick={() => onSelect(category.slug)}
-              type="button"
-            >
-              <span className="category-filter__visual">
-                <DeferredImage
-                  alt=""
-                  className="category-filter__image"
-                  fallbackAlt=""
-                  fallbackSrc={categoryPlaceholderImage}
-                  height="160"
-                  src={category.image}
-                  width="160"
-                />
-                {isSelected && <SelectionCheck />}
-              </span>
-              <span className="category-filter__details">
-                <span className="category-filter__name">{category.name}</span>
-                <span className="category-filter__count">{formatProductCount(productCount)}</span>
-              </span>
-            </button>
-          )
-        })}
+            return (
+              <button
+                aria-label={`Ver productos de ${category.name}`}
+                aria-pressed={isSelected}
+                className={`category-filter__item${
+                  isSelected ? ' category-filter__item--selected' : ''
+                }`}
+                disabled={isDisabled}
+                key={category.id}
+                onClick={() => onSelect(category.slug)}
+                type="button"
+              >
+                <span className="category-filter__visual">
+                  <DeferredImage
+                    alt=""
+                    className="category-filter__image"
+                    fallbackAlt=""
+                    fallbackSrc={categoryPlaceholderImage}
+                    height="160"
+                    src={category.image}
+                    width="160"
+                  />
+                  {isSelected && <SelectionCheck />}
+                </span>
+                <span className="category-filter__details">
+                  <span className="category-filter__name">{category.name}</span>
+                  <span className="category-filter__count">{formatProductCount(productCount)}</span>
+                </span>
+              </button>
+            )
+          })}
+        </div>
       </div>
 
       <IconButton
