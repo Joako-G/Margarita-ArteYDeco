@@ -51,7 +51,8 @@ update public.orders set status = 'delivered'
 where id = '21000000-0000-4000-8000-000000000001';
 
 insert into public.order_items (
-  id, order_id, product_id, product_name, quantity, unit_price, subtotal
+  id, order_id, product_id, product_name, quantity, list_unit_price,
+  product_discount_percentage, unit_price, subtotal
 )
 select
   '22000000-0000-4000-8000-000000000001',
@@ -59,6 +60,8 @@ select
   product.id,
   product.name,
   2,
+  product.price,
+  0,
   product.price,
   product.price * 2
 from public.products as product

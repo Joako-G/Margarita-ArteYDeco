@@ -23,6 +23,14 @@ export const createOrderBodySchema = z.strictObject({
   items: z.array(itemSchema).min(1).max(100),
   paymentMethod: z.enum(['cash', 'transfer']),
   shippingAddress: z.string().trim().max(500).optional().default(''),
+}).superRefine((values, context) => {
+  if (values.deliveryMethod === 'shipping' && values.paymentMethod === 'cash') {
+    context.addIssue({
+      code: 'custom',
+      message: 'El efectivo solo está disponible para retiro en el local',
+      path: ['paymentMethod'],
+    })
+  }
 })
 
 export const idempotencyKeySchema = z.string().trim().min(16).max(128).regex(
