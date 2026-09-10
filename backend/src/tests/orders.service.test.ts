@@ -119,6 +119,29 @@ function createConfirmationService(repository: IOrderRepository): IOrderConfirma
 }
 
 describe('OrderService', () => {
+  it('rejects cash payment for shipping before creating a session', async () => {
+    const repository = createRepository()
+    const sessionService = createGuestSessionService()
+    const service = new OrderService(
+      repository,
+      sessionService,
+      createConfirmationService(repository),
+      createLogger(TEST_ENV),
+    )
+
+    await expect(service.create({
+      ...REQUEST,
+      deliveryMethod: 'shipping',
+      paymentMethod: 'cash',
+      shippingAddress: 'Belgrano 607, Jujuy',
+    }, null, 'checkout-attempt-0001')).rejects.toMatchObject({
+      code: 'INVALID_DELIVERY_PAYMENT_COMBINATION',
+      statusCode: 400,
+    })
+    expect(sessionService.getOrCreate).not.toHaveBeenCalled()
+    expect(repository.createWithStock).not.toHaveBeenCalled()
+  })
+
   it('normalizes the phone, maps transfer and returns the minimum public DTO', async () => {
     const repository = createRepository()
     const sessionService = createGuestSessionService()
