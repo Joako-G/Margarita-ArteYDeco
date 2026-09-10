@@ -93,7 +93,10 @@ sin autorización.
 - El estado del Frontend es informativo; el Backend debe validar actividad y stock nuevamente al crear el pedido.
 - Cada ProductCard tendrá selector de cantidad y botón Agregar al carrito.
 - Mostrar el badge "Nuevo" durante los primeros 30 días desde `created_at`.
-- Reservar el badge "Oferta" para la funcionalidad de promociones; no inferir ofertas a partir del precio ni usar porcentajes hardcodeados.
+- Mostrar el badge "Oferta" únicamente cuando `discountPercentage > 0`, junto al
+  precio de lista tachado, el porcentaje y `salePrice` como precio principal.
+- Usar el precio de oferta en carrito y checkout sin convertir el cálculo del
+  Frontend en autoridad comercial.
 - La cantidad inicial será 1.
 - Deshabilitar disminuir en 1 y aumentar al alcanzar el stock.
 - Si el producto ya está en el carrito, sumar la cantidad sin superar el stock.
@@ -103,11 +106,13 @@ sin autorización.
 
 - Mostrar la cantidad seleccionada y el máximo disponible.
 - Impedir incrementos por encima del stock conocido.
-- Informar y solicitar corrección si el stock cambió desde que se agregó el producto.
+- Informar y solicitar revisión si cambiaron stock, actividad, precio de lista,
+  porcentaje o precio de oferta desde que se agregó el producto.
 - Conservar el carrito no implica reservar unidades.
 - Abrir el carrito mediante Drawer desde el icono del header; no abrirlo automáticamente después de cada agregado.
 - Permitir editar cantidades, eliminar productos y vaciar el carrito.
-- Mostrar subtotal, descuento estimado cuando corresponda y total.
+- Mostrar subtotal con ofertas aplicadas, descuento estimado por transferencia
+  cuando corresponda y total.
 - Incluir una acción principal "Continuar compra".
 
 ### Checkout
@@ -127,7 +132,8 @@ Flujo:
 
 - Mantener visible el resumen antes de confirmar.
 - Validar los datos con React Hook Form y Zod.
-- Si se elige transferencia, mostrar el descuento antes de confirmar.
+- Si se elige transferencia, mostrar su descuento después de las ofertas de
+  producto y antes de confirmar.
 - No mostrar los datos bancarios como sustituto de la creación del pedido.
 - Después de crear correctamente un pedido por transferencia, mostrar número de pedido, importe final, alias, CBU, banco y acciones para copiar.
 - Incluir "Enviar comprobante por WhatsApp" con un mensaje predefinido que contenga nombre y número de pedido. El cliente adjuntará el archivo manualmente.
@@ -149,6 +155,21 @@ Flujo:
   días, la pista local `lastOrderNumber`, las cookies administrativas y los proveedores
   tecnológicos utilizados. No presentará un banner de consentimiento mientras el sitio no utilice
   cookies publicitarias, analíticas o de seguimiento.
+- Cuando se habilite Mercado Pago, Checkout Pro utilizará `binary_mode = false` y
+  una reserva inicial de 40 minutos. El Frontend mostrará el tiempo restante desde
+  `reservation_expires_at`, nunca desde un contador creado localmente.
+- Mercado Pago se ofrecerá tanto para retiro como para envío a coordinar; la
+  modalidad de entrega no cambiará las garantías de confirmación autoritativa.
+- La opción informará que la primera versión permite pagar con dinero disponible
+  en Mercado Pago o tarjeta de débito. No mostrará como disponibles tarjetas de
+  crédito, cuotas, Rapipago ni Pago Fácil; un cliente podrá usar débito sin tener
+  cuenta de Mercado Pago.
+- Al agotarse el contador, la pantalla no afirmará que el pedido fue cancelado ni
+  que el stock fue liberado. Mostrará `Estamos verificando tu pago` mientras el
+  Backend concilia estados `pending` o `in_process`.
+- La pantalla de retorno y la confirmación consultarán el resultado mediante
+  TanStack Query; los parámetros de `back_urls` serán informativos y nunca
+  marcarán el pago como aprobado.
 
 ### Consulta y recuperación pública de pedidos
 
@@ -226,7 +247,8 @@ Flujo:
   `GET /api/admin/products` mediante Axios y TanStack Query.
 - Permitirá buscar por nombre, filtrar por publicación y estado de stock, ordenar
   y elegir 10, 20 o 50 filas. Los filtros y la página se conservarán en la URL.
-- Mostrará imagen, nombre, slug, categoría, área del catálogo, precio, stock,
+- Mostrará imagen, nombre, slug, categoría, área del catálogo, precio de lista,
+  oferta, precio resultante, stock,
   publicación, destacado y fecha de actualización sin exponer rutas privadas de
   Storage.
 - En desktop utilizará una tabla semántica. Por debajo de 1024 px cada fila se
@@ -238,7 +260,9 @@ Flujo:
 - Mostrar filtros de productos con stock y sin stock.
 - Permitir ajustes manuales con un motivo obligatorio.
 - Mostrar el historial de movimientos de inventario.
-- El formulario de alta y edición incluirá categoría, imagen, nombre, descripción, precio, stock, estado activo y condición de destacado.
+- El formulario de alta y edición incluirá categoría, imagen, nombre,
+  descripción, precio, descuento individual, vista del precio resultante, stock,
+  estado activo y condición de destacado.
 - Generar el slug a partir del nombre y permitir validar su unicidad.
 - Mostrar vista previa de la imagen antes de guardar.
 - Aceptar originales JPG, PNG o WebP de hasta 10 MB. Si superan 4 MB, preparar en
@@ -406,8 +430,8 @@ La consulta pública contemplará además:
 - Las imágenes bajo el primer viewport usarán carga nativa diferida, dimensiones
   explícitas y decodificación asíncrona. La imagen LCP tendrá `fetchpriority=high`,
   preload y variantes responsive WebP.
-- Las fuentes remotas no bloquearán el primer render y los orígenes externos
-  críticos usarán `preconnect`.
+- Las tipografías críticas se sirven desde WOFF2 locales con `font-display: swap`;
+  no se requiere `preconnect` ni solicitudes a Google Fonts.
 - Cada ruta pública indexable actualizará título, descripción, Open Graph,
   canonical y robots. Checkout, pedidos, recuperación y administración serán
   `noindex, nofollow`.

@@ -223,6 +223,19 @@ Al finalizar debe existir:
 - contenido profesional, claro y coherente con el funcionamiento actual de Margarita Arte y Deco;
 - código limpio, modular y reutilizable para futuras páginas legales.
 
+## Reconciliación PR3 — alcance actualmente implementado
+
+La página vigente describe productos, stock, medios de pago en efectivo o
+transferencia, descuento configurado, retiro o envío a coordinar y la diferencia
+entre cambios de pedido y arrepentimiento. Para envíos, la dirección es obligatoria,
+pero costo y momento de entrega se coordinan manualmente y no forman parte de un
+importe o fecha confirmados por el sistema.
+
+Las excepciones específicas, los costos de devolución y cualquier conclusión sobre
+la aplicación final del derecho requieren revisión del producto concreto, la ley
+vigente y aprobación legal antes de publicarse como regla definitiva. La identidad
+fiscal o registral del vendedor no se completa mediante este documento.
+
 ## Actualización obligatoria para activar el Botón de Arrepentimiento
 
 La versión publicada de Términos y Condiciones deberá actualizarse en el mismo

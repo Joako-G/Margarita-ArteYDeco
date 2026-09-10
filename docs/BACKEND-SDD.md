@@ -198,8 +198,8 @@ OrderService
 - Validar los productos.
 - Verificar que todos los productos estén activos.
 - Verificar que las cantidades solicitadas no superen el stock disponible.
-- Calcular subtotal.
-- Aplicar descuentos.
+- Calcular cada precio de oferta y el subtotal resultante.
+- Aplicar después el descuento por transferencia cuando corresponda.
 - Calcular total.
 - Crear el pedido.
 - Crear los detalles del pedido.
@@ -209,7 +209,9 @@ OrderService
 
 La creación del pedido, sus detalles, el descuento de stock, los movimientos de inventario y la relación Guest Session Orders deberán ejecutarse en una única transacción. Si una operación falla, ninguna modificación deberá persistirse.
 
-El Backend deberá obtener precios, stock, actividad y descuento desde sus fuentes persistidas. Nunca aceptará totales, precios ni descuentos calculados por el cliente.
+El Backend deberá obtener precio de lista, porcentaje y precio de oferta, stock,
+actividad y descuento por transferencia desde sus fuentes persistidas. Nunca
+aceptará totales, precios ni descuentos calculados por el cliente.
 
 Antes de crear el pedido:
 
@@ -237,7 +239,11 @@ Las transiciones de estado permitidas serán:
 
 Los Services rechazarán saltos inválidos. Cancelar un pedido pagado requerirá confirmación administrativa y dejará el eventual reintegro de dinero registrado como gestión manual.
 
-El Backend no aceptará métodos de entrega en el MVP. Dirección, horarios y URL de Google Maps se obtendrán desde Settings y se incluirán en la respuesta pública de configuración y en la confirmación del pedido.
+El Backend aceptará las modalidades `pickup` y `shipping` en el MVP. Para retiro,
+dirección, horarios y URL de Google Maps se obtendrán desde Settings y se incluirán
+en la respuesta pública de configuración y en la confirmación del pedido. Para envío,
+la dirección será obligatoria; costo, transportista, fecha y seguimiento continuarán
+fuera del Backend.
 
 Para transferencias, la respuesta de confirmación incluirá número de pedido, total final, alias, CBU y banco. Los datos bancarios no se devolverán antes de crear correctamente el pedido.
 
@@ -437,13 +443,16 @@ host-only `__Host-mad-csrf`, y exigirá su coincidencia en `X-CSRF-Token` junto
 con una firma HMAC válida y un `Origin` permitido. La respuesta no se almacenará
 en caché.
 
-`POST /api/orders` aceptará `customer`, `items` y `paymentMethod` (`cash` o
-`transfer`). El Backend normalizará el celular, traducirá `transfer` a
+`POST /api/orders` aceptará `customer`, `items`, `paymentMethod` (`cash` o
+`transfer`) y la modalidad de entrega con su dirección cuando corresponda. El
+Backend normalizará el celular, traducirá `transfer` a
 `bank_transfer` e ignorará cualquier importe calculado por el cliente. La RPC
 transaccional continuará siendo la autoridad para actividad, stock, precios,
 descuento, totales, snapshots e inventario.
 
-Categories y Products expondrán `imageUrl`, nunca `image_path`. Si una ruta no
+Categories y Products expondrán `imageUrl`, nunca `image_path`. Products también
+expondrá `price`, `discountPercentage` y `salePrice`; los ordenamientos públicos
+por precio utilizarán `salePrice`. Si una ruta no
 existe o Storage no puede firmarla, devolverán `imageUrl: null` para permitir el
 respaldo visual local sin ocultar el resto del catálogo. Settings expondrá
 `logoUrl` bajo la misma regla.
@@ -1058,6 +1067,24 @@ ambiguas no podrán producir un segundo reintegro. La falta de saldo, indisponib
 o ventana vencida derivará a `manual_review`; nunca alterará una determinación
 `applicable`. Credenciales y payloads sensibles permanecerán exclusivamente en el
 Backend.
+
+`MP-CHECKOUT-PRO-SDD.md` define el diseño transversal de checkout, Webhook,
+conciliación y operaciones técnicas. Ese módulo reutilizará la liquidación vigente
+del Botón de Arrepentimiento, mantendrá `orders.payment_status` como resumen
+histórico del cobro y no duplicará estados de devolución, reintegro o stock.
+La preferencia se creará con `binary_mode = false` y vigencia de 40 minutos,
+alineada con la reserva persistida. Vencer el contador solo bloqueará nuevos
+intentos; el Backend consultará Mercado Pago antes de cancelar y conservará en
+revisión cualquier pago `pending` o `in_process` hasta obtener un resultado
+autoritativo.
+
+La primera versión permitirá únicamente dinero disponible en Mercado Pago y
+tarjetas de débito. Al crear la preferencia, el Backend excluirá los tipos de pago
+restantes —incluidos `ticket`, crédito y financiación— sin utilizar
+`purpose = wallet_purchase`, para conservar el pago con débito como invitado.
+Antes de habilitar cada ambiente se consultarán los medios ofrecidos por la cuenta
+y se verificará que la preferencia no exponga Rapipago, Pago Fácil, crédito ni
+cuotas sin tarjeta.
 
 ## Antiabuso y observabilidad
 
