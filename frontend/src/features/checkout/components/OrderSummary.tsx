@@ -8,8 +8,13 @@ import { useCartStore } from '@/features/cart'
 import { Button, DeferredImage, Divider, Typography } from '@/shared/components'
 import { formatPrice } from '@/shared/utils/format-price'
 
-import type { CheckoutCartItemType, ICheckoutTotals, PaymentMethodType } from '../types/checkout'
-import type { ICheckoutFormValues } from '../types/checkout'
+import type {
+  CheckoutCartItemType,
+  ICheckoutFormValues,
+  ICheckoutTotals,
+  PaymentMethodType,
+} from '../types/checkout'
+import { CHECKOUT_LEGAL_LINKS } from '../utils/checkout-links'
 import { CheckoutTermsAcceptance } from './CheckoutTermsAcceptance'
 
 interface IOrderSummaryProps {
@@ -17,6 +22,7 @@ interface IOrderSummaryProps {
   isSubmissionBlocked: boolean
   isSubmitting: boolean
   items: CheckoutCartItemType[]
+  deliveryMethod: ICheckoutFormValues['deliveryMethod']
   paymentMethod: PaymentMethodType
   register: UseFormRegister<ICheckoutFormValues>
   totals: ICheckoutTotals
@@ -27,6 +33,7 @@ export function OrderSummary({
   isSubmissionBlocked,
   isSubmitting,
   items,
+  deliveryMethod,
   paymentMethod,
   register,
   totals,
@@ -92,6 +99,19 @@ export function OrderSummary({
           ? 'Aplicamos el descuento por transferencia antes de confirmar.'
           : 'El pago se realiza en efectivo al retirar.'}
       </p>
+      <div className="checkout-summary__commercial-disclosure" role="note">
+        <strong>Antes de confirmar</strong>
+        <p>
+          {deliveryMethod === 'pickup'
+            ? 'Retirás el pedido en el local. El total incluye los productos y el descuento configurado; no incluye un costo de envío.'
+            : 'El envío se coordina por WhatsApp. El costo y la fecha de entrega no están incluidos ni confirmados en este total.'}
+        </p>
+        <nav aria-label="Información legal de la compra">
+          <Link to={CHECKOUT_LEGAL_LINKS.terms.href}>{CHECKOUT_LEGAL_LINKS.terms.label}</Link>
+          <Link to={CHECKOUT_LEGAL_LINKS.privacy.href}>{CHECKOUT_LEGAL_LINKS.privacy.label}</Link>
+          <Link to={CHECKOUT_LEGAL_LINKS.withdrawal.href}>{CHECKOUT_LEGAL_LINKS.withdrawal.label}</Link>
+        </nav>
+      </div>
 
       <Button onClick={openCart} variant="ghost">
         Editar carrito
@@ -103,7 +123,7 @@ export function OrderSummary({
           En las compras online podés comunicar que te arrepentís dentro del plazo legal, sin
           necesidad de explicar el motivo.
         </p>
-        <Link to={routes.consumerWithdrawal}>BOTÓN DE ARREPENTIMIENTO</Link>
+        <Link to={routes.consumerWithdrawal}>{CHECKOUT_LEGAL_LINKS.withdrawal.label}</Link>
       </div>
       <Button
         className="checkout-summary__submit"
