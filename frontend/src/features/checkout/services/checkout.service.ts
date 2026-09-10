@@ -19,8 +19,11 @@ async function submitOrder(
   return response.data.data
 }
 
-async function createOrder(request: ICreateOrderRequest): Promise<IOrderConfirmation> {
-  return executeWithCsrf((csrfToken) => submitOrder(request, csrfToken, crypto.randomUUID()))
+async function createOrder(
+  request: ICreateOrderRequest,
+  idempotencyKey: string = crypto.randomUUID(),
+): Promise<IOrderConfirmation> {
+  return executeWithCsrf((csrfToken) => submitOrder(request, csrfToken, idempotencyKey))
 }
 
 export const checkoutService = {

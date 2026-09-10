@@ -30,6 +30,7 @@ import { useCheckoutDraftStore } from './stores/checkout-draft.store'
 import type { ICheckoutFormValues, IOrderConfirmation } from './types/checkout'
 import { calculateCheckoutTotals } from './utils/checkout-calculations'
 import { getCheckoutErrorFeedback, type ICheckoutErrorFeedback } from './utils/checkout-errors'
+import { getOrCreateCheckoutAttemptKey } from './utils/checkout-idempotency'
 import './checkout.css'
 
 const DEFAULT_FORM_VALUES: ICheckoutFormValues = {
@@ -57,6 +58,7 @@ export function CheckoutPage() {
     refetch: refetchSettings,
   } = usePublicSettings()
   const [orderError, setOrderError] = useState<ICheckoutErrorFeedback | null>(null)
+  const [idempotencyKey, setIdempotencyKey] = useState<string | null>(null)
   const form = useForm<ICheckoutFormValues>({
     defaultValues: checkoutDraft ?? DEFAULT_FORM_VALUES,
     mode: 'onBlur',
@@ -134,23 +136,28 @@ export function CheckoutPage() {
 
   async function handleCreateOrder(values: ICheckoutFormValues) {
     setOrderError(null)
+    const attemptKey = getOrCreateCheckoutAttemptKey(idempotencyKey)
+    setIdempotencyKey(attemptKey)
 
     try {
-      const confirmation = await checkoutService.createOrder({
-        customer: {
-          firstName: values.firstName,
-          lastName: values.lastName,
-          notes: values.notes,
-          phone: values.phone,
+      const confirmation = await checkoutService.createOrder(
+        {
+          customer: {
+            firstName: values.firstName,
+            lastName: values.lastName,
+            notes: values.notes,
+            phone: values.phone,
+          },
+          deliveryMethod: values.deliveryMethod,
+          items: items.map((item) => ({
+            productId: item.id,
+            quantity: item.quantity,
+          })),
+          paymentMethod: values.paymentMethod,
+          shippingAddress: values.shippingAddress,
         },
-        deliveryMethod: values.deliveryMethod,
-        items: items.map((item) => ({
-          productId: item.id,
-          quantity: item.quantity,
-        })),
-        paymentMethod: values.paymentMethod,
-        shippingAddress: values.shippingAddress,
-      })
+        attemptKey,
+      )
 
       completeOrder(confirmation)
     } catch (error) {
