@@ -10,6 +10,7 @@ import {
 import { Link } from 'react-router-dom'
 
 import { routes } from '@/config/routes'
+import { CHECKOUT_LEGAL_LINKS } from '@/features/checkout/utils/checkout-links'
 import { Badge, Button, Divider, Typography } from '@/shared/components'
 import { formatPrice } from '@/shared/utils/format-price'
 
@@ -29,6 +30,8 @@ function formatOrderDate(value: string): string {
     timeStyle: 'short',
   }).format(new Date(value))
 }
+
+const PAYMENT_METHOD_LABELS = { cash: 'Efectivo', transfer: 'Transferencia' } as const
 
 export function OrderDetails({ isForgetting, onForget, order }: IOrderDetailsProps) {
   const status = getPublicOrderStatusDetails(order.status, order.delivery.method)
@@ -88,6 +91,16 @@ export function OrderDetails({ isForgetting, onForget, order }: IOrderDetailsPro
             <div>
               <dt>Descuento ({order.totals.discountPercentage}%)</dt>
               <dd>{formatPrice(order.totals.discount)}</dd>
+            </div>
+          </dl>
+          <dl className="public-order__commercial-details">
+            <div>
+              <dt>Medio de pago</dt>
+              <dd>{PAYMENT_METHOD_LABELS[order.paymentMethod]}</dd>
+            </div>
+            <div>
+              <dt>Modalidad</dt>
+              <dd>{order.delivery.method === 'pickup' ? 'Retiro en el local' : 'Envío a coordinar'}</dd>
             </div>
           </dl>
         </section>
@@ -192,6 +205,11 @@ export function OrderDetails({ isForgetting, onForget, order }: IOrderDetailsPro
           )}
         </section>
 
+        <nav aria-label="Información legal del pedido" className="public-order__legal-links">
+          <Link to={CHECKOUT_LEGAL_LINKS.terms.href}>{CHECKOUT_LEGAL_LINKS.terms.label}</Link>
+          <Link to={CHECKOUT_LEGAL_LINKS.privacy.href}>{CHECKOUT_LEGAL_LINKS.privacy.label}</Link>
+          <Link to={CHECKOUT_LEGAL_LINKS.withdrawal.href}>{CHECKOUT_LEGAL_LINKS.withdrawal.label}</Link>
+        </nav>
         <nav aria-label="Acciones del pedido" className="public-order__actions">
           <Link to={routes.products}>Seguir viendo productos</Link>
           <Link to={routes.recoverOrder}>Recuperar otro pedido</Link>

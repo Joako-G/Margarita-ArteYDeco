@@ -283,6 +283,7 @@ export function CheckoutPage() {
                 isSubmissionBlocked={orderError?.blocksResubmission ?? false}
                 isSubmitting={form.formState.isSubmitting}
                 items={items}
+                deliveryMethod={deliveryMethod}
                 paymentMethod={paymentMethod}
                 register={form.register}
                 totals={totals}

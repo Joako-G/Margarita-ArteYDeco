@@ -113,6 +113,29 @@
   background: var(--color-warning-soft);
 }
 
+.consumer-withdrawal__contact-disclosure {
+  padding: var(--space-2);
+  border-inline-start: 4px solid var(--color-primary);
+  border-radius: var(--radius-input);
+  background: var(--color-primary-soft);
+}
+
+.consumer-withdrawal__contact-disclosure p {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+.consumer-withdrawal__contact-disclosure p + p {
+  margin-top: var(--space-1);
+}
+
+.consumer-withdrawal__contact-disclosure a {
+  color: var(--color-primary-dark);
+  font-weight: 600;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
 .consumer-withdrawal__actions,
 .consumer-withdrawal__secondary-links {
   display: flex;

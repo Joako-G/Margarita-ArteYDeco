@@ -322,6 +322,26 @@
   font-size: var(--font-size-small);
 }
 
+.checkout-summary__commercial-disclosure {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-input);
+  background: var(--color-surface-muted);
+  font-size: var(--font-size-caption);
+}
+
+.checkout-summary__commercial-disclosure p {
+  margin: 0;
+}
+
+.checkout-summary__commercial-disclosure nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+}
+
 .checkout-summary__withdrawal-notice {
   display: grid;
   gap: var(--space-1);

@@ -10,6 +10,7 @@ import { normalizePhone } from '@/features/checkout/utils/checkout-links'
 import { Button, Card, Container, Input, Section, Typography } from '@/shared/components'
 
 import { TurnstileChallenge } from './components/TurnstileChallenge'
+import { TurnstileDisclosure } from './components/TurnstileDisclosure'
 import { PUBLIC_ORDERS_QUERY_KEY, useRecoverOrder } from './hooks/usePublicOrders'
 import {
   recoverOrderSchema,
@@ -159,10 +160,10 @@ export function RecoverOrderPage() {
               />
 
               {isCaptchaRequired ? (
-                <TurnstileChallenge
-                  key={challengeResetKey}
-                  onTokenChange={handleCaptchaToken}
-                />
+                <>
+                  <TurnstileDisclosure />
+                  <TurnstileChallenge key={challengeResetKey} onTokenChange={handleCaptchaToken} />
+                </>
               ) : null}
 
               <Button

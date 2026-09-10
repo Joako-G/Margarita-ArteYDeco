@@ -40,16 +40,19 @@ export function TermsAndConditions() {
 
             <LegalSection title="Productos">
               <Typography variant="body">
-                Los productos publicados pueden modificarse y sus precios pueden actualizarse sin
-                previo aviso. Las fotografías son ilustrativas y, en el caso de productos
-                artesanales, pueden existir pequeñas diferencias respecto del producto final.
+                Cada oferta informa las características esenciales del producto, su precio y la
+                disponibilidad de unidades. Las fotografías son ilustrativas y, en el caso de
+                productos artesanales, pueden existir pequeñas diferencias respecto del producto
+                final sin alterar sus características informadas.
               </Typography>
             </LegalSection>
 
             <LegalSection title="Pedidos">
               <Typography variant="body">
-                El envío del formulario genera una solicitud de pedido. El comercio podrá
-                contactarte para confirmar la información antes de gestionarlo.
+                El envío del formulario genera una solicitud de pedido. Antes de confirmarlo,
+                revisás los productos, cantidades, subtotal, descuento configurado cuando
+                corresponda, total de productos, medio de pago y modalidad de cumplimiento. El
+                comercio podrá contactarte para confirmar la información y coordinar la gestión.
               </Typography>
               <Typography variant="body">
                 El pedido podrá ser aceptado, modificado o cancelado antes de concretarse, por
@@ -75,6 +78,53 @@ export function TermsAndConditions() {
                 Si elegís envío, el comercio se comunicará con vos por WhatsApp para coordinar el
                 costo y la entrega. El costo del envío no está incluido en el total del pedido y el
                 sitio no gestiona transportistas ni seguimiento.
+              </Typography>
+            </LegalSection>
+
+            <LegalSection title="Medios de pago y total">
+              <Typography variant="body">
+                Podés elegir efectivo o transferencia bancaria. El descuento por transferencia,
+                cuando corresponda, se calcula según la configuración vigente del comercio y se
+                muestra antes de confirmar. El total informado incluye los productos y el descuento
+                aplicable; el costo y el momento de entrega se coordinan por separado cuando elegís
+                envío.
+              </Typography>
+            </LegalSection>
+
+            <LegalSection title="Cambios, cancelaciones y arrepentimiento">
+              <Typography variant="body">
+                Una solicitud de cambio o cancelación de un pedido que todavía no ingresó en
+                cumplimiento es una coordinación comercial y no reemplaza el derecho legal de
+                arrepentimiento.
+              </Typography>
+              <Typography variant="body">
+                En las ventas a distancia alcanzadas, podés ejercer el arrepentimiento dentro de
+                los diez días corridos desde la entrega del bien, sin necesidad de expresar un
+                motivo. Para iniciarlo, utilizá el{' '}
+                <Link to="/arrepentimiento">formulario de arrepentimiento</Link>; coordinaremos la
+                devolución y los pasos siguientes sin limitar los derechos que correspondan.
+              </Typography>
+              <Typography variant="body">
+                Las excepciones específicas de productos y la asignación de costos de devolución
+                quedan sujetas a la revisión final de los hechos del producto y de la normativa
+                vigente.
+              </Typography>
+            </LegalSection>
+
+            <LegalSection title="Garantía y productos con defectos">
+              <Typography variant="body">
+                Los bienes muebles no consumibles nuevos cuentan con una garantía legal de seis
+                meses y los usados con una de tres meses, salvo que corresponda un plazo mayor. No
+                se reducen los derechos legales aplicables.
+              </Typography>
+              <Typography variant="body">
+                Para informar un defecto, escribinos a{' '}
+                <a href="mailto:margaritas.arteydeco.jujuy@gmail.com">
+                  margaritas.arteydeco.jujuy@gmail.com
+                </a>{' '}
+                con la información del pedido y una descripción o evidencia disponible. Podemos
+                coordinar la inspección o reparación y documentar su resultado. Si la reparación no
+                resulta satisfactoria, se mantienen los remedios legales que correspondan.
               </Typography>
             </LegalSection>
 
