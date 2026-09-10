@@ -144,6 +144,6 @@ describe('public API', () => {
     )
 
     expect((localApp.get('trust proxy') as (ip: string) => boolean)('10.0.0.1')).toBe(false)
-    expect(vercelApp.get('trust proxy')).toBe(true)
+    expect(vercelApp.get('trust proxy')).toBe(1)
   })
 })

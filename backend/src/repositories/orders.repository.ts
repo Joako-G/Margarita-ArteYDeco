@@ -1,4 +1,5 @@
 import type { PostgrestError } from '@supabase/supabase-js'
+import type { Logger } from 'pino'
 
 import type { ServerSupabaseClient } from '../config/supabase.js'
 import {
@@ -45,7 +46,10 @@ function mapOrderRpcError(error: PostgrestError): AppError {
 }
 
 export class OrderRepository implements IOrderRepository {
-  public constructor(private readonly client: ServerSupabaseClient) { }
+  public constructor(
+    private readonly client: ServerSupabaseClient,
+    private readonly logger: Logger,
+  ) { }
 
   public async createWithStock(
     sessionId: string,
@@ -71,18 +75,13 @@ export class OrderRepository implements IOrderRepository {
 
 
     if (error !== null) {
-      console.error('========== SUPABASE RPC ERROR ==========');
-      console.dir(error, { depth: null });
-      console.error('========================================');
+      this.logger.error({
+        rpc: 'create_order_with_stock',
+        supabaseError: { code: error.code },
+      }, 'Supabase RPC order creation failed')
 
-      throw mapOrderRpcError(error);
-    }
-
-    if (error !== null) {
       throw mapOrderRpcError(error)
     }
-
-    
 
     const parsed = createdOrderReferenceSchema.safeParse(data?.[0])
 

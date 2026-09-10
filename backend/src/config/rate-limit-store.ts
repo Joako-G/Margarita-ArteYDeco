@@ -25,9 +25,11 @@ export function createRateLimitStore(
 
   if (client === undefined) {
     client = new Redis(redisUrl, {
+      commandTimeout: 1_000,
       connectTimeout: 5_000,
-      enableOfflineQueue: true,
+      enableOfflineQueue: false,
       maxRetriesPerRequest: 1,
+      retryStrategy: (times): number | null => (times <= 2 ? 100 : null),
     })
     clients.set(redisUrl, client)
   }

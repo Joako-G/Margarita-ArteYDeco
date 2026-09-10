@@ -34,7 +34,9 @@ export function createApp(
 
   app.disable('x-powered-by')
   if (env.isVercel) {
-    app.set('trust proxy', true)
+    // Vercel provides one trusted proxy hop to the function. Trusting one hop
+    // avoids accepting an arbitrary client-supplied X-Forwarded-For chain.
+    app.set('trust proxy', 1)
   } else {
     const trustedProxyIps = new Set(env.trustedProxyIps)
     app.set('trust proxy', (ip: string) => trustedProxyIps.has(ip))

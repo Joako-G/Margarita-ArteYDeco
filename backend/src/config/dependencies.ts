@@ -148,7 +148,7 @@ export function createApplicationDependencies(
   const settingsService = new SettingsService(settingsRepository, storageService)
   const csrfService = new CsrfService(env.securityHmacSecret)
   const guestSessionService = new GuestSessionService(new GuestSessionRepository(supabase))
-  const orderRepository = new OrderRepository(supabase)
+  const orderRepository = new OrderRepository(supabase, logger)
   const confirmationService = new OrderConfirmationService(orderRepository)
   const orderService = new OrderService(
     orderRepository,

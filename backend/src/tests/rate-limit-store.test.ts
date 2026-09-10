@@ -31,17 +31,25 @@ describe('rate limit Redis store', () => {
     vi.clearAllMocks()
   })
 
-  it('queues initialization commands until the serverless Redis connection is ready', async () => {
+  it('rejects immediately while Redis is offline and bounds reconnect attempts', async () => {
     createRateLimitStore('rediss://default:secret@redis.example:6379', 'cold-start-test')
 
     expect(redisMocks.constructor).toHaveBeenCalledWith(
       'rediss://default:secret@redis.example:6379',
       expect.objectContaining({
+        commandTimeout: 1_000,
         connectTimeout: 5_000,
-        enableOfflineQueue: true,
+        enableOfflineQueue: false,
         maxRetriesPerRequest: 1,
+        retryStrategy: expect.any(Function),
       }),
     )
+
+    const options = redisMocks.constructor.mock.calls[0]?.[1] as {
+      retryStrategy: (times: number) => number | null
+    }
+    expect(options.retryStrategy(1)).toBe(100)
+    expect(options.retryStrategy(3)).toBeNull()
 
     const storeOptions = redisMocks.storeConstructor.mock.calls[0]?.[0] as {
       sendCommand: (...args: string[]) => Promise<unknown>

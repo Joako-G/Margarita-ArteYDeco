@@ -64,6 +64,14 @@ const envSchema = z
         path: ['PUBLIC_CACHE_MAX_AGE_SECONDS'],
       })
     }
+
+    if (value.NODE_ENV === 'production' && value.REDIS_URL === undefined) {
+      context.addIssue({
+        code: 'custom',
+        message: 'REDIS_URL es obligatoria en producción para el rate limiting distribuido',
+        path: ['REDIS_URL'],
+      })
+    }
   })
 
 export interface IEnv {

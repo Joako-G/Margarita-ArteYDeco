@@ -26,13 +26,11 @@ describe('loadEnv', () => {
     expect(() => loadEnv(withoutSecret)).toThrow()
   })
 
-  it('allows production to start without Redis', () => {
-    const env = loadEnv({
+  it('requires Redis in production', () => {
+    expect(() => loadEnv({
       ...BASE_ENV,
       NODE_ENV: 'production',
-    })
-
-    expect(env.redisUrl).toBeNull()
+    })).toThrow()
   })
 
   it('accepts a configured Redis URL', () => {
