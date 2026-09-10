@@ -13,3 +13,5 @@
 # Local tooling
 .DS_Store
 coverage/
+# Local AI runtime state
+.atl/
