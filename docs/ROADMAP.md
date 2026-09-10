@@ -1255,12 +1255,16 @@ Sistema en producción.
 - [ ] **13.1.1 — Habilitación productiva.** Requiere dictamen final de un abogado
   o abogada matriculada, configuración productiva de secretos/CAPTCHA, prueba de
   aceptación y despliegue supervisado. No se aplicaron cambios a Supabase remoto.
-- [ ] **13.2 — Mercado Pago Checkout Pro.** Incorporar pagos y reintegros mediante
+- [ ] **13.2 — Descuento individual por producto.** Ejecutar
+  `PRODUCT-DISCOUNT-SDD.md`: precio de lista, porcentaje, precio de oferta,
+  snapshots de pedido, cálculo atómico, administración y presentación pública.
+- [ ] **13.3 — Mercado Pago Checkout Pro.** Ejecutar el diseño de
+  `MP-CHECKOUT-PRO-SDD.md` e incorporar pagos y reintegros mediante
   entidades propias, outbox, idempotencia, webhooks verificados y conciliación.
   Deberá consumir el contrato desacoplado del módulo de arrepentimientos sin
   reescribir sus expedientes o liquidaciones.
 - Cupones
-- Promociones
+- Promociones avanzadas
 - Wishlist
 - Favoritos
 - Estadísticas avanzadas

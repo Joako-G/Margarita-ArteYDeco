@@ -82,6 +82,14 @@ export class OrderService implements IOrderService {
     currentSessionToken: string | null,
     idempotencyKey: string,
   ): Promise<ICreatedOrderResult> {
+    if (request.deliveryMethod === 'shipping' && request.paymentMethod === 'cash') {
+      throw new AppError(
+        400,
+        'El efectivo solo está disponible para retiro en el local',
+        'INVALID_DELIVERY_PAYMENT_COMBINATION',
+      )
+    }
+
     const session = await this.guestSessionService.getOrCreate(currentSessionToken)
     const input: ICreateOrderInput = {
       customer: {

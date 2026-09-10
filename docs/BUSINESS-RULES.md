@@ -4,7 +4,7 @@
 
 ## Business Rules
 
-Versión: 1.0
+Versión: 1.1
 
 ---
 
@@ -48,6 +48,10 @@ Las reglas aquí definidas tienen prioridad sobre cualquier decisión técnica.
 - La imagen del producto será opcional. Cuando no exista, las interfaces pública y
   administrativa mostrarán la imagen de respaldo definida por el Frontend.
 - Todo producto deberá tener un precio mayor a cero.
+- Todo producto podrá tener un porcentaje de descuento individual entre `0` y
+  menor que `100`; `0` indica que no está en oferta.
+- El precio de oferta será derivado del precio de lista y deberá continuar siendo
+  mayor a cero después del redondeo monetario.
 - Todo producto deberá crearse con un stock inicial entero mayor o igual a cero.
 
 ## Estado
@@ -225,7 +229,10 @@ Frontend utilizará la variante local oficial como respaldo.
 - La cantidad mínima por producto será 1.
 - Agregar nuevamente un producto ya presente sumará cantidades sin superar el stock.
 - Agregar un producto no reservará unidades.
-- El total se calculará automáticamente.
+- El total se calculará automáticamente usando primero los descuentos vigentes
+  de cada producto y, después, el descuento por transferencia cuando corresponda.
+- El carrito no congelará precios. El Backend recalculará precio de lista,
+  descuento del producto, subtotal y total al crear el pedido.
 - La compra generará un nuevo pedido.
 - Al crear el pedido, el Backend deberá comprobar nuevamente que todos los productos continúan activos y poseen stock suficiente.
 - La creación del pedido y el descuento de stock deberán completarse como una única operación atómica.
@@ -319,7 +326,10 @@ Frontend utilizará la variante local oficial como respaldo.
   coordinará o reintegrará el costo razonable de devolución cuando corresponda.
 - El reintegro comprenderá todas las sumas efectivamente cobradas por el contrato,
   incluido un eventual costo original de entrega, más el costo de devolución que
-  corresponda. Se calculará desde snapshots, nunca desde precios actuales ni
+  corresponda. Para Mercado Pago, el importe enviado al proveedor se limitará al
+  importe efectivamente cobrado por los productos; cualquier envío coordinado por
+  separado y el costo de devolución se registrarán y resolverán fuera de ese
+  reintegro. Se calculará desde snapshots, nunca desde precios actuales ni
   importes enviados por el Frontend.
 - Efectivo y transferencia utilizarán inicialmente un reintegro manual auditado.
   No se almacenarán CBU, alias ni datos bancarios completos del cliente.
@@ -333,6 +343,10 @@ Frontend utilizará la variante local oficial como respaldo.
   Sus caídas, límites o rechazos técnicos no podrán alterar una solicitud
   determinada como aplicable;
   el caso continuará por revisión y resolución manual.
+- El diseño de Checkout Pro deberá respetar `MP-CHECKOUT-PRO-SDD.md`: el pago
+  histórico del pedido, la liquidación del arrepentimiento y la operación técnica
+  del proveedor conservarán fuentes de verdad separadas. Ningún Webhook podrá
+  decidir aplicabilidad, devolución física o stock.
 
 ## Administración y atención
 
@@ -401,6 +415,20 @@ Una funcionalidad estará finalizada únicamente cuando:
 - Mantenga la integridad de los datos.
 - No comprometa la simplicidad del sistema.
 
+## Transparencia legal y técnica vigente
+
+- La Política de Privacidad identificará los datos, finalidades, proveedores y
+  derechos que corresponden al comportamiento implementado.
+- Se utilizarán únicamente cookies técnicas necesarias y no se mostrará un banner
+  de consentimiento por ahora; esto no constituye una conclusión legal sobre la
+  obligación o excepción de un banner.
+- Turnstile se cargará solo en flujos sensibles aprobados y se divulgará Cloudflare
+  antes o junto al desafío.
+- Los períodos de conservación y disparadores de eliminación quedan pendientes de
+  confirmación del contador y revisión legal final.
+- La documentación distinguirá requisitos, divulgaciones de proveedores,
+  recomendaciones y pendientes, sin agregar identidad fiscal no confirmada.
+
 # Administración de Stock
 
 El administrador podrá consultar y ajustar el stock desde el Panel Administrativo. Cada ajuste manual requerirá una cantidad y un motivo. Activar o desactivar un producto no modificará su stock.
@@ -412,7 +440,10 @@ Los métodos disponibles en el MVP serán:
 - Efectivo.
 - Transferencia bancaria.
 
-La transferencia aplicará el descuento configurado por el administrador. El Backend calculará el descuento y el total; nunca confiará en importes calculados por el Frontend.
+La transferencia aplicará el descuento configurado por el administrador sobre el
+subtotal obtenido después de los descuentos de producto. El Backend calculará
+ambos descuentos y el total; nunca confiará en importes calculados por el
+Frontend.
 
 Todo pedido se creará con estado `pending` y pago `pending`, independientemente del método elegido. El administrador marcará el pago como recibido después de verificarlo; esa acción no modifica `order_status`.
 
@@ -425,3 +456,64 @@ La confirmación incluirá una acción "Enviar comprobante por WhatsApp" que abr
 El Panel Administrativo utilizará enlaces `wa.me` para contactar al cliente, avisar que el pedido está listo y recordar un pago pendiente. El envío siempre requerirá una acción manual del administrador y nunca cambiará automáticamente el estado del pedido.
 
 Mercado Pago y WhatsApp Business API no forman parte del MVP.
+
+La incorporación post-MVP de Mercado Pago permanece deshabilitada hasta completar
+los prerrequisitos técnicos, operativos y documentales pendientes definidos en
+`MP-CHECKOUT-PRO-SDD.md`.
+Efectivo y transferencia continúan siendo los únicos métodos vigentes mientras
+esa fase no se implemente y habilite expresamente.
+
+Para la futura habilitación de Checkout Pro quedan aprobadas estas reglas:
+
+- Mercado Pago estará disponible para retiro en el local y para envío a
+  coordinar.
+- La primera habilitación admitirá únicamente dinero disponible en Mercado Pago
+  y tarjetas de débito. Se excluirán Rapipago, Pago Fácil, tarjetas de crédito y
+  cualquier alternativa de financiación o cuotas sin tarjeta.
+- El checkout no exigirá tener una cuenta de Mercado Pago para utilizar una
+  tarjeta de débito.
+- La reserva inicial de stock durará 40 minutos desde la creación atómica del
+  pedido y será calculada por el Backend.
+- Checkout Pro utilizará `binary_mode = false` para admitir pagos `pending` o
+  `in_process` y favorecer la aprobación de clientes que necesiten más tiempo o
+  validaciones adicionales.
+- El vencimiento del contador nunca bastará para restaurar stock. El Backend
+  consultará y conciliará el último estado de Mercado Pago; un pago todavía
+  pendiente o en proceso permanecerá bajo revisión.
+- La vigencia de la preferencia impedirá iniciar pagos nuevos después de los 40
+  minutos. Un pago iniciado antes del vencimiento se resolverá por Webhook/API.
+- El comercio absorberá el costo de Mercado Pago. No se aplicará ningún recargo
+  al comprador por utilizar este medio.
+- El comercio eligió disponer de los fondos a 18 días. La referencia de tarifa
+  y disponibilidad deberá confirmarse en la cuenta, provincia y medio de pago
+  concretos al implementar la integración; no se utilizará para calcular ni
+  modificar el total del pedido.
+- Mercado Pago cobrará únicamente los productos incluidos en el pedido. Para
+  envíos, el costo, la coordinación y la forma de pago se acordarán por separado
+  entre el dueño del negocio y el cliente, y no formarán parte del importe enviado
+  a Mercado Pago.
+- Si un pago de Mercado Pago es rechazado, el cliente podrá reintentarlo sobre
+  el mismo pedido durante los 40 minutos de reserva. El reintento creará un
+  nuevo intento de pago, pero no descontará stock nuevamente. Cumplido ese plazo,
+  el pedido se cancelará y el stock se liberará según las reglas de cancelación,
+  previa conciliación del estado del proveedor cuando corresponda.
+- La primera versión admitirá únicamente reintegros totales. No se procesarán
+  reintegros parciales.
+- El formulario de arrepentimiento solo iniciará una solicitud y nunca ejecutará
+  un reintegro automáticamente. La solicitud, su decisión, la devolución física
+  y el reintegro mantendrán estados independientes.
+- Para un pedido pagado con Mercado Pago, un arrepentimiento aprobado podrá
+  originar un reintegro por el importe efectivamente cobrado por los productos.
+  El costo de devolución se registrará por separado y se resolverá manualmente.
+  El total económico del caso podrá sumar ambos componentes, pero la API de
+  Mercado Pago recibirá únicamente el importe cobrado por los productos.
+- El servicio de reintegro será común y podrá invocarse tanto desde un
+  arrepentimiento aprobado como desde una cancelación administrativa válida, sin
+  duplicar la lógica ni las operaciones financieras.
+- Efectivo y transferencia continuarán utilizando un reintegro manual auditado;
+  estas reglas de reintegro automático aplican únicamente a pagos de Mercado
+  Pago.
+- Los contracargos no tendrán un módulo público inicial. Se notificarán y
+  registrarán para alertar al administrador; la disputa se gestionará en Mercado
+  Pago. Un contracargo no iniciará un reintegro ni restaurará stock
+  automáticamente.

@@ -42,4 +42,12 @@ export const checkoutSchema = z.object({
       path: ['shippingAddress'],
     })
   }
+
+  if (values.deliveryMethod === 'shipping' && values.paymentMethod === 'cash') {
+    context.addIssue({
+      code: 'custom',
+      message: 'El efectivo solo está disponible para retiro en el local.',
+      path: ['paymentMethod'],
+    })
+  }
 })

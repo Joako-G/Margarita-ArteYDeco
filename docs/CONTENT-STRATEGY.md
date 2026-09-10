@@ -208,6 +208,15 @@ Enfocadas en beneficios.
 
 No copiar especificaciones del fabricante.
 
+Cuando exista una oferta, utilizar textos directos y verificables:
+
+- `Oferta`.
+- `{percentage}% de descuento`.
+- `Antes {listPrice}. Ahora {salePrice}.`
+
+No utilizar urgencia artificial, plazos inexistentes ni afirmar ahorro cuando el
+porcentaje configurado sea `0`.
+
 ---
 
 # Beneficios

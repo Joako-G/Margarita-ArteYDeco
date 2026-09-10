@@ -106,6 +106,18 @@ Antes de finalizar:
 - comprobar que el formulario nunca pueda enviarse sin aceptar los documentos;
 - verificar que la nueva validación esté integrada con el sistema actual del formulario.
 
+# Reconciliación PR3 — aceptación y divulgación previa
+
+El bloque se mantiene dentro del formulario React Hook Form + Zod y enlaza a
+Términos, Privacidad y arrepentimiento. Antes de confirmar, el checkout también
+expone productos, cantidades, subtotal, descuento configurado cuando corresponde,
+total final, pago y modalidad de entrega. Para envío informa que costo y entrega se
+coordinan posteriormente; no presenta una tarifa o fecha no confirmada.
+
+La aceptación no reemplaza la revisión legal final del contenido ni define períodos
+de conservación. Las cookies técnicas y la divulgación condicional de Turnstile se
+explican en la Política de Privacidad.
+
 # Resultado esperado
 
 Al finalizar:

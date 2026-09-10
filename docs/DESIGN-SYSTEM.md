@@ -825,6 +825,10 @@ Destacado
 
 Sin stock
 
+Cuando un producto esté en oferta, el precio de lista se mostrará con `<del>`, el
+porcentaje se comunicará mediante texto y el precio de oferta será el valor de
+mayor jerarquía. La oferta nunca dependerá únicamente del color o del badge.
+
 Cuando no exista stock:
 
 - Mostrar el Badge "Sin stock" con color semántico de Error.

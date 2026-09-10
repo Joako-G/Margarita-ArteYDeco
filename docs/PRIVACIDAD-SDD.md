@@ -32,7 +32,7 @@ NO envía publicidad;
 NO requiere registro de usuarios;
 NO permite crear cuentas de clientes;
 NO almacena tarjetas de crédito;
-conserva el método de pago elegido y el estado del cobro, pero no credenciales ni
+conserva el método de pago elegido y el estado operativo del cobro, pero no credenciales ni
 datos de tarjetas;
 utiliza una cookie técnica `HttpOnly` para asociar pedidos al dispositivo y una
 pista local no sensible con el número del último pedido;
@@ -119,7 +119,8 @@ Explicar claramente que:
 - no se venden datos personales;
 - no se comparten con terceros para fines comerciales.
 
-Identificar a Supabase, Vercel y Turnstile según su uso real. No mencionar Mercado
+Identificar a Supabase, Vercel y Turnstile según su uso real. Las tipografías son locales
+en WOFF2 y no requieren Google Fonts. No mencionar Mercado
 Pago como encargado efectivo hasta que la pasarela sea habilitada.
 
 ## Seguridad
@@ -168,9 +169,10 @@ Utilizar lenguaje claro y sencillo.
 
 Agregar una sección indicando que cualquier consulta relacionada con la privacidad de los datos personales podrá realizarse mediante los medios oficiales de contacto del comercio.
 
-No hardcodear correos electrónicos, teléfonos ni direcciones.
+Publicar para derechos de privacidad el buzón confirmado:
+`margaritas.arteydeco.jujuy@gmail.com`.
 
-Preparar el componente para que en el futuro estos datos puedan obtenerse desde la configuración del negocio.
+Mantener los demás datos de contacto provenientes de la configuración del negocio.
 
 ## 4. Diseño
 
@@ -291,3 +293,32 @@ y describir, además de los pedidos:
 La consulta pública por código mostrará información mínima y no creará una cuenta,
 cookie ni Guest Session. El documento no afirmará que Mercado Pago procesa datos
 antes de que la integración esté efectivamente habilitada.
+
+## Actualización PR 1: canal restringido para derechos de privacidad
+
+Las solicitudes de acceso, actualización, rectificación o supresión se reciben en
+`margaritas.arteydeco.jujuy@gmail.com` y se siguen en un hilo de correo restringido
+al titular y al personal autorizado con acceso al buzón. La evidencia mínima de
+seguimiento comprende fecha de recepción, categoría, contacto necesario, estado de
+verificación y resolución, fecha de cierre y revisión de conservación o eliminación.
+
+No se agrega una tabla, API ni persistencia en el backend para este canal. Tampoco se
+copia en la aplicación el contenido innecesario de la solicitud, el teléfono ni el
+pedido completo. Los períodos concretos y disparadores de eliminación de esta
+evidencia, así como los de las demás categorías, quedan pendientes de confirmación
+del contador y revisión legal final.
+
+## Reconciliación PR3 — comportamiento vigente y límites de publicación
+
+La implementación vigente también informa el tratamiento técnico de CSRF, límites de
+solicitudes y Cloudflare Turnstile únicamente en los flujos sensibles aprobados. Las
+fuentes tipográficas se sirven desde WOFF2 locales y no se requiere una solicitud a
+Google Fonts. Por ahora se utilizan únicamente cookies técnicas necesarias y no se
+muestra un banner de consentimiento; esta decisión no constituye una conclusión
+legal sobre banners, proveedores o transferencias internacionales.
+
+La conservación se revisa por categoría (pedidos, evidencia de reclamos y derechos,
+seguridad y rate limiting, checkout temporal y verificación). Los períodos y
+disparadores concretos siguen pendientes de confirmación del contador y revisión
+legal final. Esta documentación no agrega una tabla, API ni persistencia adicional
+para solicitudes de privacidad.
