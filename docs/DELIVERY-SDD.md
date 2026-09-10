@@ -578,6 +578,17 @@ Verificar:
 
 ---
 
+# Reconciliación PR3 — checkout y confirmación
+
+La implementación vigente mantiene dos modalidades: retiro en el local y envío a
+coordinar. El retiro muestra la configuración del local; el envío exige dirección y
+mantiene fuera del total cualquier costo, transportista, fecha, tracking o número de
+guía. El pago en efectivo solo aparece para retiro y el envío utiliza transferencia.
+
+La confirmación conserva los totales, el pago, la modalidad y el texto de
+coordinación confirmados por el Backend. Esta documentación describe comportamiento
+operativo, no una conclusión legal sobre obligaciones de entrega.
+
 # Resultado esperado
 
 El sistema permite elegir entre retiro y envío.

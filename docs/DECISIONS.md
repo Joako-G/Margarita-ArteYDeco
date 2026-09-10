@@ -1042,3 +1042,238 @@ Se agregarán rutas públicas y administrativas, tablas de solicitudes, eventos,
 liquidaciones, idempotencia y límites, además de RPC protegidas. El enlace será
 visible desde el primer acceso. Los documentos legales se publicarán únicamente
 cuando la funcionalidad esté habilitada y después de revisión profesional.
+
+---
+
+# ADR-045
+
+## Reserva de stock y modo de aprobación para Mercado Pago Checkout Pro
+
+### Contexto
+
+Checkout Pro se incorporará después del MVP sobre un catálogo con stock por
+unidades. La creación del pedido reserva existencias, pero parte del público está
+compuesto por personas mayores que pueden necesitar más tiempo para completar la
+redirección, autenticación o validación del pago. Liberar stock demasiado pronto
+puede entrar en carrera con una aprobación tardía; retenerlo indefinidamente
+perjudica otras ventas.
+
+Mercado Pago permite `binary_mode = true`, que reduce los resultados a aprobado o
+rechazado, pero descarta pagos que necesitan quedar pendientes o en revisión y
+puede reducir la tasa de aprobación.
+
+### Decisión
+
+La reserva inicial de stock para Mercado Pago durará 40 minutos desde la creación
+atómica del pedido. La duración tendrá una única fuente configurable en el Backend
+y se persistirá como `reservation_expires_at`; el Frontend solo mostrará el valor
+devuelto por la API.
+
+Checkout Pro utilizará `binary_mode = false`. Los estados `pending` e
+`in_process` serán resultados normales. Al vencer la reserva se impedirá iniciar
+un pago nuevo, pero el Backend consultará Mercado Pago antes de cancelar el pedido
+o restaurar stock. Una operación todavía procesable permanecerá en conciliación.
+
+La preferencia tendrá una vigencia inicial de 40 minutos mediante sus campos de
+vigencia. El vencimiento de pagos offline es un concepto distinto y no se usará
+como temporizador de inventario.
+
+### Consecuencias
+
+El flujo favorece la accesibilidad temporal y la tasa de aprobación a cambio de
+mantener estados asíncronos, Webhooks, conciliación y una posible retención mayor
+del stock. Un contador agotado no equivale a cancelación. Las pruebas deberán
+cubrir aprobación posterior al vencimiento, eventos duplicados o fuera de orden y
+restauración de stock exactamente una vez.
+
+---
+
+# ADR-046
+
+## Precio de lista y descuento individual por producto
+
+### Contexto
+
+El negocio necesita seleccionar productos concretos y publicar una oferta sin
+reemplazar el precio de lista ni perder la explicación histórica de lo cobrado.
+Además, ya existe un descuento por transferencia y Mercado Pago se incorporará en
+otro incremento.
+
+### Decisión
+
+Products conservará `price` como precio de lista y almacenará un
+`discount_percentage` entre `0` y menor que `100`. PostgreSQL derivará
+`sale_price` con redondeo a dos decimales. Cada Order Item guardará snapshots del
+precio de lista, porcentaje y precio unitario cobrado.
+
+Los descuentos se aplicarán en orden: oferta por producto, subtotal y descuento
+por transferencia. Mercado Pago utilizará posteriormente el total autoritativo
+del pedido y no calculará promociones.
+
+### Consecuencias
+
+El catálogo, carrito, checkout, pedidos y administración deberán distinguir
+precio de lista y precio cobrado. El carrito podrá quedar desactualizado y deberá
+conciliarse, mientras que la RPC seguirá siendo la autoridad final. No se agregan
+vigencias, cupones, descuentos por categoría ni promociones masivas.
+
+---
+
+# ADR-047
+
+## Reglas comerciales aprobadas para Mercado Pago Checkout Pro
+
+### Contexto
+
+La integración de Mercado Pago dejó de ser una posibilidad comercial pendiente.
+Se requiere documentar su alcance sin alterar el total mostrado al comprador ni
+confundir el cobro de productos con la coordinación manual del envío.
+
+### Decisión
+
+Esta decisión aprueba para el alcance post-MVP las siguientes reglas:
+
+- El comercio absorberá el costo de Mercado Pago y no aplicará recargos al
+  comprador.
+- El comercio eligió disponer de los fondos a 18 días. La referencia vigente de
+  tarifa y disponibilidad queda sujeta a confirmación en la cuenta, provincia y
+  medio de pago concretos. No será un componente del cálculo del pedido.
+- Mercado Pago cobrará únicamente los productos. El costo, la coordinación y la
+  forma de pago del envío se acordarán por separado entre el dueño y el cliente.
+- Mercado Pago estará disponible para retiro y para envío a coordinar, conforme a
+  las demás restricciones aprobadas para Checkout Pro.
+
+### Justificación
+
+Mantiene transparente el total de productos para el comprador y conserva la
+operación manual del envío, cuyo costo no tiene una tarifa fija definida por el
+sistema.
+
+### Consecuencias
+
+El total enviado a Mercado Pago no incluirá costos de envío ni comisiones del
+comercio. La tarifa, el plazo de disponibilidad y los medios efectivamente
+ofrecidos deberán verificarse en la cuenta y en la documentación oficial antes
+de habilitar cada ambiente. La coordinación del envío seguirá fuera del cálculo
+y de la automatización de Checkout Pro.
+
+### Pendientes explícitos
+
+- Confirmar en la cuenta de producción la tarifa y la disponibilidad efectiva a
+  18 días para cada medio habilitado.
+- Definir en los documentos técnicos los contratos y la representación de los
+  acuerdos de envío sin incorporarlos al cobro de Mercado Pago.
+
+---
+
+# ADR-048
+
+## Reintento de pagos rechazados sobre el mismo pedido
+
+### Contexto
+
+Checkout Pro reserva stock durante 40 minutos. Crear un pedido nuevo para cada
+  rechazo obligaría al cliente a repetir el checkout y podría descontar stock de
+  forma duplicada.
+
+### Decisión
+
+Un pago rechazado podrá reintentarse sobre el mismo pedido durante la reserva de
+40 minutos. Cada reintento será un intento de pago independiente y auditable,
+pero reutilizará el stock ya reservado: nunca se descontará nuevamente. Después
+del vencimiento, el pedido se cancelará y el stock se liberará, previa
+conciliación del estado de Mercado Pago cuando exista un resultado incierto.
+
+### Consecuencias
+
+La API pública deberá ofrecer la continuación solo mientras la reserva esté
+vigente. El Backend deberá impedir pedidos duplicados por reintentos y mantener
+la restauración de stock exactamente una vez.
+
+### Pendientes explícitos
+
+- Definir en `DATABASE-SDD.md` las restricciones de intentos y la relación con la
+  reserva existente.
+- Definir en `BACKEND-SDD.md` el contrato final del endpoint de reintento y su
+  política de idempotencia.
+
+---
+
+# ADR-049
+
+## Reintegros totales y separación del arrepentimiento
+
+### Contexto
+
+El Botón de Arrepentimiento inicia un expediente comercial y Checkout Pro agrega
+una operación financiera externa. La primera versión debe evitar reintegros
+parciales, automatismos al enviar el formulario y lógica duplicada entre flujos.
+
+### Decisión
+
+La primera versión procesará únicamente reintegros totales. El formulario de
+arrepentimiento creará una solicitud, pero nunca ejecutará un reintegro
+automáticamente. Solo un arrepentimiento aprobado o una cancelación administrativa
+válida podrá invocar el mismo servicio de reintegro.
+
+Para pedidos pagados con Mercado Pago, el importe del reintegro será el importe
+efectivamente cobrado por los productos. El costo de devolución se registrará y
+resolverá manualmente como componente separado. El total económico del caso podrá
+sumar ambos componentes, pero la API de Mercado Pago recibirá únicamente el
+importe cobrado por productos. Efectivo y transferencia mantendrán el reintegro
+manual auditado.
+
+Los contracargos se registrarán y alertarán al administrador, sin módulo público
+inicial. La disputa se gestionará en Mercado Pago y no producirá automáticamente
+un reintegro ni una restauración de stock.
+
+### Justificación
+
+Separa el derecho de arrepentimiento, la devolución física y la operación
+financiera; reduce el riesgo de cobros duplicados y mantiene intacta la verdad
+histórica del pedido y del inventario.
+
+### Consecuencias
+
+El servicio común deberá ser idempotente, auditable y reutilizable desde ambos
+orígenes. La liquidación del arrepentimiento seguirá siendo la fuente de verdad
+económica del expediente; la operación técnica de Mercado Pago solo se vinculará
+con ella y se conciliará. Los estados de pedido, pago, reintegro, devolución y
+stock permanecerán separados.
+
+### Pendientes explícitos
+
+- Definir en `DATABASE-SDD.md` las restricciones que impidan reintegros parciales
+  y duplicados.
+- Definir en `BACKEND-SDD.md` el contrato del servicio común, sus claves de
+  idempotencia y la conciliación de operaciones externas.
+- Confirmar legal y operativamente cuándo corresponde resolver el costo de
+  devolución y cómo se comunicará al cliente.
+
+---
+
+# ADR-050
+
+## Auditoría legal acotada y publicación condicionada
+
+### Contexto
+
+Las superficies legales, checkout, recuperación y arrepentimiento deben reflejar
+el comportamiento real sin convertir investigación o recomendaciones en promesas
+del producto.
+
+### Decisión
+
+La documentación y las pruebas separarán requisitos, divulgaciones de proveedores,
+recomendaciones y decisiones pendientes. Se conservarán únicamente cookies técnicas
+necesarias, las fuentes serán locales y Turnstile seguirá siendo condicional. Los
+períodos y disparadores concretos de conservación requieren confirmación del
+contador y revisión legal final antes de publicar una conclusión definitiva.
+
+### Consecuencias
+
+El checkout y la confirmación deben mantener trazabilidad de totales, pago,
+modalidad y coordinación de entrega. Las pruebas de release verifican enlaces,
+alcance de claims, ausencia de solicitudes de fuentes remotas, almacenamiento local
+limitado y divulgación previa al desafío. No se agregan identidad fiscal, claims de
+ARCA/Monotributo ni cambios de seguridad.

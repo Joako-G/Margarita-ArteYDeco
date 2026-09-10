@@ -256,6 +256,8 @@ Campos mínimos
 - slug
 - description
 - price
+- discount_percentage
+- sale_price
 - stock_quantity
 - image_path
 - is_featured
@@ -272,6 +274,11 @@ Puede aparecer en muchos Pedidos.
 `is_active` determina si el producto se publica. `stock_quantity` determina cuántas unidades pueden venderse y deberá tener un constraint `CHECK (stock_quantity >= 0)`.
 
 `stock_quantity` será un entero, obligatorio y con valor predeterminado `0`.
+
+`price` será el precio de lista. `discount_percentage` será `numeric(5,2)`,
+obligatorio, tendrá valor predeterminado `0` y deberá ser mayor o igual a `0` y
+menor que `100`. `sale_price` será una columna generada y almacenada, redondeada a
+dos decimales, siempre mayor a cero y nunca superior al precio de lista.
 
 `slug` deberá ser único.
 
@@ -425,6 +432,8 @@ Campos mínimos
 - product_id
 - product_name
 - quantity
+- list_unit_price
+- product_discount_percentage
 - unit_price
 - subtotal
 
@@ -434,7 +443,12 @@ Pertenece a un Pedido.
 
 Pertenece a un Producto.
 
-Los campos `customer_first_name`, `customer_last_name`, `customer_phone`, `customer_phone_normalized` y `product_name` son snapshots históricos. No deberán cambiar cuando posteriormente se editen el cliente o el producto.
+Los campos `customer_first_name`, `customer_last_name`, `customer_phone`,
+`customer_phone_normalized`, `product_name`, `list_unit_price`,
+`product_discount_percentage` y `unit_price` son snapshots históricos. No deberán
+cambiar cuando posteriormente se editen el cliente o el producto. `unit_price`
+será el precio de oferta efectivamente cobrado y `subtotal` conservará la regla
+`unit_price × quantity`.
 
 ---
 
@@ -570,6 +584,15 @@ Una futura operación técnica de Mercado Pago pertenecerá al módulo de pagos 
 relacionará opcionalmente con la liquidación. Conservará proveedor, identificadores,
 importe, moneda, clave de idempotencia, estado, intentos y datos mínimos de
 conciliación; no reescribirá la liquidación ni `orders.payment_status`.
+`MP-CHECKOUT-PRO-SDD.md` desarrolla este contrato sin autorizar todavía una
+migración. Las tablas del proveedor deberán quedar fuera del acceso directo del
+Frontend, con RLS habilitado, grants públicos revocados y funciones
+`SECURITY INVOKER` por defecto.
+El futuro intento de pago conservará `reservation_expires_at`, calculado
+atómicamente como 40 minutos desde la creación del pedido, y el estado específico
+del proveedor. El proceso de vencimiento deberá bloquear el pedido, conciliar
+`pending`/`in_process` y restaurar stock una sola vez únicamente después de
+descartar un cobro aprobable o capturado.
 
 ## Idempotencia y antiabuso
 
@@ -811,7 +834,10 @@ Los cambios de stock utilizarán obligatoriamente Inventory Movements como regis
 
 La creación y cancelación de pedidos con cambios de stock deberán implementarse mediante funciones PostgreSQL invocadas por el Backend a través de Supabase RPC.
 
-- `create_order_with_stock`: valida disponibilidad, crea el pedido y sus detalles, descuenta stock, registra movimientos y vincula el pedido con la Guest Session recibida.
+- `create_order_with_stock`: valida disponibilidad, calcula el precio de oferta
+  desde Products, aplica luego el descuento por transferencia cuando corresponde,
+  crea el pedido y sus snapshots, descuenta stock, registra movimientos y vincula
+  el pedido con la Guest Session recibida.
 - `cancel_order_with_stock`: bloquea el pedido, valida su versión esperada y la confirmación de reintegro manual cuando ya estaba pagado, cambia el pedido a Cancelled, restaura unidades una sola vez y registra movimientos.
 - `adjust_product_stock`: aplica un ajuste manual no negativo y registra actor y motivo.
 - `transition_order_status`: bloquea el pedido, valida su versión esperada, aplica únicamente una transición válida y registra el cambio de pedido y pago.

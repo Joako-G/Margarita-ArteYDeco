@@ -144,6 +144,8 @@ Formulario de producto
 - Nombre
 - Descripción
 - Precio mayor a cero
+- Descuento individual entre 0 y 99,99%, con 0 como producto sin oferta
+- Vista informativa del precio resultante
 - Stock entero mayor o igual a cero
 - Estado Activo o Inactivo
 - Producto destacado
@@ -164,6 +166,10 @@ el estado destacado. La baja lógica será una acción separada y destructiva qu
 siempre requerirá confirmación; la interfaz deberá aclarar que conserva stock,
 imagen e historial de ventas. Las acciones se bloquearán mientras exista una
 mutación pendiente para el mismo producto.
+
+Los productos con descuento mostrarán el badge `Oferta`, el precio de lista y el
+precio resultante. El ordenamiento administrativo por precio conservará el precio
+de lista y no se incorporará un filtro exclusivo de ofertas en este incremento.
 
 ---
 
@@ -282,6 +288,11 @@ El Panel habilitará únicamente las transiciones válidas para el método de pa
 
 La acción final disponible para un pedido `ready` con pago confirmado dependerá del método de entrega. Para retiro será "Marcar como retirado" y registrará la fecha y hora del retiro; para envío será "Marcar como entregado" y registrará la fecha y hora de la entrega.
 
+El resumen superior del detalle identificará por separado `Estado del pedido`,
+`Estado del pago` y `Medio de pago`. En la sección Entrega, los pedidos finalizados
+mostrarán `Retirado el` o `Entregado el` con su fecha y hora administrativa en
+`America/Argentina/Buenos_Aires`.
+
 ## Acciones de WhatsApp
 
 El detalle del pedido incluirá:
@@ -302,6 +313,13 @@ La cancelación exigirá un motivo mediante formulario. Para pedidos pagados se
 solicitará además una confirmación explícita sobre el reintegro manual. El éxito
 indicará que el stock fue restaurado una sola vez; nunca se ofrecerá reapertura ni
 eliminación del pedido.
+
+Cuando se habilite Mercado Pago, el detalle mostrará la reserva inicial de 40
+minutos, el estado conciliado y la última actualización del proveedor. Un pago
+`pending` o `in_process` no habilitará cancelación automática ni restauración de
+stock por el solo vencimiento del contador; ofrecerá sincronización y revisión
+según la matriz calculada por el Backend. La confirmación manual de pago quedará
+deshabilitada para este método.
 
 Nunca eliminar pedidos.
 
@@ -339,12 +357,20 @@ La ruta `/admin/arrepentimientos/:requestId` mostrará:
   del pedido hasta el cierre, sin reemplazar el criterio del administrador;
 - decisión, devolución y reintegro como estados independientes;
 - prioridad y revisión de plazo sin rechazo automático;
+- un bloque administrativo `Plazo de arrepentimiento` con celebración del
+  contrato, entrega o retiro, presentación de la solicitud y vencimiento
+  estimado cuando exista;
 - pedido vinculado y acceso a su detalle;
 - identificación de pedido mediante candidatos privados sin preselección;
 - comentario original renderizado como texto;
 - devolución, inspección, liquidación e inventario en bloques separados;
 - timeline inmutable y acciones calculadas por el Backend;
 - compositor manual de WhatsApp para verificación o coordinación posterior.
+
+El recorrido utilizará checks únicamente para etapas realmente alcanzadas. Los
+estados iniciales `not_required` de devolución y reintegro no se considerarán
+resueltos hasta que exista una decisión registrada. El bloque de plazo aclarará
+que sus fechas orientan la revisión y nunca impiden presentar una solicitud.
 
 El teléfono se mostrará solo cuando sea necesario para operar. Los candidatos
 mostrarán número, fecha, resumen de productos, total, estado, entrega y pago. La
