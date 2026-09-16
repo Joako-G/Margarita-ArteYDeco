@@ -24,6 +24,28 @@ test('las páginas legales mantienen el alcance aprobado y no inventan identidad
   }
 })
 
+test('las páginas legales muestran el aviso de revisión profesional debajo del título', async () => {
+  const [terms, privacy, index] = await Promise.all([
+    readFrontendFile('src/features/legal/components/TermsAndConditions.tsx'),
+    readFrontendFile('src/features/legal/components/PrivacyPolicy.tsx'),
+    readFrontendFile('src/features/legal/index.ts'),
+  ])
+
+  for (const page of [terms, privacy]) {
+    assert.match(page, /<LegalReviewNotice \/>/)
+    assert.match(page, /<\/Typography>\s*<LegalReviewNotice \/>/)
+  }
+
+  assert.match(index, /export \{ LegalReviewNotice \}/)
+})
+
+test('las secciones de divulgación utilizan un borde completo', async () => {
+  const legalStyles = await readFrontendFile('src/features/legal/components/legal.css')
+
+  assert.match(legalStyles, /\.legal-section--disclosure[\s\S]*border: 1px solid var\(--color-primary\)/)
+  assert.equal(legalStyles.includes('border-inline-start: 4px'), false)
+})
+
 test('la privacidad documenta el buzón restringido sin crear persistencia adicional', async () => {
   const privacy = await readFrontendFile('src/features/legal/components/PrivacyPolicy.tsx')
 

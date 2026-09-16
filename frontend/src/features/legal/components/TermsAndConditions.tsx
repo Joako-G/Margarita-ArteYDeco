@@ -4,6 +4,7 @@ import { usePublicSettings } from '@/features/settings'
 import { Container, Section, Typography } from '@/shared/components'
 
 import { LegalList } from './LegalList'
+import { LegalReviewNotice } from './LegalReviewNotice'
 import { LegalSection } from './LegalSection'
 import './legal.css'
 
@@ -19,6 +20,8 @@ export function TermsAndConditions() {
             <Typography as="h1" variant="h1">
               Términos y Condiciones
             </Typography>
+
+            <LegalReviewNotice />
 
             <LegalSection title="Introducción">
               <Typography variant="body">
