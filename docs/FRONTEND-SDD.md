@@ -155,21 +155,45 @@ Flujo:
   días, la pista local `lastOrderNumber`, las cookies administrativas y los proveedores
   tecnológicos utilizados. No presentará un banner de consentimiento mientras el sitio no utilice
   cookies publicitarias, analíticas o de seguimiento.
-- Cuando se habilite Mercado Pago, Checkout Pro utilizará `binary_mode = false` y
-  una reserva inicial de 40 minutos. El Frontend mostrará el tiempo restante desde
+- Cuando se habilite Mercado Pago, Checkout Pro utilizará una preferencia alojada
+  mediante Preferences API y una reserva local inicial de 24 horas desde la creación
+  atómica. El Frontend mostrará
+  el tiempo restante desde
   `reservation_expires_at`, nunca desde un contador creado localmente.
 - Mercado Pago se ofrecerá tanto para retiro como para envío a coordinar; la
   modalidad de entrega no cambiará las garantías de confirmación autoritativa.
-- La opción informará que la primera versión permite pagar con dinero disponible
-  en Mercado Pago o tarjeta de débito. No mostrará como disponibles tarjetas de
-  crédito, cuotas, Rapipago ni Pago Fácil; un cliente podrá usar débito sin tener
-  cuenta de Mercado Pago.
-- Al agotarse el contador, la pantalla no afirmará que el pedido fue cancelado ni
-  que el stock fue liberado. Mostrará `Estamos verificando tu pago` mientras el
-  Backend concilia estados `pending` o `in_process`.
+- La opción informará que la primera versión permite pagar con `account_money` o
+  tarjeta de débito. No mostrará ni aceptará tarjetas de crédito, installments,
+  prepagas, Rapipago, Pago Fácil, efectivo ni cualquier método futuro no aprobado;
+  tampoco incluirá cargos de envío. Un cliente podrá usar débito sin tener cuenta
+  de Mercado Pago.
+- Al agotarse el contador, la pantalla no afirmará por sí sola que el pedido fue
+  cancelado ni que el stock fue liberado. Mostrará `Estamos verificando tu pago`
+  mientras el Backend concilia estados `pending` o `in_process`. Si el Backend
+  informa `manual_review`, explicará que el caso requiere revisión sin asumir
+  rechazo ni que Mercado Pago devuelva `expired` cuando el cliente nunca pagó.
 - La pantalla de retorno y la confirmación consultarán el resultado mediante
   TanStack Query; los parámetros de `back_urls` serán informativos y nunca
   marcarán el pago como aprobado.
+- Un Webhook verificado y el retorno aprobado iniciarán la consulta inmediata del
+  estado en el Backend; el retorno nunca autorizará el pago por sí solo. El worker
+  recogerá jobs aproximadamente cada 60 segundos, mientras la reconciliación de
+  estados pendientes seguirá los minutos 1, 2, 4, 8 y 15, luego cada 45 minutos y
+  una consulta final antes del vencimiento con margen configurable.
+- La interfaz deberá indicar que Mercado Pago procesa el pago y enlazar la
+  Política de Privacidad antes de confirmar. La divulgación identificará los datos
+  mínimos compartidos, aclarará que el envío se coordina por separado y no
+  prometerá tarifas o condiciones de cuenta no verificadas.
+- El Frontend nunca manejará credenciales de cancelación ni claves de
+  idempotencia; si el Backend informa revisión manual, mostrará un estado seguro
+  sin afirmar cancelación, reintegro o liberación de stock.
+- El Frontend no ofrecerá una API de reembolsos ni afirmará que está implementada.
+  Una aprobación tardía sin stock mostrará una excepción que requiere gestión
+  manual del dueño, separada del estado del pedido.
+- Si se ejecuta un rollback, la opción de Mercado Pago desaparecerá o quedará
+  deshabilitada, mientras efectivo y transferencia continuarán disponibles. Las
+  pantallas no borrarán ni reescribirán la confirmación histórica autorizada por
+  el Backend.
 
 ### Consulta y recuperación pública de pedidos
 
@@ -309,6 +333,9 @@ Flujo:
 - Incluir "Recordar transferencia" únicamente para transferencias con pago pendiente.
 - Ofrecer un compositor con mensajes predefinidos y editables antes de abrir WhatsApp.
 - El uso de WhatsApp no deberá cambiar estados ni asumir que el mensaje fue enviado o leído.
+- Las excepciones de Checkout Pro se mostrarán principalmente en una tarjeta
+  contextual dentro del detalle del pedido. No se agregará una nueva sección
+  principal de administración; Conciliación será una vista secundaria de auditoría.
 
 ### Arrepentimientos
 

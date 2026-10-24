@@ -865,12 +865,37 @@ pago, orden y paginación de hasta 50 filas. El detalle devuelve snapshots del
 cliente y productos, importes, retiro y configuración operativa necesaria para
 los mensajes manuales; no expone IDs internos de clientes ni datos bancarios.
 
+Para pedidos con Mercado Pago, el detalle administrativo también devuelve el ID
+del último intento, su vencimiento original, si el stock sigue reservado y
+`canConsultPayment`. El Backend calcula esta última condición solo para un
+intento pendiente o en revisión cuyo plazo ya venció; no depende de que el
+proveedor haya entregado un ID de pago. El endpoint administrativo existente
+`POST /api/admin/payments/:attemptId/sync` consulta el estado mediante la
+referencia externa cuando no hay ID, conserva las restricciones de estado,
+autenticación y CSRF, y no equivale a confirmar un cobro. La respuesta incluye
+`auditRecorded`: si la conciliación concluyó pero falló el registro del actor,
+el Backend informa `false` y registra una advertencia operativa, sin presentar
+el fallo secundario como un pago no realizado. El Frontend consulta de nuevo el
+pedido incluso cuando falla la sincronización y nunca toma HTTP 200 como prueba
+de pago aprobado. La ruta secundaria de conciliación continúa disponible para
+auditoría.
+
 Las acciones reciben una intención semántica y `expectedUpdatedAt`. El Service
 consulta el pedido vigente, valida concurrencia y deriva la única combinación de
 estado y pago permitida para efectivo o transferencia. La persistencia se ejecuta
 mediante `transition_order_status`, que bloquea la fila y vuelve a validar
 `expectedUpdatedAt` dentro de la transacción; su trigger valida nuevamente la
 transición.
+
+Para Mercado Pago, el Service conserva separado el estado de pago persistido
+del estado mostrado a partir de transacciones: no ofrece ni ejecuta transiciones
+de confirmación, preparación o entrega hasta que el pago persistido sea `paid`
+y exista stock reservado. El trigger `validate_order_change()` impide que una
+ruta administrativa escriba `paid` sin conciliación o avance el estado con pago
+persistido pendiente, aunque envíe `paid` como nuevo estado. La excepción de
+aprobación tardía conserva la confirmación atómica de pago y pedido, sin afectar
+efectivo o transferencia. Esta regla se incorpora mediante una migración posterior a
+`202610080005` y no reescribe migraciones ya aplicadas.
 
 La cancelación exige motivo. Cuando el pago está confirmado también exige aceptar
 que el reintegro monetario se gestiona manualmente. `cancel_order_with_stock`
@@ -1068,23 +1093,90 @@ o ventana vencida derivará a `manual_review`; nunca alterará una determinació
 `applicable`. Credenciales y payloads sensibles permanecerán exclusivamente en el
 Backend.
 
-`MP-CHECKOUT-PRO-SDD.md` define el diseño transversal de checkout, Webhook,
-conciliación y operaciones técnicas. Ese módulo reutilizará la liquidación vigente
+El contrato de Preferences API define la creación del checkout alojado y Payments
+API define la conciliación del pago. Ese módulo reutilizará la liquidación vigente
 del Botón de Arrepentimiento, mantendrá `orders.payment_status` como resumen
 histórico del cobro y no duplicará estados de devolución, reintegro o stock.
-La preferencia se creará con `binary_mode = false` y vigencia de 40 minutos,
-alineada con la reserva persistida. Vencer el contador solo bloqueará nuevos
-intentos; el Backend consultará Mercado Pago antes de cancelar y conservará en
-revisión cualquier pago `pending` o `in_process` hasta obtener un resultado
-autoritativo.
+El Backend creará una preferencia alojada con importe de productos únicamente y
+una reserva local de 24 horas desde la creación atómica. PostgreSQL continuará
+siendo la autoridad de `reservation_expires_at`. Un Webhook verificado o un retorno
+aprobado provocarán una consulta inmediata; el retorno nunca autorizará por sí solo.
+El worker recogerá jobs aproximadamente cada 60 segundos, sin polling
+indiscriminado.
 
-La primera versión permitirá únicamente dinero disponible en Mercado Pago y
-tarjetas de débito. Al crear la preferencia, el Backend excluirá los tipos de pago
-restantes —incluidos `ticket`, crédito y financiación— sin utilizar
-`purpose = wallet_purchase`, para conservar el pago con débito como invitado.
-Antes de habilitar cada ambiente se consultarán los medios ofrecidos por la cuenta
-y se verificará que la preferencia no exponga Rapipago, Pago Fácil, crédito ni
-cuotas sin tarjeta.
+Los pagos `pending` o `in_process` se reconciliarán en los minutos 1, 2, 4, 8 y
+15, luego cada 45 minutos y mediante una consulta final explícita antes de
+`reservation_expires_at`, con margen configurable.
+
+Until the original 24-hour expiry, the customer may retry without an attempt-count
+cap. Retry resumes the existing hosted preference and one local attempt; every
+Mercado Pago payment ID is stored as a separate transaction for that attempt.
+Retry does not change the reservation expiry or reserve stock. Worker/network
+retry backoff remains bounded separately. A provider rejection while the
+reservation is active leaves the order pending and stock reserved. The transaction
+aggregate controls payment status: a full approved amount wins over older
+rejections, remains paid despite later rejected transactions, and does not confirm
+the order automatically while the reservation is active; the owner moves the
+pending paid order to confirmed.
+
+At expiry, no provider payment or a definitive `rejected`, `cancelled`, or
+`expired` state cancels the order and releases stock exactly once. If the provider
+remains `pending`/`in_process` or its state is unavailable, stock is released
+exactly once using an audited `payment_reservation_released` inventory movement;
+the order remains pending, order-level payment remains pending, and the attempt is
+marked `manual_review`. This marker distinguishes a released reservation from an
+active pending reservation and prevents repeated expiry jobs from releasing
+stock twice.
+
+A late approval atomically attempts to re-reserve every item and writes
+`payment_re_reserved` inventory movements. When stock is sufficient, it sets the
+order to confirmed and payment to paid. When stock is insufficient, no decrement
+occurs, the order remains pending and non-deliverable, and payment is set to paid
+to reflect the provider capture; an exception is exposed for owner disposition.
+Automatic refunds remain out of scope. Retry and status projections use the
+reservation marker and order/payment state rather than presenting this flow as a
+cancellation or a provider rejection.
+
+La primera versión permitirá únicamente `account_money` y `debit_card`. El
+Backend rechazará crédito, installments, tarjetas prepagas, `ticket`, Rapipago,
+Pago Fácil, efectivo, cualquier método futuro no aprobado y cargos de envío,
+incluido un método excluido que aparezca en la respuesta del proveedor. Antes de
+habilitar cada ambiente se consultarán los medios ofrecidos por la cuenta y se
+verificará la exclusión efectiva.
+
+La creación de la preferencia usará exclusivamente credenciales del ambiente
+almacenadas en la configuración segura del Backend y una clave estable
+`X-Idempotency-Key`. La validez de las credenciales y el comportamiento
+account-specific deberán demostrarse con seller/buyer de prueba. Timeout o
+respuesta ambigua exige reconciliación y `manual_review`; no autoriza liberar
+stock.
+
+El Backend será owner de secretos, Webhooks, jobs, leases, alertas y dead
+letters. Payments On-Call será owner de la operación y deberá estar aprobado
+antes del go-live; las alertas de dead letter y manual review deberán emitirse en
+un máximo de cinco minutos.
+
+La documentación legal y el aviso del checkout deberán identificar a Mercado
+Pago como procesador, describir los datos mínimos compartidos, aclarar que el
+importe cubre productos y que el envío se coordina por separado, y distinguir
+requisitos confirmados de pendientes de cuenta o tarifa. No se habilitará el flag
+sin aprobación legal y operativa.
+
+La API automática de reembolsos de Mercado Pago queda fuera de esta mejora. No se
+implementará una integración refund. Si una aprobación tardía no puede confirmarse
+por falta de stock, el dueño gestionará el reembolso manualmente y el Backend
+registrará y expondrá la excepción; el envío coordinado y cualquier costo de
+devolución se resolverán fuera del importe enviado al proveedor.
+
+El rollback operativo deshabilitará el flag, pausará Webhooks y claims sin
+eliminar trabajos en curso, conservará historial de pagos y auditoría append-only,
+y mantendrá efectivo y transferencia disponibles. Toda restauración de stock
+seguirá limitada a RPC guardadas.
+
+El flujo principal de revisión de pagos tardíos se mostrará como tarjeta
+contextual en el detalle del pedido. No se agregará una nueva sección principal de
+administración; una vista de Conciliación, si existe, será secundaria y estará
+orientada a auditoría.
 
 ## Antiabuso y observabilidad
 

@@ -316,9 +316,18 @@ Tipos permitidos
 - manual_adjustment
 - order_created
 - order_cancelled
+- payment_reservation_released
+- payment_re_reserved
 - consumer_withdrawal_return
 
-Los movimientos `order_created` y `order_cancelled` deberán ser únicos por pedido y producto. `quantity_delta` será negativo al descontar y positivo al reponer.
+The `order_created`, `order_cancelled`, `payment_reservation_released`, and
+`payment_re_reserved` movement rows are append-only inventory evidence and are
+unique per order and product for their respective movement types. Release
+movements have positive `quantity_delta`; reservation movements have negative
+`quantity_delta`. A `payment_reservation_released` movement identifies a
+reservation returned to public stock while its order remains pending for payment
+review; it is distinct from order cancellation. `payment_re_reserved` identifies
+an atomic late-payment stock decrement.
 Los movimientos `consumer_withdrawal_return` serán positivos, estarán relacionados
 con pedido y solicitud, y serán únicos por solicitud y producto.
 
@@ -584,15 +593,43 @@ Una futura operación técnica de Mercado Pago pertenecerá al módulo de pagos 
 relacionará opcionalmente con la liquidación. Conservará proveedor, identificadores,
 importe, moneda, clave de idempotencia, estado, intentos y datos mínimos de
 conciliación; no reescribirá la liquidación ni `orders.payment_status`.
-`MP-CHECKOUT-PRO-SDD.md` desarrolla este contrato sin autorizar todavía una
-migración. Las tablas del proveedor deberán quedar fuera del acceso directo del
-Frontend, con RLS habilitado, grants públicos revocados y funciones
-`SECURITY INVOKER` por defecto.
-El futuro intento de pago conservará `reservation_expires_at`, calculado
-atómicamente como 40 minutos desde la creación del pedido, y el estado específico
-del proveedor. El proceso de vencimiento deberá bloquear el pedido, conciliar
-`pending`/`in_process` y restaurar stock una sola vez únicamente después de
-descartar un cobro aprobable o capturado.
+El contrato vigente de Checkout Pro utiliza Preferences API para crear el checkout
+alojado y Payments API para conciliar el pago. Las tablas del proveedor
+deberán quedar fuera del acceso directo del Frontend, con RLS habilitado, grants
+públicos revocados y funciones `SECURITY INVOKER` por defecto.
+El intento de pago conservará `provider_preference_id` para la preferencia alojada y
+`provider_payment_id` para el pago real, además de `reservation_expires_at`, calculado
+atómicamente como 24 horas desde la creación del pedido, y el estado específico del
+proveedor. PostgreSQL será el reloj local autoritativo; la expiración de la
+preferencia nunca sustituirá a `reservation_expires_at`.
+
+Un Webhook verificado y un retorno aprobado encolarán una consulta inmediata; el
+retorno nunca autorizará por sí solo. Un worker recogerá jobs aproximadamente cada
+60 segundos. Para `pending`/`in_process`, los jobs se programarán en los minutos 1,
+2, 4, 8 y 15, después cada 45 minutos y con una consulta final explícita antes de
+`reservation_expires_at`, usando un margen configurable.
+
+While the original 24-hour reservation is active, customer retries have no
+artificial attempt-count cap and reuse the hosted preference and local attempt;
+each provider payment is retained as a separate transaction. Retries do not
+change `reservation_expires_at` or reserve stock again. Worker/network retry
+backoff stays bounded independently. Reconciliation projects the full approved
+amount as paid even when earlier transactions were rejected, and never downgrades
+a full captured amount after a later rejection.
+
+At expiry, an RPC locks the order and decides atomically. No provider payment or a
+definitive `rejected`, `cancelled`, or `expired` state cancels the order and
+releases stock once. An unresolved/pending/in-process/provider-unavailable state
+keeps the order `pending`, marks the attempt `manual_review`, leaves order-level
+payment `pending`, and writes a distinct audited positive
+`payment_reservation_released` inventory movement. That movement is the durable
+idempotency marker and allows subsequent expiry calls to skip an already released
+reservation without inferring from order status. A later approval atomically
+re-reserves all items using `payment_re_reserved` movements: sufficient stock
+confirms the order and marks it paid; insufficient stock leaves the order pending
+and non-deliverable, marks payment paid to reflect provider capture, and exposes
+the case for owner action. Automatic refunds remain out of scope. All stock changes
+are atomic, idempotent, and non-negative.
 
 ## Idempotencia y antiabuso
 
@@ -693,8 +730,15 @@ La disponibilidad de compra no constituye un estado adicional: se calcula con `i
 
 - cash
 - bank_transfer
+- mercado_pago (`account_money` o `debit_card` únicamente cuando Checkout Pro
+  esté habilitado)
 
 Todos los pedidos se crearán como `pending` con pago `pending`, independientemente del método. `payment_status` es independiente de `order_status`.
+
+Checkout Pro no persistirá ni habilitará crédito, cuotas o installments,
+prepagas, medios offline, efectivo, métodos futuros no aprobados ni cargos de
+envío. El total del proveedor se calculará únicamente desde snapshots de
+productos.
 
 `picked_up_at` deberá permanecer NULL hasta que el pedido cambie a `picked_up`; en esa transición se registrará la fecha y hora.
 
@@ -838,6 +882,13 @@ La creación y cancelación de pedidos con cambios de stock deberán implementar
   desde Products, aplica luego el descuento por transferencia cuando corresponde,
   crea el pedido y sus snapshots, descuenta stock, registra movimientos y vincula
   el pedido con la Guest Session recibida.
+- `release_expired_payment_reservations_v2`: reclama un lote acotado de reservas
+  vencidas con bloqueo de pedidos, aplica la decisión según el estado conciliado,
+  libera stock mediante una operación idempotente y marca `manual_review` cuando
+  el estado no sea determinable.
+- `transition_payment_attempt_v2`: bloquea primero el pedido y luego el intento
+  para serializar la conciliación del proveedor con la expiración de la reserva;
+  una aprobación tardía intenta una re-reserva atómica y nunca confirma sin stock.
 - `cancel_order_with_stock`: bloquea el pedido, valida su versión esperada y la confirmación de reintegro manual cuando ya estaba pagado, cambia el pedido a Cancelled, restaura unidades una sola vez y registra movimientos.
 - `adjust_product_stock`: aplica un ajuste manual no negativo y registra actor y motivo.
 - `transition_order_status`: bloquea el pedido, valida su versión esperada, aplica únicamente una transición válida y registra el cambio de pedido y pago.
@@ -874,7 +925,7 @@ La creación y cancelación de pedidos con cambios de stock deberán implementar
 - `register_consumer_withdrawal_attempt`: incrementa atómicamente huellas HMAC de
   IP y contacto y devuelve necesidad de CAPTCHA, bloqueo y tiempo de reintento.
 
-Las funciones que modifican pedidos o inventario deberán ser atómicas. Cualquier error deberá revertir la operación completa.
+Las funciones que modifican pedidos o inventario deberán ser atómicas. Cualquier error deberá revertir la operación completa. La API automática de reembolsos de Mercado Pago queda fuera de esta mejora: una falta de stock tras una aprobación tardía requiere gestión manual del dueño, con excepción registrada y expuesta. El rollback de Checkout Pro se realizará deshabilitando el capability flag y pausando claims de forma segura; no se eliminarán tablas, intentos, jobs, auditoría ni movimientos históricos.
 
 Las RPC de arrepentimientos serán `SECURITY INVOKER`, revocarán `EXECUTE` a
 `PUBLIC`, `anon` y `authenticated`, y concederán exclusivamente los permisos
