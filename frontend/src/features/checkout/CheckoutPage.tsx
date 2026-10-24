@@ -26,7 +26,7 @@ import { CheckoutForm } from './components/CheckoutForm'
 import { OrderSummary } from './components/OrderSummary'
 import { checkoutSchema } from './schemas/checkout.schema'
 import { checkoutService } from './services/checkout.service'
-import { useCheckoutDraftStore } from './stores/checkout-draft.store'
+import { normalizeCheckoutDraft, useCheckoutDraftStore } from './stores/checkout-draft.store'
 import type { ICheckoutFormValues, IOrderConfirmation } from './types/checkout'
 import { calculateCheckoutTotals } from './utils/checkout-calculations'
 import { getCheckoutErrorFeedback, type ICheckoutErrorFeedback } from './utils/checkout-errors'
@@ -58,7 +58,7 @@ export function CheckoutPage() {
   } = usePublicSettings()
   const [orderError, setOrderError] = useState<ICheckoutErrorFeedback | null>(null)
   const form = useForm<ICheckoutFormValues>({
-    defaultValues: checkoutDraft ?? DEFAULT_FORM_VALUES,
+    defaultValues: normalizeCheckoutDraft(checkoutDraft ?? DEFAULT_FORM_VALUES),
     mode: 'onBlur',
     resolver: zodResolver(checkoutSchema),
   })
@@ -82,12 +82,13 @@ export function CheckoutPage() {
   const watchedPaymentMethod = watchedValues.paymentMethod
   const watchedPhone = watchedValues.phone
   const watchedShippingAddress = watchedValues.shippingAddress
+  const isMercadoPagoEnabled = import.meta.env.VITE_MERCADO_PAGO_ENABLED === 'true'
   const totals = calculateCheckoutTotals(items, paymentMethod, settings?.transferDiscount ?? 0)
   const validationErrorCount = Object.keys(form.formState.errors).length
   const shouldShowValidationSummary = form.formState.submitCount > 0 && validationErrorCount > 0
 
   useEffect(() => {
-    if (deliveryMethod === 'shipping' && form.getValues('paymentMethod') !== 'transfer') {
+    if (deliveryMethod === 'shipping' && form.getValues('paymentMethod') === 'cash') {
       setValue('paymentMethod', 'transfer', { shouldValidate: true })
     }
   }, [deliveryMethod, form, setValue])
@@ -136,7 +137,7 @@ export function CheckoutPage() {
     setOrderError(null)
 
     try {
-      const confirmation = await checkoutService.createOrder({
+      const request = {
         customer: {
           firstName: values.firstName,
           lastName: values.lastName,
@@ -150,7 +151,32 @@ export function CheckoutPage() {
         })),
         paymentMethod: values.paymentMethod,
         shippingAddress: values.shippingAddress,
-      })
+      }
+
+      if (values.paymentMethod === 'mercado_pago') {
+        if (!isMercadoPagoEnabled) {
+          setOrderError({
+            blocksResubmission: false,
+            kind: 'validation',
+            message: 'Este medio de pago todavía no está disponible.',
+            title: 'Elegí otra forma de pago',
+          })
+          return
+        }
+
+        const checkout = await checkoutService.createMercadoPagoCheckout({
+          ...request,
+          paymentMethod: 'mercado_pago',
+        })
+        setLastOrderNumber(checkout.orderNumber)
+        clearCart()
+        clearCheckoutDraft()
+        void queryClient.invalidateQueries({ queryKey: CATALOG_QUERY_KEY })
+        window.location.assign(checkout.checkoutUrl)
+        return
+      }
+
+      const confirmation = await checkoutService.createOrder(request)
 
       completeOrder(confirmation)
     } catch (error) {

@@ -1,9 +1,16 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
+import { routes } from '../../../config/routes.ts'
 import { recoverOrderSchema } from '../schemas/recover-order.schema.ts'
 import { isValidOrderNumber, normalizeOrderNumber } from './last-order.ts'
 import { getPublicOrderStatusDetails } from './public-order-status.ts'
+import {
+  canResumePublicPayment,
+  getPublicPaymentMethodLabel,
+  getPublicPaymentStatusDetails,
+} from './public-order-payment-status.ts'
+import { getPublicOrderBackAction } from './public-order-navigation.ts'
 import {
   getRecoveryErrorFeedback,
   isGuestSessionRequired,
@@ -86,4 +93,46 @@ test('muestra como enviado el estado final de los pedidos con envío', () => {
   assert.equal(getPublicOrderStatusDetails('delivered', 'shipping').label, 'Enviado')
   assert.equal(getPublicOrderStatusDetails('delivered', 'pickup').label, 'Entregado')
   assert.equal(getPublicOrderStatusDetails('ready', 'shipping').label, 'Listo')
+})
+
+test('construye la ruta de estado de pago con el número de pedido codificado', () => {
+  assert.equal(routes.paymentStatusPath('MAD/20260802'), '/pedido/MAD%2F20260802/pago')
+})
+
+test('solo permite continuar Mercado Pago cuando existe un intento reanudable', () => {
+  assert.equal(canResumePublicPayment('mercado_pago', 'pending', true), true)
+  assert.equal(canResumePublicPayment('mercado_pago', 'rejected', true), true)
+  assert.equal(canResumePublicPayment('mercado_pago', 'paid', true), false)
+  assert.equal(canResumePublicPayment('mercado_pago', 'manual_review', true), false)
+  assert.equal(canResumePublicPayment('mercado_pago', 'expired', true), false)
+  assert.equal(canResumePublicPayment('mercado_pago', 'pending', false), false)
+  assert.equal(canResumePublicPayment('transfer', 'pending', true), false)
+})
+
+test('comunica estados genéricos para transferencia y efectivo', () => {
+  assert.equal(getPublicPaymentStatusDetails('transfer', 'pending').label, 'Pendiente de confirmar')
+  assert.equal(getPublicPaymentStatusDetails('cash', 'pending').label, 'Pago al retirar')
+})
+
+test('projects unresolved Mercado Pago as review and keeps captured payment distinct from fulfillment', () => {
+  const review = getPublicPaymentStatusDetails('mercado_pago', 'manual_review')
+  const captured = getPublicPaymentStatusDetails('mercado_pago', 'paid')
+
+  assert.equal(review.label, 'Pago en revisión')
+  assert.equal(review.variant, 'warning')
+  assert.notEqual(review.label, 'Pago rechazado')
+  assert.equal(captured.label, 'Pago confirmado')
+  assert.equal(getPublicOrderStatusDetails('pending', 'pickup').label, 'Pendiente')
+})
+
+test('muestra la etiqueta pública correcta para cada medio de pago', () => {
+  assert.equal(getPublicPaymentMethodLabel('mercado_pago'), 'Mercado Pago')
+  assert.equal(getPublicPaymentMethodLabel('transfer'), 'Transferencia bancaria')
+  assert.equal(getPublicPaymentMethodLabel('cash'), 'Pago en efectivo al retirar')
+})
+
+test('usa historial interno y vuelve al catálogo como fallback seguro', () => {
+  assert.equal(getPublicOrderBackAction(2), 'history')
+  assert.equal(getPublicOrderBackAction(0), 'catalog')
+  assert.equal(getPublicOrderBackAction(null), 'catalog')
 })

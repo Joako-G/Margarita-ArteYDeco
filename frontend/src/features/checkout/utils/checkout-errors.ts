@@ -67,6 +67,24 @@ export function getCheckoutErrorFeedback(error: unknown): ICheckoutErrorFeedback
     }
   }
 
+  if (errorCode === 'PAYMENT_METHOD_DISABLED') {
+    return {
+      blocksResubmission: false,
+      kind: 'temporary',
+      message: 'Mercado Pago no está disponible en este momento. Tu carrito sigue guardado.',
+      title: 'No pudimos habilitar Mercado Pago.',
+    }
+  }
+
+  if (errorCode === 'PAYMENT_PROVIDER_UNAVAILABLE') {
+    return {
+      blocksResubmission: false,
+      kind: 'temporary',
+      message: 'Mercado Pago no pudo iniciar el checkout. Tu carrito sigue guardado; intentá nuevamente.',
+      title: 'No pudimos iniciar el pago.',
+    }
+  }
+
   return {
     blocksResubmission: false,
     kind: 'temporary',

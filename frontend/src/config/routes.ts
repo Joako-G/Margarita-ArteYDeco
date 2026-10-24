@@ -12,6 +12,7 @@ export const routes = {
   adminProducts: '/admin/productos',
   adminCategories: '/admin/categorias',
   adminOrders: '/admin/pedidos',
+  adminPaymentReconciliation: '/admin/pagos/reconciliacion',
   adminConsumerWithdrawals: '/admin/arrepentimientos',
   adminCustomers: '/admin/clientes',
   adminSettings: '/admin/configuracion',
@@ -26,4 +27,5 @@ export const routes = {
   adminProductNew: '/admin/productos/nuevo',
   adminProductEdit: (productId: string) => `/admin/productos/${encodeURIComponent(productId)}/editar`,
   orderPath: (orderNumber: string) => `/pedido/${encodeURIComponent(orderNumber)}`,
+  paymentStatusPath: (orderNumber: string) => `/pedido/${encodeURIComponent(orderNumber)}/pago`,
 } as const

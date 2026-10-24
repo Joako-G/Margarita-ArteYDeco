@@ -22,6 +22,9 @@ const loadOrderRoute = async () => ({
 const loadRecoverOrderRoute = async () => ({
   Component: (await import('@/router/PublicOrderRoutes')).RecoverOrderRoute,
 })
+const loadPaymentStatusRoute = async () => ({
+  Component: (await import('@/features/checkout/PaymentStatusPage')).PaymentStatusPage,
+})
 const loadPrivacyPolicyPage = async () => ({
   Component: (await import('@/pages/Legal/PrivacyPolicy')).PrivacyPolicyPage,
 })
@@ -58,6 +61,10 @@ export const publicRoutes: RouteObject[] = [
       {
         path: 'pedido/:orderNumber',
         lazy: loadOrderRoute,
+      },
+      {
+        path: 'pedido/:orderNumber/pago',
+        lazy: loadPaymentStatusRoute,
       },
       {
         path: 'recuperar-pedido',

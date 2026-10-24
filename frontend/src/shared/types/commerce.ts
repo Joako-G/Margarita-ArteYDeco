@@ -13,7 +13,7 @@ export interface IOrder {
   discount: number
   id: string
   orderNumber: string
-  paymentMethod: 'cash' | 'transfer'
+  paymentMethod: 'cash' | 'transfer' | 'mercado_pago'
   shippingAddress: string | null
   status: 'cancelled' | 'confirmed' | 'delivered' | 'pending' | 'picked_up' | 'preparing' | 'ready'
   subtotal: number

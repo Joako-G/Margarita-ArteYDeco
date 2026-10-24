@@ -57,8 +57,7 @@ export function OrderSummary({
               </p>
               {item.discountPercentage > 0 ? (
                 <small>
-                  <del>{formatPrice(item.price)}</del>{' '}
-                  · {item.discountPercentage}% de descuento
+                  <del>{formatPrice(item.price)}</del> · {item.discountPercentage}% de descuento
                 </small>
               ) : null}
             </div>
@@ -90,7 +89,9 @@ export function OrderSummary({
       <p className="checkout-summary__payment-note">
         {paymentMethod === 'transfer'
           ? 'Aplicamos el descuento por transferencia antes de confirmar.'
-          : 'El pago se realiza en efectivo al retirar.'}
+          : paymentMethod === 'mercado_pago'
+             ? 'Te vamos a dirigir a Mercado Pago para completar el pago de forma segura. La reserva local se mantiene durante 24 horas y el tiempo restante se calcula desde el Backend.'
+            : 'El pago se realiza en efectivo al retirar.'}
       </p>
 
       <Button onClick={openCart} variant="ghost">

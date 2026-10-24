@@ -1,4 +1,4 @@
-export type PaymentMethodType = 'cash' | 'transfer'
+export type PaymentMethodType = 'cash' | 'transfer' | 'mercado_pago'
 export type DeliveryMethodType = 'pickup' | 'shipping'
 export type OrderStatusType =
   | 'cancelled'
@@ -8,6 +8,7 @@ export type OrderStatusType =
   | 'picked_up'
   | 'preparing'
   | 'ready'
+export type PaymentStatusType = 'paid' | 'pending' | 'in_process' | 'rejected' | 'approved' | 'expired' | 'manual_review'
 
 export interface IOrderTotals {
   discount: number
@@ -28,6 +29,7 @@ export interface IOrderConfirmation {
     shippingAddress: string | null
   }
   items: {
+    imageUrl: string | null
     listUnitPrice: number
     lineTotal: number
     name: string
@@ -37,6 +39,8 @@ export interface IOrderConfirmation {
   }[]
   orderNumber: string
   paymentMethod: PaymentMethodType
+  paymentStatus: PaymentStatusType
+  reservationExpiresAt: string | null
   pickup: {
     address: string
     businessHours: string
@@ -44,6 +48,7 @@ export interface IOrderConfirmation {
   }
   status: OrderStatusType
   totals: IOrderTotals
+  canResumePayment: boolean
   whatsappProofUrl: string
 }
 

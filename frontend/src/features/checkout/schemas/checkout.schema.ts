@@ -32,7 +32,7 @@ export const checkoutSchema = z.object({
       return normalizedPhone.length >= 10 && normalizedPhone.length <= 15
     }, 'Ingresá un celular válido, incluyendo el código de área.'),
   notes: z.string().trim().max(500, 'Las observaciones pueden tener hasta 500 caracteres.'),
-  paymentMethod: z.enum(['cash', 'transfer']),
+  paymentMethod: z.enum(['cash', 'transfer', 'mercado_pago']),
   shippingAddress: z.string().trim().max(300, 'La dirección puede tener hasta 300 caracteres.'),
 }).superRefine((values, context) => {
   if (values.deliveryMethod === 'shipping' && values.shippingAddress.trim().length < 10) {
@@ -50,4 +50,5 @@ export const checkoutSchema = z.object({
       path: ['paymentMethod'],
     })
   }
+
 })

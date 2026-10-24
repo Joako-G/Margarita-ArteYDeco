@@ -7,11 +7,7 @@ import { routes } from '@/config/routes'
 import { Button, Container, EmptyState, Modal, Section, Spinner } from '@/shared/components'
 
 import { OrderDetails } from './components/OrderDetails'
-import {
-  PUBLIC_ORDERS_QUERY_KEY,
-  useForgetOrders,
-  usePublicOrder,
-} from './hooks/usePublicOrders'
+import { PUBLIC_ORDERS_QUERY_KEY, useForgetOrders, usePublicOrder } from './hooks/usePublicOrders'
 import {
   clearLastOrderNumber,
   isValidOrderNumber,
@@ -19,6 +15,7 @@ import {
   setLastOrderNumber,
 } from './utils/last-order'
 import { isOrderSessionUnavailable } from './utils/public-order-errors'
+import { getPublicOrderBackAction } from './utils/public-order-navigation'
 import './public-orders.css'
 
 export function OrderPage() {
@@ -58,6 +55,18 @@ export function OrderPage() {
     } catch {
       setForgetError('No pudimos olvidar los pedidos de este dispositivo. Intentá nuevamente.')
     }
+  }
+
+  function handleBack() {
+    const historyIndex =
+      typeof window.history.state?.idx === 'number' ? window.history.state.idx : null
+
+    if (getPublicOrderBackAction(historyIndex) === 'history') {
+      navigate(-1)
+      return
+    }
+
+    navigate(routes.products)
   }
 
   if (!isOrderNumberValid || (orderQuery.isError && isOrderSessionUnavailable(orderQuery.error))) {
@@ -124,6 +133,7 @@ export function OrderPage() {
     <>
       <OrderDetails
         isForgetting={forgetOrders.isPending}
+        onBack={handleBack}
         onForget={() => setIsForgetModalOpen(true)}
         order={orderQuery.data}
       />
@@ -150,7 +160,11 @@ export function OrderPage() {
           Este dispositivo dejará de consultarlos. Los pedidos y el historial del negocio no se
           eliminarán; podrás recuperar uno nuevamente con su número y el celular de la compra.
         </p>
-        {forgetError ? <p className="public-order__modal-error" role="alert">{forgetError}</p> : null}
+        {forgetError ? (
+          <p className="public-order__modal-error" role="alert">
+            {forgetError}
+          </p>
+        ) : null}
       </Modal>
     </>
   )

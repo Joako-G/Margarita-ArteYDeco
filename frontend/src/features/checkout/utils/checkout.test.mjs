@@ -22,7 +22,7 @@ test('valida y normaliza los datos obligatorios del checkout', () => {
     firstName: '  Ana ',
     lastName: ' Pérez ',
     notes: '  Preparar para regalo. ',
-    paymentMethod: 'transfer',
+    paymentMethod: 'cash',
     phone: '5491123456789',
     shippingAddress: '',
   })
@@ -35,25 +35,25 @@ test('valida y normaliza los datos obligatorios del checkout', () => {
   }
 
   assert.equal(checkoutSchema.safeParse({
-    acceptTerms: true,
-    deliveryMethod: 'shipping',
-    firstName: 'Ana',
-    lastName: 'Pérez',
-    notes: '',
-    paymentMethod: 'cash',
-    phone: '5491123456789',
-    shippingAddress: 'Belgrano 607, Jujuy',
+      acceptTerms: true,
+      deliveryMethod: 'shipping',
+      firstName: 'Ana',
+      lastName: 'Pérez',
+      notes: '',
+      paymentMethod: 'transfer',
+      phone: '5491123456789',
+      shippingAddress: 'Belgrano 607, Jujuy',
   }).success, true)
 
   assert.equal(checkoutSchema.safeParse({
-    acceptTerms: true,
-    deliveryMethod: 'shipping',
-    firstName: 'Ana',
-    lastName: 'Pérez',
-    notes: '',
-    paymentMethod: 'cash',
-    phone: '5491123456789',
-    shippingAddress: '',
+      acceptTerms: true,
+      deliveryMethod: 'shipping',
+      firstName: 'Ana',
+      lastName: 'Pérez',
+      notes: '',
+      paymentMethod: 'cash',
+      phone: '5491123456789',
+      shippingAddress: '',
   }).success, false)
 
   const withoutAcceptance = checkoutSchema.safeParse({
@@ -121,6 +121,27 @@ test('calcula el descuento por transferencia desde la configuración', () => {
   )
 })
 
+test('accepts the three checkout payment methods and rejects provider-specific fields', () => {
+  const baseValues = {
+    acceptTerms: true,
+    deliveryMethod: 'pickup',
+    firstName: 'Ana',
+    lastName: 'Pérez',
+    notes: '',
+    phone: '5491123456789',
+    shippingAddress: '',
+  }
+
+  assert.equal(checkoutSchema.safeParse({ ...baseValues, paymentMethod: 'cash' }).success, true)
+  assert.equal(checkoutSchema.safeParse({ ...baseValues, paymentMethod: 'transfer' }).success, true)
+  assert.equal(checkoutSchema.safeParse({ ...baseValues, paymentMethod: 'mercado_pago' }).success, true)
+  const providerMethodResult = checkoutSchema.safeParse({ ...baseValues, paymentMethod: 'mercado_pago', mercadoPagoMethod: 'debit_card' })
+  assert.equal(providerMethodResult.success, true)
+  if (providerMethodResult.success) assert.equal('mercadoPagoMethod' in providerMethodResult.data, false)
+  assert.equal(checkoutSchema.safeParse({ ...baseValues, paymentMethod: 'debit_card' }).success, false)
+  assert.equal(checkoutSchema.safeParse({ ...baseValues, deliveryMethod: 'shipping', paymentMethod: 'cash', shippingAddress: 'Belgrano 607, Jujuy' }).success, false)
+})
+
 test('normaliza el celular sin persistir datos adicionales', () => {
   assert.equal(normalizePhone('+54 9 11 2345-6789'), '5491123456789')
 })
@@ -130,6 +151,8 @@ test('diferencia stock, validación, CSRF y fallos temporales', () => {
   assert.equal(getCheckoutErrorFeedback(createApiError('VALIDATION_ERROR')).kind, 'validation')
   assert.equal(getCheckoutErrorFeedback(createApiError('INVALID_CSRF_TOKEN')).kind, 'csrf')
   assert.equal(getCheckoutErrorFeedback(new Error('network')).kind, 'temporary')
+  assert.equal(getCheckoutErrorFeedback(createApiError('PAYMENT_METHOD_DISABLED')).title, 'No pudimos habilitar Mercado Pago.')
+  assert.equal(getCheckoutErrorFeedback(createApiError('PAYMENT_PROVIDER_UNAVAILABLE')).title, 'No pudimos iniciar el pago.')
   assert.equal(getCheckoutApiErrorCode(new Error('network')), null)
 })
 
