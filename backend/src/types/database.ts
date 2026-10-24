@@ -108,7 +108,7 @@ type IOrderDatabaseRow = {
   id: string
   notes: string | null
   order_number: string
-  payment_method: 'bank_transfer' | 'cash'
+  payment_method: 'bank_transfer' | 'cash' | 'mercado_pago'
   payment_status: 'paid' | 'pending' | 'rejected'
   picked_up_at: string | null
   shipping_address: string | null
@@ -171,6 +171,8 @@ type IInventoryMovementDatabaseRow = {
     | 'manual_adjustment'
     | 'order_cancelled'
     | 'order_created'
+    | 'payment_re_reserved'
+    | 'payment_reservation_released'
   order_id: string | null
   product_id: string
   quantity_delta: number
@@ -186,10 +188,24 @@ export interface IDatabase {
     Enums: {
       delivery_method: 'pickup' | 'shipping'
       order_status: 'cancelled' | 'confirmed' | 'delivered' | 'pending' | 'picked_up' | 'preparing' | 'ready'
-      payment_method: 'bank_transfer' | 'cash'
+      payment_method: 'bank_transfer' | 'cash' | 'mercado_pago'
       recovery_limit_scope: 'ip' | 'order_phone'
     }
     Functions: {
+      acknowledge_payment_webhook_v2: {
+        Args: {
+          p_environment: 'sandbox' | 'production'
+          p_request_id: string
+          p_resource_id: string
+          p_resource_type: string
+          p_signature_digest: string
+        }
+        Returns: boolean
+      }
+      enqueue_payment_reconciliation_v2: {
+        Args: { p_attempt_id: string; p_run_at?: string }
+        Returns: { job_id: string }[]
+      }
       cancel_order_with_stock: {
         Args: {
           p_actor_profile_id: string
@@ -233,6 +249,53 @@ export interface IDatabase {
           order_id: string
           order_number: string
         }[]
+      }
+      create_order_with_payment_v2: {
+        Args: {
+          p_customer_first_name: string
+          p_customer_last_name: string
+          p_customer_phone: string
+          p_customer_phone_normalized: string
+          p_delivery_method: 'pickup' | 'shipping'
+          p_environment: 'sandbox' | 'production'
+          p_guest_session_id: string
+          p_items: JsonType
+          p_notes: string | null
+          p_request_fingerprint: string
+          p_shipping_address: string | null
+          p_idempotency_key: string
+        }
+        Returns: { order_id: string; attempt_id: string; reservation_expires_at: string }[]
+      }
+      release_expired_payment_reservations_v2: {
+        Args: { p_limit?: number }
+        Returns: { examined_count: number; released_count: number; approved_count: number }[]
+      }
+      reconcile_payment_transaction_v1: {
+        Args: {
+          p_expected_provider_version: number | null
+          p_expected_status: 'pending' | 'approved' | 'rejected' | 'expired' | 'cancelled' | 'manual_review'
+          p_last_error: string | null
+          p_next_status: 'pending' | 'approved' | 'rejected' | 'expired' | 'cancelled' | 'manual_review'
+          p_provider_status: string
+          p_provider_updated_at: string | null
+          p_provider_version: number | null
+          p_review_required: boolean
+          p_transaction_id: string
+        }
+        Returns: { aggregate_status: 'pending' | 'approved' | 'rejected' | 'expired' | 'cancelled' | 'manual_review'; transition_applied: boolean }[]
+      }
+      transition_payment_attempt_v2: {
+        Args: {
+          p_attempt_id: string
+          p_expected_provider_version: number | null
+          p_expected_status: 'pending' | 'approved' | 'rejected' | 'expired' | 'cancelled' | 'manual_review'
+          p_next_status: 'pending' | 'approved' | 'rejected' | 'expired' | 'cancelled' | 'manual_review'
+          p_provider_status: string
+          p_provider_updated_at: string | null
+          p_provider_version: number | null
+        }
+        Returns: { transition_applied: boolean }[]
       }
       get_public_recovery_limit: {
         Args: {
@@ -336,6 +399,70 @@ export interface IDatabase {
       }
       order_items: IReadOnlyTable<IOrderItemDatabaseRow>
       orders: IReadOnlyTable<IOrderDatabaseRow>
+      payment_attempts: IReadOnlyTable<{
+        amount: number
+        created_at: string
+        currency: 'ARS'
+        environment: 'sandbox' | 'production'
+        external_reference: string
+        id: string
+        last_error: string | null
+        operation_key: string
+        order_id: string
+        provider: 'mercado_pago'
+         provider_order_id: string | null
+         provider_preference_id: string | null
+         provider_payment_id: string | null
+         provider_updated_at: string | null
+         provider_version: number | null
+        provider_status: string | null
+        reservation_expires_at: string
+         status: 'pending' | 'approved' | 'rejected' | 'expired' | 'cancelled' | 'manual_review'
+        updated_at: string
+      }>
+      payment_transactions: IReadOnlyTable<{
+        amount: number
+        created_at: string
+        currency: 'ARS'
+        environment: 'sandbox' | 'production'
+        id: string
+        last_error: string | null
+        payment_attempt_id: string
+        payment_type_id: string | null
+        provider: 'mercado_pago'
+        provider_payment_id: string
+        provider_status: string | null
+        provider_updated_at: string | null
+        provider_version: number | null
+        review_required: boolean
+        status: 'pending' | 'approved' | 'rejected' | 'expired' | 'cancelled' | 'manual_review'
+        updated_at: string
+      }>
+      payment_inbox: IReadOnlyTable<{
+        created_at: string
+        environment: 'sandbox' | 'production'
+        id: string
+        processed_at: string | null
+        received_at: string
+        request_id: string
+        resource_id: string
+        resource_type: string
+        retention_until: string
+        signature_digest: string
+        status: 'received' | 'queued' | 'processed' | 'quarantined'
+        updated_at: string
+      }>
+      payment_outbox: IReadOnlyTable<{
+        attempt_id: string
+        available_at: string
+        created_at: string
+        id: string
+        idempotency_key: string
+        operation: 'create_order' | 'reconcile_order' | 'cancel_order'
+        payload: JsonType
+        status: 'pending' | 'leased' | 'succeeded' | 'dead_letter' | 'manual_review'
+        updated_at: string
+      }>
       profiles: IReadOnlyTable<IProfileDatabaseRow>
       public_recovery_attempts: IReadOnlyTable<IRecoveryAttemptDatabaseRow>
       settings: IReadOnlyTable<ISettingsDatabaseRow>

@@ -16,6 +16,8 @@ const itemSchema = z.strictObject({
 })
 
 export const deliveryMethodSchema = z.enum(['pickup', 'shipping'])
+export const persistedPaymentMethodSchema = z.enum(['bank_transfer', 'cash', 'mercado_pago'])
+export const paymentStatusSchema = z.enum(['paid', 'pending', 'rejected'])
 
 export const createOrderBodySchema = z.strictObject({
   customer: customerSchema,
@@ -84,7 +86,8 @@ export const orderRowSchema = z.strictObject({
   delivery_method: deliveryMethodSchema,
   discount: z.coerce.number().nonnegative(),
   order_number: z.string().regex(/^MAD-[0-9]{8}-[0-9]{6,}$/),
-  payment_method: z.enum(['bank_transfer', 'cash']),
+  payment_method: persistedPaymentMethodSchema,
+  payment_status: paymentStatusSchema,
   shipping_address: z.string().nullable(),
   status: z.enum(['cancelled', 'confirmed', 'delivered', 'pending', 'picked_up', 'preparing', 'ready']),
   subtotal: z.coerce.number().positive(),
@@ -93,6 +96,7 @@ export const orderRowSchema = z.strictObject({
 
 export const orderItemRowsSchema = z.array(z.strictObject({
   list_unit_price: z.coerce.number().positive(),
+  products: z.strictObject({ image_path: z.string().nullable() }).nullable().optional(),
   product_name: z.string().min(1),
   product_discount_percentage: z.coerce.number().min(0).lt(100),
   quantity: z.coerce.number().int().positive(),

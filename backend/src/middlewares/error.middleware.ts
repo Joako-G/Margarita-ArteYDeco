@@ -3,6 +3,7 @@ import type { Logger } from 'pino'
 import { ZodError } from 'zod'
 
 import { AppError } from '../utils/app-error.js'
+import { safeRequestUrl } from './request-logger.middleware.js'
 
 export const notFoundMiddleware: RequestHandler = (_request, response) => {
   response.status(404).json({
@@ -14,6 +15,8 @@ export const notFoundMiddleware: RequestHandler = (_request, response) => {
 export function createErrorMiddleware(logger: Logger): ErrorRequestHandler {
   return (error: unknown, request, response, _next): void => {
     void _next
+    const url = safeRequestUrl(request.originalUrl)
+    const isPaymentWebhook = url === '/api/webhooks/mercado-pago'
 
     if (error instanceof ZodError) {
       response.status(400).json({
@@ -48,7 +51,7 @@ export function createErrorMiddleware(logger: Logger): ErrorRequestHandler {
     if (error instanceof AppError) {
       if (error.statusCode >= 500) {
         logger.error(
-          { code: error.code, method: request.method, requestId: request.id, url: request.url },
+          { code: error.code, method: request.method, requestId: request.id, url },
           'La solicitud falló por un error controlado',
         )
       }
@@ -64,10 +67,10 @@ export function createErrorMiddleware(logger: Logger): ErrorRequestHandler {
 
     logger.error(
       {
-        error,
+        ...(!isPaymentWebhook && { error }),
         method: request.method,
         requestId: request.id,
-        url: request.url,
+        url,
       },
       'Error interno no controlado',
     )

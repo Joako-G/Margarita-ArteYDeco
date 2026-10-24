@@ -25,9 +25,20 @@ const emptySettingsService: ISettingsService = {
 const confirmation = {
   bankDetails: null,
   createdAt: '2026-08-02T15:00:00.000Z',
-  items: [{ lineTotal: 600, name: 'Caja decorada', quantity: 1, unitPrice: 600 }],
+  delivery: { method: 'pickup' as const, shippingAddress: null },
+  items: [{
+    imageUrl: null,
+    lineTotal: 600,
+    listUnitPrice: 600,
+    name: 'Caja decorada',
+    productDiscountPercentage: 0,
+    quantity: 1,
+    unitPrice: 600,
+  }],
   orderNumber: ORDER_NUMBER,
   paymentMethod: 'cash' as const,
+  paymentStatus: 'pending' as const,
+  reservationExpiresAt: null,
   pickup: {
     address: 'Calle 123',
     businessHours: 'Lunes a viernes',
@@ -36,6 +47,7 @@ const confirmation = {
   status: 'pending' as const,
   totals: { discount: 0, discountPercentage: 0, subtotal: 600, total: 600 },
   whatsappProofUrl: 'https://wa.me/5491100000000?text=pedido',
+  canResumePayment: false,
 }
 
 function createPublicOrderService(): IPublicOrderService {
@@ -90,6 +102,22 @@ describe('public order API', () => {
     expect(response.body.data).not.toHaveProperty('customer')
     expect(response.headers['cache-control']).toBe('no-store')
     expect(response.headers['referrer-policy']).toBe('no-referrer')
+  })
+
+  it('returns a Mercado Pago confirmation instead of a data-source error', async () => {
+    const service = createPublicOrderService()
+    vi.mocked(service.getByNumber).mockResolvedValue({
+      ...confirmation,
+      paymentMethod: 'mercado_pago',
+    })
+
+    const response = await request(getApp(service))
+      .get(`/api/public/orders/${ORDER_NUMBER}`)
+      .set('Cookie', `${GUEST_SESSION_COOKIE_NAME}=${SESSION_TOKEN}`)
+      .expect(200)
+
+    expect(response.body.data.paymentMethod).toBe('mercado_pago')
+    expect(response.body).not.toHaveProperty('error', 'DATA_SOURCE_UNAVAILABLE')
   })
 
   it('clears an invalid anonymous cookie without exposing session details', async () => {

@@ -1,7 +1,28 @@
+import type { Logger } from 'pino'
+
 import type { ServerSupabaseClient } from '../config/supabase.js'
 import type { IGuestSessionRow } from '../types/guest-session.js'
 import { recoveredGuestSessionSchema } from '../schemas/orders.schema.js'
 import { RepositoryError } from '../utils/app-error.js'
+
+const MAX_DATABASE_MESSAGE_LENGTH = 200
+
+function sanitizeDatabaseMessage(message: unknown): string | undefined {
+  if (typeof message !== 'string') return undefined
+
+  const normalized = [...message]
+    .map((character) => character.codePointAt(0)! < 32 || character.codePointAt(0)! === 127 ? ' ' : character)
+    .join('')
+    .replace(/\s+/g, ' ')
+    .trim()
+  if (
+    normalized.length === 0 ||
+    /access[_ -]?token|authorization|bearer|cookie|customer|email|password|phone|secret|token|url|https?:\/\/|request[_ -]?body|select\s|insert\s|update\s|delete\s|from\s|where\s|postgres(?:ql)?/i.test(normalized) ||
+    /\b\d{7,}\b/.test(normalized)
+  ) return undefined
+
+  return normalized.slice(0, MAX_DATABASE_MESSAGE_LENGTH)
+}
 
 export interface IGuestSessionRepository {
   create(tokenHash: string, expiresAt: Date): Promise<IGuestSessionRow>
@@ -17,7 +38,19 @@ export interface IGuestSessionRepository {
 }
 
 export class GuestSessionRepository implements IGuestSessionRepository {
-  public constructor(private readonly client: ServerSupabaseClient) {}
+  public constructor(
+    private readonly client: ServerSupabaseClient,
+    private readonly logger: Logger,
+  ) {}
+
+  private logSupabaseError(operation: string, error: { code?: string | null; message?: unknown }): void {
+    const diagnosticMessage = sanitizeDatabaseMessage(error.message)
+    this.logger.error({
+      code: error.code ?? 'UNKNOWN',
+      ...(diagnosticMessage === undefined ? {} : { message: diagnosticMessage }),
+      operation,
+    }, 'Guest session Supabase operation failed')
+  }
 
   public async create(tokenHash: string, expiresAt: Date): Promise<IGuestSessionRow> {
     const { data, error } = await this.client
@@ -30,6 +63,7 @@ export class GuestSessionRepository implements IGuestSessionRepository {
       .single()
 
     if (error !== null || data === null) {
+      if (error !== null) this.logSupabaseError('guest_sessions.create', error)
       throw new RepositoryError('No fue posible crear la sesión de compra')
     }
 
@@ -49,6 +83,7 @@ export class GuestSessionRepository implements IGuestSessionRepository {
       .maybeSingle()
 
     if (error !== null) {
+      this.logSupabaseError('guest_sessions.find_active', error)
       throw new RepositoryError('No fue posible validar la sesión de compra')
     }
 
@@ -82,6 +117,7 @@ export class GuestSessionRepository implements IGuestSessionRepository {
     })
 
     if (error !== null) {
+      this.logSupabaseError('recover_order_guest_session', error)
       throw new RepositoryError('No fue posible recuperar la sesión de compra')
     }
 
@@ -104,6 +140,7 @@ export class GuestSessionRepository implements IGuestSessionRepository {
     })
 
     if (error !== null) {
+      this.logSupabaseError('touch_guest_session', error)
       throw new RepositoryError('No fue posible actualizar la sesión de compra')
     }
   }

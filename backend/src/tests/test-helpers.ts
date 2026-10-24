@@ -68,6 +68,29 @@ export const TEST_ENV: IEnv = {
   turnstileAllowedHostnames: ['localhost'],
   turnstileSecretKey: 'test-turnstile-secret',
   isVercel: false,
+  mercadoPago: {
+    accessToken: null,
+    apiBaseUrl: 'https://api.mercadopago.com',
+    environment: 'sandbox',
+    enabled: false,
+    excludedPaymentTypeIds: [],
+    failureUrl: null,
+    frontendOrigin: 'http://localhost:5173',
+    notificationUrl: null,
+    pendingUrl: null,
+    successUrl: null,
+    validationError: null,
+    webhookSecret: null,
+  },
+  paymentSchedulerApproved: false,
+  paymentSchedulerHttpSupported: false,
+  paymentSchedulerPlan: 'supabase_free',
+  paymentSchedulerProvider: 'disabled',
+  paymentSchedulerQuotaPerHour: 0,
+  paymentWorkerCadenceSeconds: 60,
+  paymentWorkerEnabled: false,
+  paymentWorkerSchedulerEnabled: false,
+  paymentWorkerSecret: null,
 }
 
 export function createTestDependencies(
@@ -239,6 +262,12 @@ export function createTestDependencies(
 
   return {
     adminConsumerWithdrawalController: new AdminConsumerWithdrawalController(adminConsumerWithdrawalService),
+    adminPaymentController: {
+      list: (): void => undefined,
+      retry: (): void => undefined,
+      review: (): void => undefined,
+      sync: (): void => undefined,
+    } as never,
     adminAuthController: new AdminAuthController(adminAuthService, TEST_ENV.adminSessionMaxAgeMs),
     adminAuthService,
     adminCategoryController: new AdminCategoryController(adminCategoryService),
@@ -255,6 +284,8 @@ export function createTestDependencies(
     csrfController: new CsrfController(csrfService),
     csrfService,
     orderController: new OrderController(orderService),
+    paymentCheckoutController: { create: (): void => undefined } as never,
+    paymentWebhookController: { receive: (): void => undefined } as never,
     productController: new ProductController(productService, 60),
     publicOrderController: new PublicOrderController(publicOrderService),
     settingsController: new SettingsController(settingsService, 60),

@@ -7,6 +7,8 @@ import { createLogger } from '../config/logger.js'
 import type { ICategoryService } from '../services/categories.service.js'
 import type { IProductService } from '../services/products.service.js'
 import type { ISettingsService } from '../services/settings.service.js'
+import type { IAdminAuthService } from '../services/admin-auth.service.js'
+import { AppError } from '../utils/app-error.js'
 import { createTestDependencies, TEST_ENV } from './test-helpers.js'
 
 const listCategories = vi.fn().mockResolvedValue([
@@ -46,10 +48,17 @@ const settingsService: ISettingsService = {
 }
 
 function getApp(): Express {
+  const adminAuthService: IAdminAuthService = {
+    authenticate: async () => {
+      throw new AppError(401, 'Tu sesión no es válida o venció', 'ADMIN_SESSION_REQUIRED')
+    },
+    login: async () => { throw new Error('Not used') },
+    logout: async () => undefined,
+  }
   return createApp(
     TEST_ENV,
     createLogger(TEST_ENV),
-    createTestDependencies(categoryService, productService, settingsService),
+    createTestDependencies(categoryService, productService, settingsService, undefined, undefined, adminAuthService),
   )
 }
 
@@ -133,6 +142,14 @@ describe('public API', () => {
       success: false,
       message: 'Recurso no encontrado',
     })
+  })
+
+  it('registers the authenticated admin payment reconciliation route', async () => {
+    const response = await request(getApp())
+      .get('/api/admin/payments/reconciliation')
+      .expect(401)
+
+    expect(response.body.error).toBe('ADMIN_SESSION_REQUIRED')
   })
 
   it('trusts the Vercel proxy chain only when running on Vercel', () => {

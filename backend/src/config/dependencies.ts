@@ -17,7 +17,9 @@ import { PublicOrderController } from '../controllers/public-orders.controller.j
 import { SettingsController } from '../controllers/settings.controller.js'
 import { SitemapController } from '../controllers/sitemap.controller.js'
 import { ConsumerWithdrawalController } from '../controllers/consumer-withdrawals.controller.js'
+import { PaymentCheckoutController } from '../controllers/payment-checkout.controller.js'
 import { AdminConsumerWithdrawalController } from '../controllers/admin-consumer-withdrawals.controller.js'
+import { AdminPaymentController } from '../controllers/admin-payments.controller.js'
 import { CategoryRepository } from '../repositories/categories.repository.js'
 import { AdminCategoryRepository } from '../repositories/admin-categories.repository.js'
 import { AdminCustomerRepository } from '../repositories/admin-customers.repository.js'
@@ -29,6 +31,7 @@ import { AdminProductRepository } from '../repositories/admin-products.repositor
 import { AdminSettingsRepository } from '../repositories/admin-settings.repository.js'
 import { GuestSessionRepository } from '../repositories/guest-sessions.repository.js'
 import { OrderRepository } from '../repositories/orders.repository.js'
+import { PaymentCheckoutRepository } from '../repositories/payment-checkout.repository.js'
 import { ProductRepository } from '../repositories/products.repository.js'
 import { RecoveryRepository } from '../repositories/recovery.repository.js'
 import { SettingsRepository } from '../repositories/settings.repository.js'
@@ -59,12 +62,31 @@ import { TurnstileService } from '../services/turnstile.service.js'
 import { CatalogImageService } from '../services/catalog-image.service.js'
 import { ConsumerWithdrawalProtectionService } from '../services/consumer-withdrawal-protection.service.js'
 import { ConsumerWithdrawalService } from '../services/consumer-withdrawals.service.js'
+import { PaymentCheckoutService } from '../services/payment-checkout.service.js'
 import { AdminConsumerWithdrawalService } from '../services/admin-consumer-withdrawals.service.js'
+import { AdminPaymentService } from '../services/admin-payments.service.js'
 import type { IEnv } from './env.js'
 import { createSupabaseClient } from './supabase.js'
+import { MercadoPagoPreferencesAdapter } from '../payments/mercado-pago-preferences.adapter.js'
+import { PaymentWebhookController } from '../controllers/payment-webhook.controller.js'
+import { PaymentReturnController } from '../controllers/payment-return.controller.js'
+import { PaymentInboxRepository } from '../repositories/payment-inbox.repository.js'
+import { PaymentWebhookService } from '../services/payment-webhook.service.js'
+import { PaymentWorkerController } from '../controllers/payment-worker.controller.js'
+import { PaymentJobsRepository } from '../repositories/payment-jobs.repository.js'
+import { PaymentReconciliationRepository } from '../repositories/payment-reconciliation.repository.js'
+import { PaymentReconciliationService } from '../services/payment-reconciliation.service.js'
+import { PaymentRetryService } from '../services/payment-retry.service.js'
+import { AdminPaymentRepository } from '../repositories/admin-payments.repository.js'
+import { PaymentWorkerService } from '../services/payment-worker.service.js'
+import { PaymentOutboxRepository } from '../repositories/payment-outbox.repository.js'
+import { PaymentReservationsRepository } from '../repositories/payment-reservations.repository.js'
+import { validatePaymentScheduler } from '../services/payment-scheduler-policy.js'
+import { PaymentWorkerScheduler } from '../services/payment-worker-scheduler.service.js'
 
 export interface IApplicationDependencies {
   adminConsumerWithdrawalController: AdminConsumerWithdrawalController
+  adminPaymentController: AdminPaymentController
   adminAuthController: AdminAuthController
   adminAuthService: IAdminAuthService
   adminCategoryController: AdminCategoryController
@@ -81,6 +103,11 @@ export interface IApplicationDependencies {
   csrfController: CsrfController
   csrfService: ICsrfService
   orderController: OrderController
+  paymentCheckoutController: PaymentCheckoutController
+  paymentWebhookController: PaymentWebhookController
+  paymentReturnController?: PaymentReturnController
+  paymentWorkerController?: PaymentWorkerController
+  paymentWorkerScheduler?: PaymentWorkerScheduler
   productController: ProductController
   publicOrderController: PublicOrderController
   settingsController: SettingsController
@@ -147,9 +174,14 @@ export function createApplicationDependencies(
   )
   const settingsService = new SettingsService(settingsRepository, storageService)
   const csrfService = new CsrfService(env.securityHmacSecret)
-  const guestSessionService = new GuestSessionService(new GuestSessionRepository(supabase))
+  const guestSessionService = new GuestSessionService(new GuestSessionRepository(supabase, logger))
   const orderRepository = new OrderRepository(supabase)
-  const confirmationService = new OrderConfirmationService(orderRepository)
+  const paymentCheckoutRepository = new PaymentCheckoutRepository(supabase, logger)
+  const confirmationService = new OrderConfirmationService(
+    orderRepository,
+    paymentCheckoutRepository,
+    storageService,
+  )
   const orderService = new OrderService(
     orderRepository,
     guestSessionService,
@@ -174,6 +206,62 @@ export function createApplicationDependencies(
       windowMs: env.recoveryWindowMs,
     },
   )
+  const paymentProvider = env.mercadoPago.enabled && env.mercadoPago.validationError === null
+     ? new MercadoPagoPreferencesAdapter(env.mercadoPago, logger)
+    : null
+  const paymentCheckoutService = new PaymentCheckoutService(
+    paymentCheckoutRepository,
+    guestSessionService,
+    paymentProvider,
+    env.mercadoPago,
+    logger,
+    publicOrderService,
+  )
+  const paymentWebhookService = new PaymentWebhookService(
+    new PaymentInboxRepository(supabase),
+    env.mercadoPago,
+    logger,
+  )
+  const paymentReconciliationService = new PaymentReconciliationService(
+    new PaymentReconciliationRepository(supabase),
+    paymentProvider,
+    env.mercadoPago,
+    logger,
+  )
+  const paymentRetryService = new PaymentRetryService(new PaymentJobsRepository(supabase))
+  const adminPaymentService = new AdminPaymentService(
+    new AdminPaymentRepository(supabase),
+    paymentReconciliationService,
+    paymentRetryService,
+    logger,
+  )
+  const paymentWorker = new PaymentWorkerService(
+    paymentRetryService,
+    paymentReconciliationService,
+    new PaymentReservationsRepository(supabase),
+    logger,
+    { notify: (alert): void => { logger.error({ jobId: alert.jobId, operation: alert.operation, disposition: alert.disposition, reason: alert.reason }, 'Payment worker alert') } },
+    new PaymentOutboxRepository(supabase),
+    paymentProvider,
+    paymentCheckoutRepository,
+    env.mercadoPago,
+  )
+  const schedulerError = env.paymentSchedulerProvider === 'disabled'
+    ? 'Payment scheduler is disabled'
+    : validatePaymentScheduler({
+      approved: env.paymentSchedulerApproved,
+      cadenceSeconds: env.paymentWorkerCadenceSeconds,
+      httpSupported: env.paymentSchedulerHttpSupported,
+      plan: env.paymentSchedulerPlan,
+      quotaPerHour: env.paymentSchedulerQuotaPerHour,
+    })
+  const paymentWorkerScheduler = env.paymentWorkerSchedulerEnabled
+    ? new PaymentWorkerScheduler(paymentWorker, {
+      cadenceSeconds: env.paymentWorkerCadenceSeconds,
+      enabled: true,
+      workerId: 'local-development-worker',
+    })
+    : undefined
   const consumerWithdrawalRepository = new ConsumerWithdrawalRepository(supabase)
   const consumerWithdrawalProtection = new ConsumerWithdrawalProtectionService(env.securityHmacSecret)
   const withdrawalTurnstile = new TurnstileService(
@@ -199,6 +287,7 @@ export function createApplicationDependencies(
 
   return {
     adminConsumerWithdrawalController: new AdminConsumerWithdrawalController(adminConsumerWithdrawalService),
+    adminPaymentController: new AdminPaymentController(adminPaymentService),
     adminAuthController: new AdminAuthController(adminAuthService, env.adminSessionMaxAgeMs),
     adminAuthService,
     adminCategoryController: new AdminCategoryController(adminCategoryService),
@@ -215,6 +304,13 @@ export function createApplicationDependencies(
     csrfController: new CsrfController(csrfService),
     csrfService,
     orderController: new OrderController(orderService),
+    paymentCheckoutController: new PaymentCheckoutController(paymentCheckoutService),
+    paymentReturnController: new PaymentReturnController(env.mercadoPago, paymentReconciliationService, logger),
+    paymentWebhookController: new PaymentWebhookController(paymentWebhookService),
+    ...(paymentWorkerScheduler === undefined ? {} : { paymentWorkerScheduler }),
+    ...(env.paymentWorkerEnabled && env.paymentWorkerSecret !== null && schedulerError === null
+      ? { paymentWorkerController: new PaymentWorkerController(paymentWorker, env.paymentWorkerSecret) }
+      : {}),
     productController: new ProductController(productService, env.publicCacheMaxAgeSeconds),
     publicOrderController: new PublicOrderController(publicOrderService),
     settingsController: new SettingsController(settingsService, env.publicCacheMaxAgeSeconds),
