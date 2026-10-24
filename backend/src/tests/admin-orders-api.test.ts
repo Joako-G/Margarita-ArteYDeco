@@ -25,6 +25,7 @@ const ORDER_ID = '3a2b9148-7dbf-4b88-a47f-296205f5e4de'
 const UPDATED_AT = '2026-08-03T12:00:00.000Z'
 const ORDER: IAdminOrderDetailDto = {
   availableActions: ['confirmPayment'],
+  canConsultPayment: false,
   business: {
     address: 'Av. Siempre Viva 123',
     businessHours: 'Lunes a viernes de 9 a 18 h',
@@ -39,6 +40,7 @@ const ORDER: IAdminOrderDetailDto = {
   discount: 1200,
   deliveredAt: null,
   id: ORDER_ID,
+  inventoryAllocationActive: true,
   itemCount: 1,
   items: [{
     listUnitPrice: 6000,
@@ -51,9 +53,16 @@ const ORDER: IAdminOrderDetailDto = {
   notes: '',
   orderNumber: 'MAD-20260803-000001',
   paymentMethod: 'bank_transfer',
+  paymentAttemptId: null,
+  paymentProviderId: null,
+  paymentProviderStatus: null,
+  paymentReconciliationStatus: null,
   paymentStatus: 'pending',
+  paymentUpdatedAt: null,
+  paymentRequiresManualReview: false,
   pickedUpAt: null,
   requiresManualRefundOnCancel: false,
+  reservationExpiresAt: null,
   status: 'pending',
   shippingAddress: null,
   subtotal: 12000,

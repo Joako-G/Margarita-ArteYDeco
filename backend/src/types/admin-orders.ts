@@ -10,6 +10,13 @@ export type AdminOrderStatusType =
   | 'ready'
 
 export type AdminPaymentStatusType = 'paid' | 'pending' | 'rejected'
+export type AdminPaymentReconciliationStatusType =
+  | 'approved'
+  | 'cancelled'
+  | 'expired'
+  | 'manual_review'
+  | 'pending'
+  | 'rejected'
 export type AdminOrderActionType =
   | 'confirmPayment'
   | 'confirmOrder'
@@ -29,6 +36,7 @@ export interface IAdminOrderFilters {
 }
 
 export interface IAdminOrderRecord {
+  inventoryAllocationActive?: boolean
   contractConcludedAt: string | null
   createdAt: string
   customerFirstName: string
@@ -43,7 +51,16 @@ export interface IAdminOrderRecord {
   notes: string | null
   orderNumber: string
   paymentMethod: PaymentMethodType
+  paymentProviderId: string | null
+  paymentAttemptId?: string | null
+  paymentAttemptStatus?: AdminPaymentReconciliationStatusType | null
+  paymentProviderStatus: string | null
+  reservationExpiresAt?: string | null
+  paymentReconciliationStatus: AdminPaymentReconciliationStatusType | null
+  persistedPaymentStatus: AdminPaymentStatusType
   paymentStatus: AdminPaymentStatusType
+  paymentUpdatedAt: string | null
+  paymentRequiresManualReview: boolean
   pickedUpAt: string | null
   shippingAddress: string | null
   status: AdminOrderStatusType
@@ -78,7 +95,13 @@ export interface IAdminOrderListItemDto {
   itemCount: number
   orderNumber: string
   paymentMethod: PaymentMethodType
+  paymentProviderId: string | null
+  paymentProviderStatus: string | null
+  reservationExpiresAt?: string | null
+  paymentReconciliationStatus: AdminPaymentReconciliationStatusType | null
   paymentStatus: AdminPaymentStatusType
+  paymentUpdatedAt: string | null
+  paymentRequiresManualReview: boolean
   status: AdminOrderStatusType
   total: number
   updatedAt: string
@@ -98,6 +121,10 @@ export interface IAdminOrderListDto {
 
 export interface IAdminOrderDetailDto extends IAdminOrderListItemDto {
   availableActions: readonly AdminOrderActionType[]
+  canConsultPayment: boolean
+  inventoryAllocationActive: boolean
+  paymentAttemptId: string | null
+  reservationExpiresAt: string | null
   business: {
     address: string
     businessHours: string

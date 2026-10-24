@@ -9,13 +9,21 @@ const orderStatusSchema = z.enum([
   'preparing',
   'ready',
 ])
-const paymentMethodSchema = z.enum(['bank_transfer', 'cash'])
+const paymentMethodSchema = z.enum(['bank_transfer', 'cash', 'mercado_pago'])
 const paymentStatusSchema = z.enum(['paid', 'pending', 'rejected'])
+const paymentReconciliationStatusSchema = z.enum([
+  'approved',
+  'cancelled',
+  'expired',
+  'manual_review',
+  'pending',
+  'rejected',
+])
 
 export const adminOrderFiltersSchema = z.strictObject({
   page: z.coerce.number().int().min(1).max(10_000).default(1),
   pageSize: z.coerce.number().int().min(1).max(50).default(10),
-  paymentMethod: z.enum(['all', 'bank_transfer', 'cash']).default('all'),
+  paymentMethod: z.enum(['all', 'bank_transfer', 'cash', 'mercado_pago']).default('all'),
   paymentStatus: z.enum(['all', 'paid', 'pending', 'rejected']).default('all'),
   search: z.string().trim().min(2).max(80).optional(),
   sort: z.enum(['newest', 'oldest', 'totalAsc', 'totalDesc']).default('newest'),
@@ -32,6 +40,11 @@ export const adminOrderFiltersSchema = z.strictObject({
 })
 
 const adminOrderRowFields = {
+  inventory_movements: z.array(z.strictObject({
+    product_id: z.uuid(),
+    movement_type: z.string(),
+    quantity_delta: z.coerce.number().int(),
+  })).default([]),
   contract_concluded_at: z.iso.datetime({ offset: true }).nullable(),
   created_at: z.iso.datetime({ offset: true }),
   customer_first_name: z.string().trim().min(1),
@@ -46,6 +59,21 @@ const adminOrderRowFields = {
   order_number: z.string().trim().min(1),
   payment_method: paymentMethodSchema,
   payment_status: paymentStatusSchema,
+  payment_attempts: z.array(z.strictObject({
+    id: z.uuid(),
+    created_at: z.iso.datetime({ offset: true }),
+    provider_payment_id: z.string().trim().min(1).nullable(),
+    provider_status: z.string().trim().min(1).nullable(),
+     provider_updated_at: z.iso.datetime({ offset: true }).nullable(),
+     reservation_expires_at: z.iso.datetime({ offset: true }).nullable().optional(),
+     status: paymentReconciliationStatusSchema,
+    updated_at: z.iso.datetime({ offset: true }),
+  })),
+  payment_transactions: z.array(z.strictObject({
+    amount: z.coerce.number().nonnegative(),
+    review_required: z.boolean(),
+    status: paymentReconciliationStatusSchema,
+  })).default([]),
   picked_up_at: z.iso.datetime({ offset: true }).nullable(),
   shipping_address: z.string().nullable(),
   status: orderStatusSchema,

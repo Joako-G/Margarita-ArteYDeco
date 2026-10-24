@@ -29,6 +29,8 @@ export const adminInventoryMovementRowsSchema = z.array(z.strictObject({
     'manual_adjustment',
     'order_cancelled',
     'order_created',
+    'payment_re_reserved',
+    'payment_reservation_released',
   ]),
   order: z.strictObject({
     order_number: z.string().trim().min(1),

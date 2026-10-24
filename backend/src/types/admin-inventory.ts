@@ -4,6 +4,8 @@ export type InventoryMovementType =
   | 'manual_adjustment'
   | 'order_cancelled'
   | 'order_created'
+  | 'payment_re_reserved'
+  | 'payment_reservation_released'
 
 export type AdminStockAdjustmentDirectionType = 'decrease' | 'increase'
 

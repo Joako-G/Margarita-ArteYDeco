@@ -1,3 +1,5 @@
+import type { PaymentMethodType } from './orders.js'
+
 export type AdminCustomerSortType = 'nameAsc' | 'nameDesc' | 'newest' | 'oldest'
 
 export interface IAdminCustomerFilters {
@@ -28,7 +30,7 @@ export interface IAdminCustomerOrderRecord {
   createdAt: string
   id: string
   orderNumber: string
-  paymentMethod: 'bank_transfer' | 'cash'
+  paymentMethod: PaymentMethodType
   paymentStatus: 'paid' | 'pending' | 'rejected'
   status: 'cancelled' | 'confirmed' | 'delivered' | 'pending' | 'picked_up' | 'preparing' | 'ready'
   total: number

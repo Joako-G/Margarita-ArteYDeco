@@ -15,7 +15,7 @@ export const adminDashboardRecentOrderRowsSchema = z.array(z.strictObject({
   customer_first_name: z.string().trim().min(1),
   customer_last_name: z.string().trim().min(1),
   order_number: z.string().regex(/^MAD-[0-9]{8}-[0-9]{6,}$/),
-  payment_method: z.enum(['bank_transfer', 'cash']),
+   payment_method: z.enum(['bank_transfer', 'cash', 'mercado_pago']),
   status: z.enum([
     'cancelled',
     'confirmed',
