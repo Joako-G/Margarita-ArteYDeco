@@ -27,6 +27,8 @@ import {
   useAdminOrder,
   useAdminOrderLifecycle,
 } from '@/features/admin-orders'
+import { useAdminPaymentConsultation } from '@/features/admin-orders/hooks/useAdminPaymentConsultation'
+import { getAdminPaymentConsultationFeedback } from '@/features/admin-orders/utils/admin-payment-consultation'
 import type {
   AdminOrderActionType,
   AdminOrderCancellationFormType,
@@ -67,9 +69,10 @@ const ORDER_ACTION_SUCCESS_MESSAGES: Record<AdminOrderActionType, string> = {
 
 function AdminOrderContent({ order }: IAdminOrderContentProps) {
   const lifecycle = useAdminOrderLifecycle()
+  const consultation = useAdminPaymentConsultation()
   const [actionToConfirm, setActionToConfirm] = useState<AdminOrderActionType | null>(null)
   const [isCancellationOpen, setIsCancellationOpen] = useState(false)
-  const [feedback, setFeedback] = useState<{ message: string; type: 'error' | 'success' } | null>(null)
+  const [feedback, setFeedback] = useState<{ message: string; type: 'error' | 'success' | 'warning' } | null>(null)
   const status = ORDER_STATUS_DETAILS[order.status]
   const payment = PAYMENT_STATUS_DETAILS[order.paymentStatus]
   const displayNumber = getOrderDisplayNumber(order.orderNumber)
@@ -79,8 +82,26 @@ function AdminOrderContent({ order }: IAdminOrderContentProps) {
     : order.status === 'picked_up'
   const hasSingleProduct = order.items.length === 1
   const hasDiscount = order.discount > 0
+  const reservationDate = order.reservationExpiresAt === null
+    ? null
+    : formatAdminOrderDate(order.reservationExpiresAt)
 
   useRefreshAdminSessionOnUnauthorized(lifecycle.error)
+  useRefreshAdminSessionOnUnauthorized(consultation.data?.syncError ?? consultation.error)
+
+  async function handleConsultPayment() {
+    if (!order.canConsultPayment || !order.paymentAttemptId || consultation.isPending) return
+    setFeedback(null)
+    try {
+      const result = await consultation.mutateAsync({ attemptId: order.paymentAttemptId, orderId: order.id })
+      setFeedback(getAdminPaymentConsultationFeedback(result))
+    } catch {
+      setFeedback({
+        message: 'No pudimos actualizar el pedido después de la consulta. El resultado puede haber cambiado; recargá el detalle antes de actuar.',
+        type: 'error',
+      })
+    }
+  }
 
   async function handleActionConfirm() {
     if (actionToConfirm === null) return
@@ -125,7 +146,7 @@ function AdminOrderContent({ order }: IAdminOrderContentProps) {
       />
 
       {feedback ? (
-        <div className={`admin-order-detail__feedback admin-order-detail__feedback--${feedback.type}`} role={feedback.type === 'error' ? 'alert' : 'status'}>
+        <div aria-live="polite" className={`admin-order-detail__feedback admin-order-detail__feedback--${feedback.type}`} role={feedback.type === 'error' ? 'alert' : 'status'}>
           {feedback.type === 'success'
             ? <CircleCheck aria-hidden="true" size={22} />
             : <CircleAlert aria-hidden="true" size={22} />}
@@ -150,11 +171,43 @@ function AdminOrderContent({ order }: IAdminOrderContentProps) {
               <strong className="admin-order-detail__payment-method">{PAYMENT_METHOD_LABELS[order.paymentMethod]}</strong>
             </div>
           </div>
+          {order.paymentMethod === 'mercado_pago' && order.paymentAttemptId ? (
+            <dl className="admin-order-detail__payment-meta">
+              {reservationDate ? (
+                <div>
+                  <dt>Reserva original hasta</dt>
+                  <dd><time dateTime={order.reservationExpiresAt ?? undefined}>{reservationDate}</time></dd>
+                </div>
+              ) : null}
+              {!order.inventoryAllocationActive ? (
+                <div>
+                  <dt>Stock</dt>
+                  <dd><Badge variant="warning">Sin reserva activa</Badge></dd>
+                </div>
+              ) : null}
+            </dl>
+          ) : null}
+          {order.paymentRequiresManualReview ? (
+            <p className="admin-order-detail__payment-warning">
+              El pago requiere revisión. No prepares ni entregues el pedido hasta confirmar el pago y la disponibilidad de productos.
+            </p>
+          ) : null}
         </div>
         <div className="admin-order-detail__primary-actions">
-          {order.availableActions.map((action) => (
+          {order.canConsultPayment && order.paymentAttemptId ? (
             <Button
               disabled={lifecycle.isPending}
+              isLoading={consultation.isPending}
+              loadingText="Consultando…"
+              onClick={() => void handleConsultPayment()}
+              variant="secondary"
+            >
+              Consultar Pago
+            </Button>
+          ) : null}
+          {order.availableActions.map((action) => (
+            <Button
+              disabled={lifecycle.isPending || consultation.isPending}
               key={action}
               onClick={() => setActionToConfirm(action)}
             >
@@ -165,7 +218,7 @@ function AdminOrderContent({ order }: IAdminOrderContentProps) {
           {order.canCancel ? (
             <Button
               className="admin-order-detail__cancel"
-              disabled={lifecycle.isPending}
+              disabled={lifecycle.isPending || consultation.isPending}
               onClick={() => setIsCancellationOpen(true)}
               variant="ghost"
             >

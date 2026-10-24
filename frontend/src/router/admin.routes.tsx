@@ -75,6 +75,7 @@ export const adminRoutes: RouteObject[] = [
           { path: 'categorias/nueva', lazy: loadCategoryFormPage },
           { path: 'categorias/:categoryId/editar', lazy: loadCategoryFormPage },
           { path: 'pedidos', lazy: loadOrdersPage },
+          { path: 'pagos/reconciliacion', lazy: loadOrdersPage },
           { path: 'pedidos/:orderId', lazy: loadOrderDetailPage },
           { path: 'arrepentimientos', lazy: loadConsumerWithdrawalsPage },
           { path: 'arrepentimientos/:requestId', lazy: loadConsumerWithdrawalDetailPage },

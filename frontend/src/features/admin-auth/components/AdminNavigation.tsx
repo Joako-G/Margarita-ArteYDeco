@@ -1,4 +1,4 @@
-import { Boxes, ClipboardList, LayoutDashboard, RotateCcw, Settings, Shapes, Users } from 'lucide-react'
+import { Boxes, ClipboardList, CreditCard, LayoutDashboard, RotateCcw, Settings, Shapes, Users } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 
 import { routes } from '@/config/routes'
@@ -42,6 +42,16 @@ function AdminManagementItems({ onNavigate }: IAdminNavigationProps) {
       >
         <ClipboardList aria-hidden="true" size={19} />
         Pedidos
+      </NavLink>
+      <NavLink
+        className={({ isActive }) =>
+          `admin-navigation__item${isActive ? ' admin-navigation__item--active' : ''}`
+        }
+        onClick={onNavigate}
+        to={routes.adminPaymentReconciliation}
+      >
+        <CreditCard aria-hidden="true" size={19} />
+        Conciliación de pagos
       </NavLink>
       <NavLink
         className={({ isActive }) =>

@@ -1,10 +1,7 @@
-const adminProductDateFormatter = new Intl.DateTimeFormat('es-AR', {
-  dateStyle: 'medium',
-  timeStyle: 'short',
-})
+import { formatAdminDate } from '../../../shared/utils/format-admin-date.ts'
 
 export function formatAdminProductDate(value: string): string {
-  return adminProductDateFormatter.format(new Date(value))
+  return formatAdminDate(value)
 }
 
 export function formatRelativeAdminProductDate(value: string): string {

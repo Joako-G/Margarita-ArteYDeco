@@ -10,7 +10,9 @@ import type { IAdminOrderListItem } from '../types/admin-orders'
 import {
   formatAdminOrderDate,
   PAYMENT_METHOD_LABELS,
+  PAYMENT_RECONCILIATION_DETAILS,
   PAYMENT_STATUS_DETAILS,
+  formatPaymentUpdatedAt,
 } from '../utils/admin-order-formatters'
 
 interface IAdminOrderCardProps {
@@ -20,6 +22,9 @@ interface IAdminOrderCardProps {
 export function AdminOrderCard({ order }: IAdminOrderCardProps) {
   const status = ORDER_STATUS_DETAILS[order.status]
   const payment = PAYMENT_STATUS_DETAILS[order.paymentStatus]
+  const reconciliation = order.paymentReconciliationStatus
+    ? PAYMENT_RECONCILIATION_DETAILS[order.paymentReconciliationStatus]
+    : null
 
   return (
     <article className="admin-order-card">
@@ -54,6 +59,9 @@ export function AdminOrderCard({ order }: IAdminOrderCardProps) {
           <span className="admin-order-card__payment-method">
             {PAYMENT_METHOD_LABELS[order.paymentMethod]}
           </span>
+          {reconciliation ? <span className="admin-order-card__payment-method">{reconciliation.label}</span> : null}
+          {order.paymentRequiresManualReview ? <span className="admin-order-card__payment-method">Revisión manual requerida</span> : null}
+          {order.paymentUpdatedAt ? <time className="admin-order-card__payment-method" dateTime={order.paymentUpdatedAt}>{formatPaymentUpdatedAt(order.paymentUpdatedAt)}</time> : null}
         </div>
 
         <div className="admin-order-card__footer">

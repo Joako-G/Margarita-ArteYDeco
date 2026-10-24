@@ -3,7 +3,11 @@ export { AdminOrderFilters } from './components/AdminOrderFilters'
 export { AdminOrderTable } from './components/AdminOrderTable'
 export { AdminOrderTableSkeleton } from './components/AdminOrderTableSkeleton'
 export { AdminWhatsAppComposer } from './components/AdminWhatsAppComposer'
-export { useAdminOrder, useAdminOrders } from './hooks/useAdminOrders'
+export {
+  useAdminOrder,
+  useAdminOrders,
+  useAdminPaymentReconciliation,
+} from './hooks/useAdminOrders'
 export { useAdminOrderLifecycle } from './hooks/useAdminOrderLifecycle'
 export type { AdminOrderFiltersFormType } from './schemas/admin-order-filters.schema'
 export type { AdminOrderCancellationFormType } from './schemas/admin-order-cancellation.schema'
@@ -18,6 +22,9 @@ export {
   getOrderDisplayNumber,
   ORDER_ACTION_LABELS,
   PAYMENT_METHOD_LABELS,
+  PAYMENT_RECONCILIATION_DETAILS,
   PAYMENT_STATUS_DETAILS,
+  formatPaymentUpdatedAt,
 } from './utils/admin-order-formatters'
 export { getAdminOrderErrorMessage } from './utils/admin-order-errors'
+export { adminOrdersService } from './services/admin-orders.service'

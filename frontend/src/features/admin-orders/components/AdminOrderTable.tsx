@@ -10,7 +10,9 @@ import type { IAdminOrderListItem } from '../types/admin-orders'
 import {
   formatAdminOrderDate,
   PAYMENT_METHOD_LABELS,
+  PAYMENT_RECONCILIATION_DETAILS,
   PAYMENT_STATUS_DETAILS,
+  formatPaymentUpdatedAt,
 } from '../utils/admin-order-formatters'
 import { AdminOrderCard } from './AdminOrderCard'
 import { AdminOrderHorizontalCard } from './AdminOrderHorizontalCard'
@@ -76,6 +78,9 @@ function AdminOrderTableView({ orders }: { orders: readonly IAdminOrderListItem[
           {orders.map((order) => {
             const status = ORDER_STATUS_DETAILS[order.status]
             const payment = PAYMENT_STATUS_DETAILS[order.paymentStatus]
+            const reconciliation = order.paymentReconciliationStatus
+              ? PAYMENT_RECONCILIATION_DETAILS[order.paymentReconciliationStatus]
+              : null
             return (
               <tr key={order.id}>
                 <td data-label="Pedido">
@@ -95,6 +100,9 @@ function AdminOrderTableView({ orders }: { orders: readonly IAdminOrderListItem[
                   <span className="admin-order-table__payment">
                     <Badge variant={status.variant}>{status.label}</Badge>
                     <span>{PAYMENT_METHOD_LABELS[order.paymentMethod]} · {payment.label}</span>
+                    {reconciliation ? <span>{reconciliation.label}</span> : null}
+                    {order.paymentRequiresManualReview ? <Badge variant="warning">Revisión manual</Badge> : null}
+                    {order.paymentUpdatedAt ? <time dateTime={order.paymentUpdatedAt}>{formatPaymentUpdatedAt(order.paymentUpdatedAt)}</time> : null}
                   </span>
                 </td>
                 <td data-label="Total">
