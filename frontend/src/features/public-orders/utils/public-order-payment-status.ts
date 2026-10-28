@@ -85,3 +85,8 @@ export function canResumePublicPayment(
     canResumePayment
   )
 }
+
+export function isReservationActive(reservationExpiresAt: string, now: number = Date.now()): boolean {
+  const expiry = new Date(reservationExpiresAt).getTime()
+  return Number.isFinite(expiry) && expiry > now
+}

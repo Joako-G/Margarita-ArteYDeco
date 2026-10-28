@@ -122,7 +122,8 @@
 
 .public-order__payment-status {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  /* The result column is capped so a long reservation note wraps instead of squeezing the copy. */
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, 16rem);
   gap: var(--space-2);
   align-items: center;
   background: var(--color-primary-soft);

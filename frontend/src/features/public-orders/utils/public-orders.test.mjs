@@ -9,6 +9,7 @@ import {
   canResumePublicPayment,
   getPublicPaymentMethodLabel,
   getPublicPaymentStatusDetails,
+  isReservationActive,
 } from './public-order-payment-status.ts'
 import { getPublicOrderBackAction } from './public-order-navigation.ts'
 import {
@@ -135,4 +136,13 @@ test('usa historial interno y vuelve al catálogo como fallback seguro', () => {
   assert.equal(getPublicOrderBackAction(2), 'history')
   assert.equal(getPublicOrderBackAction(0), 'catalog')
   assert.equal(getPublicOrderBackAction(null), 'catalog')
+})
+
+test('distingue una reserva vigente de una vencida', () => {
+  const now = Date.parse('2026-10-15T12:00:00.000Z')
+
+  assert.equal(isReservationActive('2026-10-15T20:53:00.000Z', now), true)
+  assert.equal(isReservationActive('2026-10-15T11:59:59.000Z', now), false)
+  assert.equal(isReservationActive('2026-10-15T12:00:00.000Z', now), false)
+  assert.equal(isReservationActive('fecha-invalida', now), false)
 })

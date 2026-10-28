@@ -20,6 +20,7 @@ import {
   canResumePublicPayment,
   getPublicPaymentMethodLabel,
   getPublicPaymentStatusDetails,
+  isReservationActive,
 } from '../utils/public-order-payment-status'
 import { getPublicOrderStatusDetails } from '../utils/public-order-status'
 import { CopyValueButton } from './CopyValueButton'
@@ -64,6 +65,7 @@ function PaymentStatusCard({ order }: { order: IOrderConfirmation }) {
   const reservationDate = order.reservationExpiresAt === null
     ? null
     : new Intl.DateTimeFormat('es-AR', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(order.reservationExpiresAt))
+  const reservationActive = order.reservationExpiresAt !== null && isReservationActive(order.reservationExpiresAt)
 
   return (
     <section aria-labelledby="order-payment-status-title" className="public-order__surface public-order__payment-status">
@@ -82,7 +84,7 @@ function PaymentStatusCard({ order }: { order: IOrderConfirmation }) {
         <small>{paymentMethodLabel}</small>
         {reservationDate !== null ? (
           <small>
-            Reserva local vigente hasta <time dateTime={order.reservationExpiresAt ?? undefined}>{reservationDate}</time>. El estado se confirma con el Backend.
+            {reservationActive ? 'Reserva local vigente hasta' : 'La reserva local venció el'} <time dateTime={order.reservationExpiresAt ?? undefined}>{reservationDate}</time>. El estado se confirma con el Backend.
           </small>
         ) : null}
       </div>
