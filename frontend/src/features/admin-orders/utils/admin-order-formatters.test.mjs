@@ -6,6 +6,7 @@ import {
   buildAdminWhatsAppUrl,
   formatPaymentUpdatedAt,
   getAdminWhatsAppTemplate,
+  isRefundPending,
   PAYMENT_RECONCILIATION_DETAILS,
 } from './admin-order-formatters.ts'
 import { formatAdminDate } from '../../../shared/utils/format-admin-date.ts'
@@ -138,4 +139,16 @@ test('reports successful consultation only from the refreshed paid order', async
   )
 
   assert.equal(getAdminPaymentConsultationFeedback(result).type, 'success')
+})
+
+test('flags only cancelled Mercado Pago orders with a confirmed payment as pending refund', () => {
+  const base = { paymentMethod: 'mercado_pago', paymentStatus: 'paid', status: 'cancelled' }
+
+  assert.equal(isRefundPending(base), true)
+  assert.equal(isRefundPending({ ...base, paymentStatus: 'pending' }), false)
+  assert.equal(isRefundPending({ ...base, paymentStatus: 'rejected' }), false)
+  assert.equal(isRefundPending({ ...base, status: 'pending' }), false)
+  assert.equal(isRefundPending({ ...base, status: 'delivered' }), false)
+  assert.equal(isRefundPending({ ...base, paymentMethod: 'cash' }), false)
+  assert.equal(isRefundPending({ ...base, paymentMethod: 'bank_transfer' }), false)
 })

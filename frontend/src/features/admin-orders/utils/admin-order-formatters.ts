@@ -4,6 +4,7 @@ import type {
   AdminPaymentReconciliationStatusType,
   AdminPaymentStatusType,
   IAdminOrderDetail,
+  IAdminOrderListItem,
 } from '../types/admin-orders'
 
 import { buildWhatsAppUrl } from '../../../shared/utils/whatsapp.ts'
@@ -35,6 +36,16 @@ export const PAYMENT_RECONCILIATION_DETAILS: Record<
   manual_review: { label: 'Revisión manual', variant: 'warning' },
   pending: { label: 'Conciliación pendiente', variant: 'neutral' },
   rejected: { label: 'Conciliación rechazada', variant: 'error' },
+}
+
+export const REFUND_PENDING_LABEL = 'Reembolso pendiente'
+
+export function isRefundPending(
+  order: Pick<IAdminOrderListItem, 'paymentMethod' | 'paymentStatus' | 'status'>,
+): boolean {
+  return order.status === 'cancelled'
+    && order.paymentStatus === 'paid'
+    && order.paymentMethod === 'mercado_pago'
 }
 
 export const ORDER_ACTION_LABELS: Record<AdminOrderActionType, string> = {

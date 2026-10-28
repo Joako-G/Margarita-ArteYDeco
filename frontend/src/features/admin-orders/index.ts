@@ -20,10 +20,12 @@ export {
 export {
   formatAdminOrderDate,
   getOrderDisplayNumber,
+  isRefundPending,
   ORDER_ACTION_LABELS,
   PAYMENT_METHOD_LABELS,
   PAYMENT_RECONCILIATION_DETAILS,
   PAYMENT_STATUS_DETAILS,
+  REFUND_PENDING_LABEL,
   formatPaymentUpdatedAt,
 } from './utils/admin-order-formatters'
 export { getAdminOrderErrorMessage } from './utils/admin-order-errors'

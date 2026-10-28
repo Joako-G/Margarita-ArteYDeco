@@ -21,6 +21,7 @@ import {
   formatAdminOrderDate,
   getAdminOrderErrorMessage,
   getOrderDisplayNumber,
+  isRefundPending,
   ORDER_ACTION_LABELS,
   PAYMENT_METHOD_LABELS,
   PAYMENT_STATUS_DETAILS,
@@ -190,6 +191,11 @@ function AdminOrderContent({ order }: IAdminOrderContentProps) {
           {order.paymentRequiresManualReview ? (
             <p className="admin-order-detail__payment-warning">
               El pago requiere revisión. No prepares ni entregues el pedido hasta confirmar el pago y la disponibilidad de productos.
+            </p>
+          ) : null}
+          {isRefundPending(order) ? (
+            <p className="admin-order-detail__payment-warning">
+              Pedido cancelado con pago confirmado. Reembolsá el pago manualmente desde Mercado Pago.
             </p>
           ) : null}
         </div>

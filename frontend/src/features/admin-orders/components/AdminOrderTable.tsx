@@ -9,9 +9,11 @@ import { ORDER_STATUS_DETAILS } from '@/shared/utils/order-status'
 import type { IAdminOrderListItem } from '../types/admin-orders'
 import {
   formatAdminOrderDate,
+  isRefundPending,
   PAYMENT_METHOD_LABELS,
   PAYMENT_RECONCILIATION_DETAILS,
   PAYMENT_STATUS_DETAILS,
+  REFUND_PENDING_LABEL,
   formatPaymentUpdatedAt,
 } from '../utils/admin-order-formatters'
 import { AdminOrderCard } from './AdminOrderCard'
@@ -102,6 +104,7 @@ function AdminOrderTableView({ orders }: { orders: readonly IAdminOrderListItem[
                     <span>{PAYMENT_METHOD_LABELS[order.paymentMethod]} · {payment.label}</span>
                     {reconciliation ? <span>{reconciliation.label}</span> : null}
                     {order.paymentRequiresManualReview ? <Badge variant="warning">Revisión manual</Badge> : null}
+                    {isRefundPending(order) ? <Badge variant="warning">{REFUND_PENDING_LABEL}</Badge> : null}
                     {order.paymentUpdatedAt ? <time dateTime={order.paymentUpdatedAt}>{formatPaymentUpdatedAt(order.paymentUpdatedAt)}</time> : null}
                   </span>
                 </td>
