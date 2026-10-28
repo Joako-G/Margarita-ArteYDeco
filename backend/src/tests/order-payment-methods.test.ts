@@ -230,4 +230,33 @@ describe('Mercado Pago order payment method', () => {
     expect(confirmation?.canResumePayment).toBe(canResume)
     expect(confirmation?.reservationExpiresAt).toBe('2026-09-23T15:00:00.000Z')
   })
+
+  it('never offers to resume payment on a cancelled order, even with a live preference', async () => {
+    const repository = {
+      findConfirmation: vi.fn().mockResolvedValue({
+        createdAt: ORDER_ROW.created_at, customerFirstName: 'Marta', customerLastName: 'Gómez',
+        deliveryMethod: 'pickup', discount: 0, items: [], orderNumber: ORDER_ROW.order_number,
+        paymentMethod: 'mercado_pago', paymentStatus: 'pending', shippingAddress: null,
+        status: 'cancelled', subtotal: 600, total: 600,
+      }),
+      findOrderSettings: vi.fn().mockResolvedValue({
+        address: 'Calle 123', bankName: 'Banco', businessHours: 'Lunes a viernes',
+        mapsUrl: 'https://maps.google.com/example', transferAlias: 'alias',
+        transferCbu: '0000000000000000000000', transferDiscount: 10, whatsapp: '5491123456789',
+      }),
+    } as unknown as IOrderRepository
+    const paymentRepository = {
+      findLatestAttempt: vi.fn().mockResolvedValue({
+        reservationExpiresAt: new Date('2026-09-23T15:00:00.000Z'), status: 'pending',
+      }),
+      findResumableAttempt: vi.fn().mockResolvedValue({
+        providerPreferenceId: 'preference-id', reservationExpiresAt: new Date('2026-09-23T15:00:00.000Z'), status: 'pending',
+      }),
+    } as unknown as IPaymentCheckoutRepository
+
+    const confirmation = await new OrderConfirmationService(repository, paymentRepository).get('order-id', 'session-id')
+
+    expect(confirmation?.status).toBe('cancelled')
+    expect(confirmation?.canResumePayment).toBe(false)
+  })
 })

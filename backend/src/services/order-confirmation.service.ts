@@ -106,6 +106,7 @@ export class OrderConfirmationService implements IOrderConfirmationService {
         order.orderNumber,
       ),
       canResumePayment: order.paymentMethod === 'mercado_pago'
+        && order.status !== 'cancelled'
         && (latestAttempt?.status === 'pending' || latestAttempt?.status === 'rejected')
         && resumableAttempt !== null,
     }

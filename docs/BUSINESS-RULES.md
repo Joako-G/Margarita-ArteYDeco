@@ -178,7 +178,9 @@ Transiciones del MVP:
 - Todos los pedidos: `pending` → `confirmed` → `preparing` → `ready`.
 - Desde `ready`, un pedido puede pasar a `picked_up` o `delivered` según corresponda.
 - Un pedido podrá pasar a `cancelled` antes de ser retirado o entregado.
-- No se podrá reabrir un pedido cancelado, retirado o entregado.
+- No se podrá reabrir un pedido cancelado, retirado o entregado. La única
+  excepción es la aprobación tardía de un pedido cancelado por vencimiento
+  automático, descrita en las reglas de pago con Mercado Pago.
 
 ---
 
@@ -499,6 +501,17 @@ Para la futura habilitación de Checkout Pro quedan aprobadas estas reglas:
   decremented and the order remains `pending` and non-deliverable while payment
   accurately reflects `paid`; the owner handles fulfillment and any refund
   manually.
+- A cancelled order never reopens because a payment arrives afterwards. The only
+  exception is an order the system itself cancelled at reservation expiry (no
+  provider payment, or a definitive `rejected`, `cancelled`, or `expired`
+  state), which follows the late-approval rule above. An order cancelled by the
+  owner or the customer stays `cancelled` whatever payment is approved later:
+  no stock is re-reserved, the order status does not change, and payment
+  accurately reflects `paid`.
+- A `cancelled` order whose payment is `paid` is shown in the administration as
+  pending refund ("Reembolso pendiente") in the order detail and the order list.
+  The owner refunds the customer manually in Mercado Pago. The system never
+  refunds automatically, and the MVP has no refunded state or action.
 - El comercio absorberá el costo de Mercado Pago. No se aplicará ningún recargo
   al comprador por utilizar este medio.
 - El comercio eligió disponer de los fondos a 18 días. La referencia de tarifa
