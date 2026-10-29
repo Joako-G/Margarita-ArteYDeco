@@ -495,6 +495,15 @@ Para la futura habilitación de Checkout Pro quedan aprobadas estas reglas:
   state instead keeps the order `pending`, marks the current attempt
   `manual_review`, sets order-level payment to `pending`, and releases stock
   exactly once. It must not treat lack of a provider response as rejection.
+- A payment still `pending` or `in_process` after the reservation expired keeps its
+  attempt in `manual_review` until the provider resolves it, so the owner checks it
+  (for example with "Consultar Pago"); before expiry it stays `pending`. If the
+  provider then rejects it definitively, the order is cancelled automatically
+  without moving stock again, because the units were already released once, and the
+  cancellation is audited. A rejection while the reservation is still active keeps
+  the order `pending` so the customer can retry. The attempt stays `rejected`, so a
+  later approval on that cancelled order is recorded as paid but never reopens it
+  (the owner refunds it manually).
 - A late approval after expiry atomically re-reserves stock. If every item is
   available, the system records audited stock decrements and sets the order to
   `confirmed` and payment to `paid`. If any item is unavailable, no stock is
