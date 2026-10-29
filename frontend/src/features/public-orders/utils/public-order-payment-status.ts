@@ -90,3 +90,12 @@ export function isReservationActive(reservationExpiresAt: string, now: number = 
   const expiry = new Date(reservationExpiresAt).getTime()
   return Number.isFinite(expiry) && expiry > now
 }
+
+export function getReservationNoticeKind(
+  orderStatus: string,
+  reservationExpiresAt: string | null,
+  now: number = Date.now(),
+): 'active' | 'expired' | null {
+  if (orderStatus === 'cancelled' || reservationExpiresAt === null) return null
+  return isReservationActive(reservationExpiresAt, now) ? 'active' : 'expired'
+}

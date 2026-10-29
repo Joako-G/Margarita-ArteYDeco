@@ -20,7 +20,7 @@ import {
   canResumePublicPayment,
   getPublicPaymentMethodLabel,
   getPublicPaymentStatusDetails,
-  isReservationActive,
+  getReservationNoticeKind,
 } from '../utils/public-order-payment-status'
 import { getPublicOrderStatusDetails } from '../utils/public-order-status'
 import { CopyValueButton } from './CopyValueButton'
@@ -65,7 +65,7 @@ function PaymentStatusCard({ order }: { order: IOrderConfirmation }) {
   const reservationDate = order.reservationExpiresAt === null
     ? null
     : new Intl.DateTimeFormat('es-AR', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(order.reservationExpiresAt))
-  const reservationActive = order.reservationExpiresAt !== null && isReservationActive(order.reservationExpiresAt)
+  const reservationNotice = getReservationNoticeKind(order.status, order.reservationExpiresAt)
 
   return (
     <section aria-labelledby="order-payment-status-title" className="public-order__surface public-order__payment-status">
@@ -82,9 +82,9 @@ function PaymentStatusCard({ order }: { order: IOrderConfirmation }) {
         <span>Estado</span>
         <Badge variant={paymentStatus.variant}>{paymentStatus.label}</Badge>
         <small>{paymentMethodLabel}</small>
-        {reservationDate !== null ? (
+        {reservationNotice !== null && reservationDate !== null ? (
           <small>
-            {reservationActive ? 'Reserva local vigente hasta' : 'La reserva local venció el'} <time dateTime={order.reservationExpiresAt ?? undefined}>{reservationDate}</time>. El estado se confirma con el Backend.
+            El estado se confirma con el Backend. {reservationNotice === 'active' ? 'Reserva local vigente hasta' : 'La reserva local venció el'} <time dateTime={order.reservationExpiresAt ?? undefined}>{reservationDate}</time>
           </small>
         ) : null}
       </div>

@@ -9,6 +9,7 @@ import {
   canResumePublicPayment,
   getPublicPaymentMethodLabel,
   getPublicPaymentStatusDetails,
+  getReservationNoticeKind,
   isReservationActive,
 } from './public-order-payment-status.ts'
 import { getPublicOrderBackAction } from './public-order-navigation.ts'
@@ -145,4 +146,14 @@ test('distingue una reserva vigente de una vencida', () => {
   assert.equal(isReservationActive('2026-10-15T11:59:59.000Z', now), false)
   assert.equal(isReservationActive('2026-10-15T12:00:00.000Z', now), false)
   assert.equal(isReservationActive('fecha-invalida', now), false)
+})
+
+test('muestra la nota de reserva solo si el pedido no está cancelado', () => {
+  const now = Date.parse('2026-10-15T12:00:00.000Z')
+
+  assert.equal(getReservationNoticeKind('pending', '2026-10-15T20:53:00.000Z', now), 'active')
+  assert.equal(getReservationNoticeKind('pending', '2026-10-15T11:00:00.000Z', now), 'expired')
+  assert.equal(getReservationNoticeKind('cancelled', '2026-10-15T20:53:00.000Z', now), null)
+  assert.equal(getReservationNoticeKind('cancelled', '2026-10-15T11:00:00.000Z', now), null)
+  assert.equal(getReservationNoticeKind('pending', null, now), null)
 })
