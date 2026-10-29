@@ -90,7 +90,7 @@ export function OrderSummary({
         {paymentMethod === 'transfer'
           ? 'Aplicamos el descuento por transferencia antes de confirmar.'
           : paymentMethod === 'mercado_pago'
-             ? 'Te vamos a dirigir a Mercado Pago para completar el pago de forma segura. La reserva local se mantiene durante 24 horas y el tiempo restante se calcula desde el Backend.'
+             ? 'Te vamos a dirigir a Mercado Pago para completar el pago de forma segura. Reservamos tus productos durante 24 horas y te mostramos el tiempo restante.'
             : 'El pago se realiza en efectivo al retirar.'}
       </p>
 

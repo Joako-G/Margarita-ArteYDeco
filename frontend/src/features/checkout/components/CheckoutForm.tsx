@@ -125,7 +125,7 @@ export function CheckoutForm({ deliveryMethod, errors, register, settings }: ICh
             <div className="checkout-form__payment-option">
               <Radio label="Mercado Pago" value="mercado_pago" {...register('paymentMethod')} />
               <WalletCards aria-hidden="true" size={24} strokeWidth={2} />
-               <p>Te vamos a dirigir al checkout seguro de Mercado Pago. La reserva local se mantiene durante 24 horas; el tiempo restante se informa desde el Backend.</p>
+               <p>Te vamos a dirigir al checkout seguro de Mercado Pago. Reservamos tus productos durante 24 horas y te mostramos el tiempo restante.</p>
             </div>
           </div>
         </fieldset>

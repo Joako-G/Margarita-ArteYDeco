@@ -84,7 +84,7 @@ function PaymentStatusCard({ order }: { order: IOrderConfirmation }) {
         <small>{paymentMethodLabel}</small>
         {reservationNotice !== null && reservationDate !== null ? (
           <small>
-            El estado se confirma con el Backend. {reservationNotice === 'active' ? 'Reserva local vigente hasta' : 'La reserva local venció el'} <time dateTime={order.reservationExpiresAt ?? undefined}>{reservationDate}</time>
+            Confirmamos el estado de tu pago automáticamente. {reservationNotice === 'active' ? 'Tus productos están reservados hasta' : 'La reserva de tus productos venció el'} <time dateTime={order.reservationExpiresAt ?? undefined}>{reservationDate}</time>
           </small>
         ) : null}
       </div>
