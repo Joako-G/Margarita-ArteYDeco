@@ -11,6 +11,7 @@ export interface PaymentAttemptForReconciliation {
   providerPreferenceId: string | null
   providerPaymentId: string | null
   providerVersion: number | null
+  reservationExpiresAt?: string | null
   status: ReconciledPaymentState
 }
 
@@ -63,7 +64,7 @@ export class PaymentReconciliationRepository implements IPaymentReconciliationRe
   public async findAttempt(attemptId: string): Promise<PaymentAttemptForReconciliation> {
     const { data, error } = await this.client
       .from('payment_attempts')
-      .select('id, order_id, amount, currency, external_reference, provider_preference_id, provider_payment_id, provider_version, status')
+      .select('id, order_id, amount, currency, external_reference, provider_preference_id, provider_payment_id, provider_version, reservation_expires_at, status')
       .eq('id', attemptId)
       .maybeSingle()
 
@@ -78,6 +79,7 @@ export class PaymentReconciliationRepository implements IPaymentReconciliationRe
       providerPreferenceId: data.provider_preference_id,
       providerPaymentId: data.provider_payment_id,
       providerVersion: data.provider_version,
+      reservationExpiresAt: data.reservation_expires_at,
       status: data.status === 'cancelled' ? 'expired' : data.status,
     }
   }
@@ -85,7 +87,7 @@ export class PaymentReconciliationRepository implements IPaymentReconciliationRe
   public async findExpiredAttempts(limit: number, now: Date): Promise<PaymentAttemptForReconciliation[]> {
     const { data, error } = await this.client
       .from('payment_attempts')
-      .select('id, order_id, amount, currency, external_reference, provider_preference_id, provider_payment_id, provider_version, status')
+      .select('id, order_id, amount, currency, external_reference, provider_preference_id, provider_payment_id, provider_version, reservation_expires_at, status')
       .lte('reservation_expires_at', now.toISOString())
       .in('status', ['pending', 'rejected'])
       .order('reservation_expires_at', { ascending: true })
@@ -101,6 +103,7 @@ export class PaymentReconciliationRepository implements IPaymentReconciliationRe
       providerPreferenceId: row.provider_preference_id,
       providerPaymentId: row.provider_payment_id,
       providerVersion: row.provider_version,
+      reservationExpiresAt: row.reservation_expires_at,
       status: row.status === 'cancelled' ? 'expired' : row.status,
     }))
   }
@@ -111,7 +114,7 @@ export class PaymentReconciliationRepository implements IPaymentReconciliationRe
   ): Promise<PaymentAttemptForReconciliation | null> {
     const { data, error } = await this.client
       .from('payment_attempts')
-      .select('id, order_id, amount, currency, external_reference, provider_preference_id, provider_payment_id, provider_version, status')
+      .select('id, order_id, amount, currency, external_reference, provider_preference_id, provider_payment_id, provider_version, reservation_expires_at, status')
       .eq('environment', environment)
       .eq('external_reference', externalReference)
       .limit(2)
@@ -128,6 +131,7 @@ export class PaymentReconciliationRepository implements IPaymentReconciliationRe
       providerPreferenceId: row.provider_preference_id,
       providerPaymentId: row.provider_payment_id,
       providerVersion: row.provider_version,
+      reservationExpiresAt: row.reservation_expires_at,
       status: row.status === 'cancelled' ? 'expired' : row.status,
     }
   }

@@ -479,3 +479,109 @@ describe('authenticated provider reconciliation boundary', () => {
     expect(repository.transition).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ status: 'approved' }))
   })
 })
+
+describe('payment still unresolved after the reservation expired', () => {
+  const past = (): string => new Date(Date.now() - 60_000).toISOString()
+  const future = (): string => new Date(Date.now() + 3_600_000).toISOString()
+
+  type UpsertMock = ReturnType<typeof vi.fn<NonNullable<IPaymentReconciliationRepository['upsertProviderTransaction']>>>
+  type TransitionMock = ReturnType<typeof vi.fn<NonNullable<IPaymentReconciliationRepository['transitionProviderTransaction']>>>
+
+  function build(options: {
+    existing?: Partial<PaymentTransactionRecord>
+    providerPayment: ProviderPayment
+    reservationExpiresAt?: string | null
+  }): { service: PaymentReconciliationService; transitionProviderTransaction: TransitionMock; upsertProviderTransaction: UpsertMock } {
+    const attempt = {
+      amount: 1500, currency: 'ARS', externalReference: 'ORD-1', id: 'attempt-1', orderId: 'order-1',
+      providerPreferenceId: 'preference-1', providerPaymentId: 'payment-1', providerVersion: null,
+      reservationExpiresAt: options.reservationExpiresAt ?? null,
+      status: 'pending' as const,
+    }
+    const record = (overrides: Partial<PaymentTransactionRecord> = {}): PaymentTransactionRecord => ({
+      amount: 1500, currency: 'ARS', id: 'transaction-1', paymentAttemptId: attempt.id, paymentTypeId: 'debit_card',
+      providerPaymentId: 'payment-1', providerStatus: 'in_process', providerUpdatedAt: '2026-09-18T20:00:00.000Z',
+      providerVersion: 3, reviewRequired: false, status: 'pending', updatedAt: '2026-09-18T20:00:00.000Z',
+      ...overrides,
+    })
+    const upsertProviderTransaction = vi.fn<NonNullable<IPaymentReconciliationRepository['upsertProviderTransaction']>>(async () => record())
+    const transitionProviderTransaction = vi.fn<NonNullable<IPaymentReconciliationRepository['transitionProviderTransaction']>>(
+      async () => ({ transition: 'applied' as const, status: 'pending' as const }),
+    )
+    const repository = {
+      findAttempt: vi.fn(async () => attempt),
+      findExpiredAttempts: vi.fn(async () => [attempt]),
+      findAttemptByExternalReference: vi.fn(),
+      recordProviderPaymentId: vi.fn(),
+      findProviderTransaction: vi.fn(async () => (options.existing === undefined ? null : record(options.existing))),
+      upsertProviderTransaction,
+      transitionProviderTransaction,
+      transition: vi.fn(),
+    }
+    const provider: PaymentProvider = { createPreference: vi.fn(), getPayment: vi.fn(async () => options.providerPayment) }
+    return { service: new PaymentReconciliationService(repository, provider, config, logger), transitionProviderTransaction, upsertProviderTransaction }
+  }
+
+  it.each(['in_process', 'pending'] as const)('flags a new %s transaction for review once the reservation expired', async (status) => {
+    const { service, transitionProviderTransaction, upsertProviderTransaction } = build({
+      providerPayment: payment({ status, version: 3 }), reservationExpiresAt: past(),
+    })
+
+    await service.reconcile('attempt-1')
+
+    expect(upsertProviderTransaction).toHaveBeenCalledWith('attempt-1', expect.anything(), expect.anything(), true, null)
+    expect(transitionProviderTransaction).toHaveBeenCalledWith(expect.anything(), expect.anything(), true, null)
+  })
+
+  it.each([
+    ['a reservation that is still active', 'in_process', 'active'],
+    ['an approved payment', 'approved', 'expired'],
+    ['a rejected payment', 'rejected', 'expired'],
+    ['an attempt without an expiry value', 'in_process', 'missing'],
+  ] as const)('does not flag %s', async (_label, status, expiry) => {
+    const reservationExpiresAt = expiry === 'active' ? future() : expiry === 'expired' ? past() : null
+    const { service, transitionProviderTransaction, upsertProviderTransaction } = build({
+      providerPayment: payment({ status, version: 3 }), reservationExpiresAt,
+    })
+
+    await service.reconcile('attempt-1')
+
+    expect(upsertProviderTransaction).toHaveBeenCalledWith('attempt-1', expect.anything(), expect.anything(), false, null)
+    expect(transitionProviderTransaction).toHaveBeenCalledWith(expect.anything(), expect.anything(), false, null)
+  })
+
+  it('flags an existing transaction even when the provider version did not change', async () => {
+    const { service, transitionProviderTransaction } = build({
+      existing: { providerVersion: 3, reviewRequired: false },
+      providerPayment: payment({ status: 'in_process', version: 3 }),
+      reservationExpiresAt: past(),
+    })
+
+    await service.reconcile('attempt-1')
+
+    expect(transitionProviderTransaction).toHaveBeenCalledTimes(1)
+    expect(transitionProviderTransaction).toHaveBeenCalledWith(expect.anything(), expect.anything(), true, null)
+  })
+
+  it('does not rewrite a transaction that is already flagged and unchanged', async () => {
+    const { service, transitionProviderTransaction } = build({
+      existing: { providerVersion: 3, reviewRequired: true },
+      providerPayment: payment({ status: 'in_process', version: 3 }),
+      reservationExpiresAt: past(),
+    })
+
+    await service.reconcile('attempt-1')
+
+    expect(transitionProviderTransaction).not.toHaveBeenCalled()
+  })
+
+  it('keeps flagging a payment whose amount does not match, whatever the expiry', async () => {
+    const { service, transitionProviderTransaction } = build({
+      providerPayment: payment({ amount: 1, status: 'in_process', version: 3 }), reservationExpiresAt: future(),
+    })
+
+    await service.reconcile('attempt-1')
+
+    expect(transitionProviderTransaction).toHaveBeenCalledWith(expect.anything(), expect.anything(), true, 'La transacción no coincide con el pedido')
+  })
+})

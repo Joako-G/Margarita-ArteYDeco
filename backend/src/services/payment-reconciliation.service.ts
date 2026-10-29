@@ -50,6 +50,16 @@ function isNewer(attempt: PaymentAttemptForReconciliation, provider: ProviderPay
   return true
 }
 
+// A payment still pending or in process once the reservation expired cannot be trusted
+// to resolve on its own: it is flagged so the attempt stays in manual review for the owner.
+function isUnresolvedAfterExpiry(attempt: PaymentAttemptForReconciliation, providerStatus: string): boolean {
+  if (attempt.reservationExpiresAt === null || attempt.reservationExpiresAt === undefined) return false
+  const expiry = new Date(attempt.reservationExpiresAt).getTime()
+  if (!Number.isFinite(expiry) || expiry > Date.now()) return false
+  const state = normalizeProviderState(providerStatus)
+  return state === 'pending' || state === 'in_process'
+}
+
 export class PaymentReconciliationService implements IPaymentReconciliationService {
   public constructor(
     private readonly repository: IPaymentReconciliationRepository,
@@ -184,6 +194,7 @@ export class PaymentReconciliationService implements IPaymentReconciliationServi
       && providerPayment.paymentTypeId !== null
       && isAllowedPaymentType(providerPayment.paymentTypeId)
     const identityError = identityMatches ? null : 'La transacción no coincide con el pedido'
+    const needsReview = !identityMatches || isUnresolvedAfterExpiry(attempt, providerPayment.status)
     let transaction = await this.repository.findProviderTransaction(this.config.environment, providerPayment.id)
 
     if (transaction !== null && transaction.paymentAttemptId !== attempt.id) {
@@ -195,7 +206,7 @@ export class PaymentReconciliationService implements IPaymentReconciliationServi
         attempt.id,
         this.config.environment,
         providerPayment,
-        !identityMatches,
+        needsReview,
         identityError,
       )
     } else if (
@@ -204,6 +215,7 @@ export class PaymentReconciliationService implements IPaymentReconciliationServi
       && providerPayment.version <= transaction.providerVersion
       && identityMatches
       && !(attempt.status === 'manual_review' && transaction.status === 'approved')
+      && !(needsReview && !transaction.reviewRequired)
     ) {
       return {
         attemptId: attempt.id,
@@ -222,7 +234,7 @@ export class PaymentReconciliationService implements IPaymentReconciliationServi
         providerVersion: providerPayment.version,
         status: next,
       },
-      !identityMatches,
+      needsReview,
       identityError,
     )
 
