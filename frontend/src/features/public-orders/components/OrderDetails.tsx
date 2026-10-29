@@ -21,6 +21,8 @@ import {
   getPublicPaymentMethodLabel,
   getPublicPaymentStatusDetails,
   getReservationNoticeKind,
+  PUBLIC_REFUND_NOTICE,
+  shouldShowRefundNotice,
 } from '../utils/public-order-payment-status'
 import { getPublicOrderStatusDetails } from '../utils/public-order-status'
 import { CopyValueButton } from './CopyValueButton'
@@ -77,6 +79,7 @@ function PaymentStatusCard({ order }: { order: IOrderConfirmation }) {
           Estado del pago
         </Typography>
         <p>{paymentStatus.description}</p>
+        {shouldShowRefundNotice(order) ? <p>{PUBLIC_REFUND_NOTICE}</p> : null}
       </div>
       <div className="public-order__payment-status-result">
         <span>Estado</span>

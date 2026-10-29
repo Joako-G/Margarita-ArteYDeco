@@ -99,3 +99,18 @@ export function getReservationNoticeKind(
   if (orderStatus === 'cancelled' || reservationExpiresAt === null) return null
   return isReservationActive(reservationExpiresAt, now) ? 'active' : 'expired'
 }
+
+export const PUBLIC_REFUND_NOTICE =
+  'Tu pedido fue cancelado. Como el pago ya estaba confirmado, nos vamos a comunicar con vos para devolverte el dinero.'
+
+export function shouldShowRefundNotice(order: {
+  paymentMethod: PaymentMethodType
+  paymentStatus: PaymentStatusType
+  status: string
+}): boolean {
+  return (
+    order.status === 'cancelled' &&
+    order.paymentMethod === 'mercado_pago' &&
+    (order.paymentStatus === 'paid' || order.paymentStatus === 'approved')
+  )
+}

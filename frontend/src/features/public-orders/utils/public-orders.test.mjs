@@ -11,6 +11,8 @@ import {
   getPublicPaymentStatusDetails,
   getReservationNoticeKind,
   isReservationActive,
+  PUBLIC_REFUND_NOTICE,
+  shouldShowRefundNotice,
 } from './public-order-payment-status.ts'
 import { getPublicOrderBackAction } from './public-order-navigation.ts'
 import {
@@ -156,4 +158,20 @@ test('muestra la nota de reserva solo si el pedido no está cancelado', () => {
   assert.equal(getReservationNoticeKind('cancelled', '2026-10-15T20:53:00.000Z', now), null)
   assert.equal(getReservationNoticeKind('cancelled', '2026-10-15T11:00:00.000Z', now), null)
   assert.equal(getReservationNoticeKind('pending', null, now), null)
+})
+
+test('avisa del reembolso solo en pedidos cancelados de Mercado Pago con pago confirmado', () => {
+  const base = { paymentMethod: 'mercado_pago', paymentStatus: 'paid', status: 'cancelled' }
+
+  assert.equal(shouldShowRefundNotice(base), true)
+  assert.equal(shouldShowRefundNotice({ ...base, paymentStatus: 'approved' }), true)
+  assert.equal(shouldShowRefundNotice({ ...base, paymentStatus: 'pending' }), false)
+  assert.equal(shouldShowRefundNotice({ ...base, paymentStatus: 'expired' }), false)
+  assert.equal(shouldShowRefundNotice({ ...base, status: 'pending' }), false)
+  assert.equal(shouldShowRefundNotice({ ...base, paymentMethod: 'cash' }), false)
+  assert.equal(shouldShowRefundNotice({ ...base, paymentMethod: 'transfer' }), false)
+  assert.equal(
+    PUBLIC_REFUND_NOTICE,
+    'Tu pedido fue cancelado. Como el pago ya estaba confirmado, nos vamos a comunicar con vos para devolverte el dinero.',
+  )
 })
