@@ -18,6 +18,7 @@ import { formatPrice } from '@/shared/utils/format-price'
 import type { IOrderConfirmation } from '../types/public-orders'
 import {
   canResumePublicPayment,
+  formatReservationDate,
   getPublicPaymentMethodLabel,
   getPublicPaymentStatusDetails,
   getReservationNoticeKind,
@@ -64,10 +65,8 @@ function OrderHeaderCard({ order }: Pick<IOrderDetailsProps, 'order'>) {
 function PaymentStatusCard({ order }: { order: IOrderConfirmation }) {
   const paymentStatus = getPublicPaymentStatusDetails(order.paymentMethod, order.paymentStatus)
   const paymentMethodLabel = getPublicPaymentMethodLabel(order.paymentMethod)
-  const reservationDate = order.reservationExpiresAt === null
-    ? null
-    : new Intl.DateTimeFormat('es-AR', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(order.reservationExpiresAt))
-  const reservationNotice = getReservationNoticeKind(order.status, order.reservationExpiresAt)
+  const reservationDate = order.reservationExpiresAt === null ? null : formatReservationDate(order.reservationExpiresAt)
+  const reservationNotice = getReservationNoticeKind(order.status, order.paymentStatus, order.reservationExpiresAt)
 
   return (
     <section aria-labelledby="order-payment-status-title" className="public-order__surface public-order__payment-status">

@@ -93,11 +93,25 @@ export function isReservationActive(reservationExpiresAt: string, now: number = 
 
 export function getReservationNoticeKind(
   orderStatus: string,
+  paymentStatus: PaymentStatusType,
   reservationExpiresAt: string | null,
   now: number = Date.now(),
 ): 'active' | 'expired' | null {
-  if (orderStatus === 'cancelled' || reservationExpiresAt === null) return null
+  const isPaymentConfirmed = paymentStatus === 'paid' || paymentStatus === 'approved'
+  if (orderStatus === 'cancelled' || isPaymentConfirmed || reservationExpiresAt === null) return null
   return isReservationActive(reservationExpiresAt, now) ? 'active' : 'expired'
+}
+
+// Browsers format "p. m." with a breakable space; a non-breaking one keeps it on one line.
+export function keepMeridiemTogether(text: string): string {
+  return text.replace(/([ap])\.\s*m\./, '$1.\xa0m.')
+}
+
+export function formatReservationDate(reservationExpiresAt: string, timeZone?: string): string {
+  return keepMeridiemTogether(
+    new Intl.DateTimeFormat('es-AR', { dateStyle: 'medium', timeStyle: 'short', timeZone })
+      .format(new Date(reservationExpiresAt)),
+  )
 }
 
 export const PUBLIC_REFUND_NOTICE =

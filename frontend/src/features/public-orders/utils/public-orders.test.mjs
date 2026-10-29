@@ -9,8 +9,10 @@ import {
   canResumePublicPayment,
   getPublicPaymentMethodLabel,
   getPublicPaymentStatusDetails,
+  formatReservationDate,
   getReservationNoticeKind,
   isReservationActive,
+  keepMeridiemTogether,
   PUBLIC_REFUND_NOTICE,
   shouldShowRefundNotice,
 } from './public-order-payment-status.ts'
@@ -150,14 +152,33 @@ test('distingue una reserva vigente de una vencida', () => {
   assert.equal(isReservationActive('fecha-invalida', now), false)
 })
 
-test('muestra la nota de reserva solo si el pedido no está cancelado', () => {
+test('muestra la nota de reserva solo mientras el pedido no está cancelado ni pagado', () => {
   const now = Date.parse('2026-10-15T12:00:00.000Z')
+  const future = '2026-10-15T20:53:00.000Z'
+  const past = '2026-10-15T11:00:00.000Z'
 
-  assert.equal(getReservationNoticeKind('pending', '2026-10-15T20:53:00.000Z', now), 'active')
-  assert.equal(getReservationNoticeKind('pending', '2026-10-15T11:00:00.000Z', now), 'expired')
-  assert.equal(getReservationNoticeKind('cancelled', '2026-10-15T20:53:00.000Z', now), null)
-  assert.equal(getReservationNoticeKind('cancelled', '2026-10-15T11:00:00.000Z', now), null)
-  assert.equal(getReservationNoticeKind('pending', null, now), null)
+  assert.equal(getReservationNoticeKind('pending', 'pending', future, now), 'active')
+  assert.equal(getReservationNoticeKind('pending', 'rejected', future, now), 'active')
+  assert.equal(getReservationNoticeKind('pending', 'pending', past, now), 'expired')
+  assert.equal(getReservationNoticeKind('cancelled', 'pending', future, now), null)
+  assert.equal(getReservationNoticeKind('cancelled', 'pending', past, now), null)
+  assert.equal(getReservationNoticeKind('confirmed', 'paid', past, now), null)
+  assert.equal(getReservationNoticeKind('confirmed', 'approved', future, now), null)
+  assert.equal(getReservationNoticeKind('pending', 'pending', null, now), null)
+})
+
+test('une "a. m." y "p. m." con un espacio que no se parte en dos líneas', () => {
+  assert.equal(keepMeridiemTogether('28 oct 2026, 11:44 p. m.'), '28 oct 2026, 11:44 p.\xa0m.')
+  assert.equal(keepMeridiemTogether('28 oct 2026, 9:05 a. m.'), '28 oct 2026, 9:05 a.\xa0m.')
+  assert.equal(keepMeridiemTogether('28 oct 2026, 11:44 p.' + String.fromCharCode(0x202f) + 'm.'), '28 oct 2026, 11:44 p.\xa0m.')
+  assert.equal(keepMeridiemTogether('28 oct 2026, 23:44'), '28 oct 2026, 23:44')
+})
+
+test('formatea la fecha de reserva sin dejar un espacio común entre "p." y "m."', () => {
+  const formatted = formatReservationDate('2026-10-29T02:44:00.000Z', 'America/Argentina/Buenos_Aires')
+
+  assert.match(formatted, /11:44/)
+  assert.doesNotMatch(formatted, /p\. m\./, `unexpected format: ${JSON.stringify(formatted)}`)
 })
 
 test('avisa del reembolso solo en pedidos cancelados de Mercado Pago con pago confirmado', () => {
