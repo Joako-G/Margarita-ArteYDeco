@@ -23,7 +23,9 @@ begin
   -- Case 2: the provider rejects BEFORE the reservation expires. The order stays pending and the customer may retry.
   -- Case 3: the provider rejects after expiry but before the expiry release ran. The release cancels it, returning the stock once.
   -- Case 4: after the case 1 cancellation, another payment is approved. The order stays cancelled and paid (refund by hand).
-  for v_case in 1..4 loop
+  -- Case 5: part of the amount was approved and the remainder is rejected after expiry. The order is NOT cancelled
+  --         automatically, so the captured money is never hidden.
+  for v_case in 1..5 loop
     v_session := extensions.gen_random_uuid();
     insert into public.guest_sessions (id, token_hash, expires_at)
     values (v_session, decode(md5(v_run_id || v_case::text) || md5(v_run_id || v_case::text), 'hex'), now() + interval '1 day');
@@ -123,6 +125,22 @@ begin
         or (select stock_quantity from public.products where id = v_product) is distinct from v_initial_stock
         or exists (select 1 from public.inventory_movements where order_id = v_order and movement_type = 'payment_re_reserved') then
         raise exception 'Case 4: an approval after the automatic cancellation must stay cancelled, paid, with no re-reservation';
+      end if;
+    end if;
+
+    if v_case = 5 then
+      insert into public.payment_transactions (
+        payment_attempt_id, environment, provider_payment_id, amount, currency,
+        payment_type_id, status, provider_status, provider_version
+      ) values (v_attempt, 'sandbox', 'late-rejection-partial-' || v_run_id, 40, 'ARS',
+        'debit_card', 'approved', 'approved', null);
+      perform public.release_expired_payment_reservation_for_order_v2(v_order);
+      perform public.reconcile_payment_transaction_v1(v_transaction, 'pending', 1, 'rejected', 'rejected', now(), 2, false, null);
+      if (select status::text from public.orders where id = v_order) is distinct from 'pending'
+        or (select stock_quantity from public.products where id = v_product) is distinct from v_initial_stock
+        or (select count(*) from public.inventory_movements where order_id = v_order) <> 2
+        or exists (select 1 from public.audit_logs where entity_id = v_order and action = 'order_cancelled') then
+        raise exception 'Case 5: a partially approved order must not be cancelled automatically after a late rejection';
       end if;
     end if;
 

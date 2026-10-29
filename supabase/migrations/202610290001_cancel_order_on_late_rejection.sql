@@ -3,7 +3,8 @@
 -- cancelled automatically, without moving stock again, and the cancellation is audited.
 -- A rejection while the reservation is still active keeps the order pending so the customer can
 -- retry. The attempt stays 'rejected', so a later approval on this cancelled order is recorded as
--- paid but does not reopen it (the owner refunds it manually). Forward-only: replaces one function.
+-- paid but does not reopen it (the owner refunds it manually). An order that already has part of
+-- its amount approved is not cancelled automatically. Forward-only: replaces one function.
 
 CREATE OR REPLACE FUNCTION public.reconcile_payment_attempt_aggregate_v2(p_attempt_id uuid)
  RETURNS payment_attempt_status
@@ -89,7 +90,10 @@ begin
   end if;
   -- A definitive rejection that arrives after the reservation expired, once its stock was
   -- already released, cancels the order. No stock moves: the units were returned once.
+  -- An order with a partially approved amount is left pending for manual handling, so the
+  -- captured money is never hidden behind an automatic cancellation.
   if v_aggregate = 'rejected'
+    and v_approved_amount = 0
     and v_order.status = 'pending'
     and v_order.payment_status <> 'paid'
     and v_order.reservation_expires_at is not null
