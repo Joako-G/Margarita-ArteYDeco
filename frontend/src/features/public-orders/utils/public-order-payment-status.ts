@@ -117,6 +117,29 @@ export function formatReservationDate(reservationExpiresAt: string, timeZone?: s
 export const PUBLIC_REFUND_NOTICE =
   'Tu pedido fue cancelado. Como el pago ya estaba confirmado, nos vamos a comunicar con vos para devolverte el dinero.'
 
+export const PUBLIC_PAID_WITHOUT_STOCK_NOTICE =
+  'Recibimos tu pago, pero tu reserva había vencido y ya no tenemos stock disponible. Nos vamos a comunicar con vos para coordinar la devolución del dinero o una alternativa.'
+
+// A late payment with stock confirms the order at once; one left pending after the reservation
+// expired could not re-reserve the stock.
+export function shouldShowPaidWithoutStockNotice(
+  order: {
+    paymentMethod: PaymentMethodType
+    paymentStatus: PaymentStatusType
+    reservationExpiresAt: string | null
+    status: string
+  },
+  now: number = Date.now(),
+): boolean {
+  return (
+    order.status === 'pending' &&
+    order.paymentMethod === 'mercado_pago' &&
+    (order.paymentStatus === 'paid' || order.paymentStatus === 'approved') &&
+    order.reservationExpiresAt !== null &&
+    !isReservationActive(order.reservationExpiresAt, now)
+  )
+}
+
 export function shouldShowRefundNotice(order: {
   paymentMethod: PaymentMethodType
   paymentStatus: PaymentStatusType

@@ -22,7 +22,9 @@ import {
   getPublicPaymentMethodLabel,
   getPublicPaymentStatusDetails,
   getReservationNoticeKind,
+  PUBLIC_PAID_WITHOUT_STOCK_NOTICE,
   PUBLIC_REFUND_NOTICE,
+  shouldShowPaidWithoutStockNotice,
   shouldShowRefundNotice,
 } from '../utils/public-order-payment-status'
 import { getPublicOrderStatusDetails } from '../utils/public-order-status'
@@ -79,6 +81,7 @@ function PaymentStatusCard({ order }: { order: IOrderConfirmation }) {
         </Typography>
         <p>{paymentStatus.description}</p>
         {shouldShowRefundNotice(order) ? <p>{PUBLIC_REFUND_NOTICE}</p> : null}
+        {shouldShowPaidWithoutStockNotice(order) ? <p>{PUBLIC_PAID_WITHOUT_STOCK_NOTICE}</p> : null}
       </div>
       <div className="public-order__payment-status-result">
         <span>Estado</span>

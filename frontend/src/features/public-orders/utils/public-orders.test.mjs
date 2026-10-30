@@ -13,7 +13,9 @@ import {
   getReservationNoticeKind,
   isReservationActive,
   keepMeridiemTogether,
+  PUBLIC_PAID_WITHOUT_STOCK_NOTICE,
   PUBLIC_REFUND_NOTICE,
+  shouldShowPaidWithoutStockNotice,
   shouldShowRefundNotice,
 } from './public-order-payment-status.ts'
 import { getPublicOrderBackAction } from './public-order-navigation.ts'
@@ -194,5 +196,28 @@ test('avisa del reembolso solo en pedidos cancelados de Mercado Pago con pago co
   assert.equal(
     PUBLIC_REFUND_NOTICE,
     'Tu pedido fue cancelado. Como el pago ya estaba confirmado, nos vamos a comunicar con vos para devolverte el dinero.',
+  )
+})
+
+test('avisa de la falta de stock solo en pedidos pendientes de Mercado Pago pagados despues de vencer la reserva', () => {
+  const now = Date.parse('2026-10-30T12:00:00Z')
+  const base = {
+    paymentMethod: 'mercado_pago',
+    paymentStatus: 'paid',
+    reservationExpiresAt: '2026-10-30T11:00:00Z',
+    status: 'pending',
+  }
+
+  assert.equal(shouldShowPaidWithoutStockNotice(base, now), true)
+  assert.equal(shouldShowPaidWithoutStockNotice({ ...base, paymentStatus: 'approved' }, now), true)
+  assert.equal(shouldShowPaidWithoutStockNotice({ ...base, reservationExpiresAt: '2026-10-30T13:00:00Z' }, now), false)
+  assert.equal(shouldShowPaidWithoutStockNotice({ ...base, reservationExpiresAt: null }, now), false)
+  assert.equal(shouldShowPaidWithoutStockNotice({ ...base, paymentStatus: 'pending' }, now), false)
+  assert.equal(shouldShowPaidWithoutStockNotice({ ...base, status: 'confirmed' }, now), false)
+  assert.equal(shouldShowPaidWithoutStockNotice({ ...base, status: 'cancelled' }, now), false)
+  assert.equal(shouldShowPaidWithoutStockNotice({ ...base, paymentMethod: 'cash' }, now), false)
+  assert.equal(
+    PUBLIC_PAID_WITHOUT_STOCK_NOTICE,
+    'Recibimos tu pago, pero tu reserva había vencido y ya no tenemos stock disponible. Nos vamos a comunicar con vos para coordinar la devolución del dinero o una alternativa.',
   )
 })
