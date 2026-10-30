@@ -25,7 +25,9 @@ begin
   -- Case 4: after the case 1 cancellation, another payment is approved. The order stays cancelled and paid (refund by hand).
   -- Case 5: part of the amount was approved and the remainder is rejected after expiry. The order is NOT cancelled
   --         automatically, so the captured money is never hidden.
-  for v_case in 1..5 loop
+  -- Case 6: the payment is still in process at expiry (flagged for review), then the provider approves it. The late
+  --         approval clears the flag and re-reserves the stock exactly once, so the order ends confirmed and paid.
+  for v_case in 1..6 loop
     v_session := extensions.gen_random_uuid();
     insert into public.guest_sessions (id, token_hash, expires_at)
     values (v_session, decode(md5(v_run_id || v_case::text) || md5(v_run_id || v_case::text), 'hex'), now() + interval '1 day');
@@ -141,6 +143,23 @@ begin
         or (select count(*) from public.inventory_movements where order_id = v_order) <> 2
         or exists (select 1 from public.audit_logs where entity_id = v_order and action = 'order_cancelled') then
         raise exception 'Case 5: a partially approved order must not be cancelled automatically after a late rejection';
+      end if;
+    end if;
+
+    if v_case = 6 then
+      perform public.release_expired_payment_reservation_for_order_v2(v_order);
+      perform public.reconcile_payment_transaction_v1(v_transaction, 'pending', 1, 'pending', 'in_process', now(), 2, true, null);
+      if (select status::text from public.payment_attempts where id = v_attempt) is distinct from 'manual_review' then
+        raise exception 'Case 6: the flagged in-process payment must keep the attempt in manual review before the approval';
+      end if;
+      perform public.reconcile_payment_transaction_v1(v_transaction, 'pending', 2, 'approved', 'approved', now(), 3, false, null);
+      if (select status::text from public.orders where id = v_order) is distinct from 'confirmed'
+        or (select payment_status::text from public.orders where id = v_order) is distinct from 'paid'
+        or (select status::text from public.payment_attempts where id = v_attempt) is distinct from 'approved'
+        or (select stock_quantity from public.products where id = v_product) is distinct from v_initial_stock - 1
+        or (select count(*) from public.inventory_movements where order_id = v_order and movement_type = 'payment_re_reserved') <> 1
+        or exists (select 1 from public.audit_logs where entity_id = v_order and action = 'order_cancelled') then
+        raise exception 'Case 6: a late approval of a flagged payment must confirm the order and re-reserve the stock exactly once';
       end if;
     end if;
 
