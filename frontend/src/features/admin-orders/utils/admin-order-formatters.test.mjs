@@ -7,6 +7,7 @@ import {
   formatPaymentUpdatedAt,
   getAdminWhatsAppTemplate,
   isRefundPending,
+  isPaidWithoutStock,
   PAYMENT_RECONCILIATION_DETAILS,
 } from './admin-order-formatters.ts'
 import { formatAdminDate } from '../../../shared/utils/format-admin-date.ts'
@@ -151,4 +152,15 @@ test('flags only cancelled Mercado Pago orders with a confirmed payment as pendi
   assert.equal(isRefundPending({ ...base, status: 'delivered' }), false)
   assert.equal(isRefundPending({ ...base, paymentMethod: 'cash' }), false)
   assert.equal(isRefundPending({ ...base, paymentMethod: 'bank_transfer' }), false)
+})
+
+test('flags only pending Mercado Pago orders paid after the stock was released as paid without stock', () => {
+  const base = { inventoryAllocationActive: false, paymentMethod: 'mercado_pago', paymentStatus: 'paid', status: 'pending' }
+
+  assert.equal(isPaidWithoutStock(base), true)
+  assert.equal(isPaidWithoutStock({ ...base, inventoryAllocationActive: true }), false)
+  assert.equal(isPaidWithoutStock({ ...base, paymentStatus: 'pending' }), false)
+  assert.equal(isPaidWithoutStock({ ...base, status: 'confirmed' }), false)
+  assert.equal(isPaidWithoutStock({ ...base, status: 'cancelled' }), false)
+  assert.equal(isPaidWithoutStock({ ...base, paymentMethod: 'cash' }), false)
 })

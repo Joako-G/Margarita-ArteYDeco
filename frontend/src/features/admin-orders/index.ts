@@ -20,7 +20,9 @@ export {
 export {
   formatAdminOrderDate,
   getOrderDisplayNumber,
+  isPaidWithoutStock,
   isRefundPending,
+  PAID_WITHOUT_STOCK_NOTICE,
   ORDER_ACTION_LABELS,
   PAYMENT_METHOD_LABELS,
   PAYMENT_RECONCILIATION_DETAILS,

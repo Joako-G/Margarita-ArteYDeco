@@ -40,6 +40,17 @@ export const PAYMENT_RECONCILIATION_DETAILS: Record<
 
 export const REFUND_PENDING_LABEL = 'Reembolso pendiente'
 
+export const PAID_WITHOUT_STOCK_NOTICE = 'El cliente pagó después de vencer la reserva y ya no hay stock para reservarlo. Coordiná el reembolso, o reponé stock y confirmá el pedido.'
+
+export function isPaidWithoutStock(
+  order: Pick<IAdminOrderDetail, 'inventoryAllocationActive' | 'paymentMethod' | 'paymentStatus' | 'status'>,
+): boolean {
+  return order.status === 'pending'
+    && order.paymentStatus === 'paid'
+    && order.paymentMethod === 'mercado_pago'
+    && !order.inventoryAllocationActive
+}
+
 export function isRefundPending(
   order: Pick<IAdminOrderListItem, 'paymentMethod' | 'paymentStatus' | 'status'>,
 ): boolean {

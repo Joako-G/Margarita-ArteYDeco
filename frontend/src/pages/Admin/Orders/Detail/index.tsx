@@ -21,8 +21,10 @@ import {
   formatAdminOrderDate,
   getAdminOrderErrorMessage,
   getOrderDisplayNumber,
+  isPaidWithoutStock,
   isRefundPending,
   ORDER_ACTION_LABELS,
+  PAID_WITHOUT_STOCK_NOTICE,
   PAYMENT_METHOD_LABELS,
   PAYMENT_STATUS_DETAILS,
   useAdminOrder,
@@ -192,6 +194,9 @@ function AdminOrderContent({ order }: IAdminOrderContentProps) {
             <p className="admin-order-detail__payment-warning">
               El pago requiere revisión. No prepares ni entregues el pedido hasta confirmar el pago y la disponibilidad de productos.
             </p>
+          ) : null}
+          {isPaidWithoutStock(order) ? (
+            <p className="admin-order-detail__payment-warning">{PAID_WITHOUT_STOCK_NOTICE}</p>
           ) : null}
           {isRefundPending(order) ? (
             <p className="admin-order-detail__payment-warning">
