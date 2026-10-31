@@ -261,6 +261,7 @@ html {
   gap: var(--space-1);
   margin-top: var(--space-3);
   padding-top: var(--space-2);
+  padding-bottom: calc(var(--space-3) + 48px + env(safe-area-inset-bottom));
   border-top: 1px solid rgba(255, 255, 255, 0.24);
   font-size: var(--font-size-caption);
 }
@@ -269,6 +270,9 @@ html {
   position: fixed;
   top: var(--space-1);
   left: var(--space-2);
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   padding: var(--space-1) var(--space-2);
   color: var(--color-surface);
   background: var(--color-primary-dark);
