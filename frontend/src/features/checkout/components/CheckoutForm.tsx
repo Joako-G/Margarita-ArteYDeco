@@ -10,11 +10,18 @@ import { normalizePhone } from '../utils/checkout-links'
 interface ICheckoutFormProps {
   deliveryMethod: ICheckoutFormValues['deliveryMethod']
   errors: FieldErrors<ICheckoutFormValues>
+  isMercadoPagoEnabled: boolean
   register: UseFormRegister<ICheckoutFormValues>
   settings: IPublicSettings
 }
 
-export function CheckoutForm({ deliveryMethod, errors, register, settings }: ICheckoutFormProps) {
+export function CheckoutForm({
+  deliveryMethod,
+  errors,
+  isMercadoPagoEnabled,
+  register,
+  settings,
+}: ICheckoutFormProps) {
   return (
     <div className="checkout-form">
       <section aria-labelledby="contact-title" className="checkout-form__section">
@@ -122,11 +129,13 @@ export function CheckoutForm({ deliveryMethod, errors, register, settings }: ICh
               <WalletCards aria-hidden="true" size={24} strokeWidth={2} />
               <p>Obtenés un {settings.transferDiscount}% de descuento.</p>
             </div>
-            <div className="checkout-form__payment-option">
-              <Radio label="Mercado Pago" value="mercado_pago" {...register('paymentMethod')} />
-              <WalletCards aria-hidden="true" size={24} strokeWidth={2} />
-               <p>Te vamos a dirigir al checkout seguro de Mercado Pago. Reservamos tus productos durante 24 horas y te mostramos el tiempo restante.</p>
-            </div>
+            {isMercadoPagoEnabled ? (
+              <div className="checkout-form__payment-option">
+                <Radio label="Mercado Pago" value="mercado_pago" {...register('paymentMethod')} />
+                <WalletCards aria-hidden="true" size={24} strokeWidth={2} />
+                <p>Te vamos a dirigir al checkout seguro de Mercado Pago. Reservamos tus productos durante 24 horas y te mostramos el tiempo restante.</p>
+              </div>
+            ) : null}
           </div>
         </fieldset>
       </section>

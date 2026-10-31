@@ -28,6 +28,7 @@ import { checkoutSchema } from './schemas/checkout.schema'
 import { checkoutService } from './services/checkout.service'
 import { normalizeCheckoutDraft, useCheckoutDraftStore } from './stores/checkout-draft.store'
 import type { ICheckoutFormValues, IOrderConfirmation } from './types/checkout'
+import { getAvailablePaymentMethod } from './utils/available-payment-method'
 import { calculateCheckoutTotals } from './utils/checkout-calculations'
 import { getCheckoutErrorFeedback, type ICheckoutErrorFeedback } from './utils/checkout-errors'
 import './checkout.css'
@@ -92,6 +93,12 @@ export function CheckoutPage() {
       setValue('paymentMethod', 'transfer', { shouldValidate: true })
     }
   }, [deliveryMethod, form, setValue])
+
+  useEffect(() => {
+    const current = form.getValues('paymentMethod')
+    const available = getAvailablePaymentMethod(current, deliveryMethod, isMercadoPagoEnabled)
+    if (available !== current) setValue('paymentMethod', available, { shouldValidate: true })
+  }, [deliveryMethod, form, isMercadoPagoEnabled, setValue])
 
   useEffect(() => {
     setCheckoutDraft({
@@ -299,6 +306,7 @@ export function CheckoutPage() {
               <CheckoutForm
                 errors={form.formState.errors}
                 deliveryMethod={deliveryMethod}
+                isMercadoPagoEnabled={isMercadoPagoEnabled}
                 register={form.register}
                 settings={settings}
               />

@@ -3,6 +3,7 @@ import test from 'node:test'
 
 import { checkoutSchema } from '../schemas/checkout.schema.ts'
 import { calculateCheckoutTotals } from './checkout-calculations.ts'
+import { getAvailablePaymentMethod } from './available-payment-method.ts'
 import { getCheckoutApiErrorCode, getCheckoutErrorFeedback } from './checkout-errors.ts'
 import { normalizePhone } from './checkout-links.ts'
 
@@ -161,4 +162,14 @@ test('bloquea el reenvío si el pedido pudo crearse sin confirmación', () => {
 
   assert.equal(feedback.kind, 'uncertain')
   assert.equal(feedback.blocksResubmission, true)
+})
+
+test('mantiene el medio de pago cuando esta disponible y reemplaza Mercado Pago apagado', () => {
+  assert.equal(getAvailablePaymentMethod('mercado_pago', 'pickup', true), 'mercado_pago')
+  assert.equal(getAvailablePaymentMethod('mercado_pago', 'shipping', true), 'mercado_pago')
+  assert.equal(getAvailablePaymentMethod('mercado_pago', 'pickup', false), 'cash')
+  assert.equal(getAvailablePaymentMethod('mercado_pago', 'shipping', false), 'transfer')
+  assert.equal(getAvailablePaymentMethod('cash', 'pickup', false), 'cash')
+  assert.equal(getAvailablePaymentMethod('transfer', 'pickup', false), 'transfer')
+  assert.equal(getAvailablePaymentMethod('transfer', 'shipping', false), 'transfer')
 })
