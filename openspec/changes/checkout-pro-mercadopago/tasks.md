@@ -43,7 +43,7 @@ Chain strategy: feature-branch-chain
 - [x] 3.2 Add the contextual payment/reconciliation card to order detail and keep Conciliation as a secondary audit surface; provide sync, retry-within-policy, review, attempts, provider update, expiry, and audit actions without manual payment confirmation.
 - [x] 3.3 Update the permitted documentation with the 24-hour reservation, provider truth rules, scheduled reconciliation, late approval/re-reservation, manual refund exception, contextual administration flow, legal disclosure, ownership, and rollback.
 - [x] 3.4 Run HTTPS sandbox/evidence gates: separate seller/buyer, approved/pending/rejected, duplicate/replay, retry, excluded methods, migration, no credentials/card data; keep capability disabled until all gates pass.
-- [ ] 3.5 Validate rollback: disable flag, pause Webhooks/claims safely, preserve immutable audit/payment history, retain cash/transfer, and prove stock changes remain RPC-guarded.
+- [x] 3.5 Validate rollback: disable flag, pause Webhooks/claims safely, preserve immutable audit/payment history, retain cash/transfer, and prove stock changes remain RPC-guarded.
 - [x] 3.6 Add hybrid post-return payment UX: trigger an immediate Backend reconciliation from the approved return, poll only the Backend's status, and preserve pending/manual-review messaging without trusting browser parameters as final payment truth.
 
 ## Parent Local SQL Rerun — Shipping Fixture Follow-up
