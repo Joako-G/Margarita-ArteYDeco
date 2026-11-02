@@ -133,7 +133,7 @@ export function CheckoutForm({
               <div className="checkout-form__payment-option">
                 <Radio label="Mercado Pago" value="mercado_pago" {...register('paymentMethod')} />
                 <WalletCards aria-hidden="true" size={24} strokeWidth={2} />
-                <p>Podés pagar con tarjeta de débito o con dinero disponible en Mercado Pago. Te vamos a dirigir a su checkout seguro. Reservamos tus productos durante 24 horas y te mostramos el tiempo restante.</p>
+                <p>Podés pagar con tarjeta de débito o con dinero disponible en Mercado Pago.</p>
               </div>
             ) : null}
           </div>
