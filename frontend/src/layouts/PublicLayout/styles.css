@@ -129,6 +129,42 @@ html {
   background: var(--color-primary-soft);
 }
 
+.landing-mobile-menu__group {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.landing-mobile-menu__group-toggle {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  gap: var(--space-1);
+  padding-inline: var(--space-2);
+  color: var(--color-primary-dark);
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 500;
+  text-align: start;
+  background: none;
+  border: 0;
+  border-radius: var(--radius-button);
+  cursor: pointer;
+}
+
+.landing-mobile-menu__group-toggle:hover {
+  background: var(--color-primary-soft);
+}
+
+.landing-mobile-menu__submenu {
+  display: grid;
+  gap: var(--space-1);
+  padding-inline-start: var(--space-2);
+}
+
+.landing-mobile-menu__submenu[hidden] {
+  display: none;
+}
+
 .landing-footer {
   padding-block: var(--space-5) var(--space-2);
   color: var(--color-surface);

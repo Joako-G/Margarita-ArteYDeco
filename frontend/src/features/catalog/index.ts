@@ -1,2 +1,5 @@
 export { CatalogPage } from './CatalogPage'
 export { useCatalog } from './hooks/useCatalog'
+export { usePublicCategories } from './hooks/usePublicCategories'
+export { buildCatalogMenu, isCatalogMenuGroup } from './utils/catalog-area'
+export type { CatalogMenuNodeType } from './utils/catalog-area'
