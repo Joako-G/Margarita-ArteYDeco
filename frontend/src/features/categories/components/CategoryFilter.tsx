@@ -28,6 +28,29 @@ const INITIAL_SCROLL_STATE: ICategoryScrollState = {
   hasOverflow: false,
 }
 
+function revealSelectedCategory(
+  categoryFilter: HTMLDivElement,
+  selectedItem: HTMLButtonElement | null,
+) {
+  if (!selectedItem) {
+    categoryFilter.scrollLeft = 0
+    return
+  }
+
+  const filterBounds = categoryFilter.getBoundingClientRect()
+  const itemBounds = selectedItem.getBoundingClientRect()
+  const scrollPadding = Number.parseFloat(
+    window.getComputedStyle(categoryFilter).paddingInlineStart,
+  )
+  const visibleStart = filterBounds.left + (Number.isNaN(scrollPadding) ? 0 : scrollPadding)
+
+  if (itemBounds.left >= visibleStart && itemBounds.right <= filterBounds.right) {
+    return
+  }
+
+  categoryFilter.scrollLeft += itemBounds.left - visibleStart
+}
+
 export function CategoryFilter({
   allLabel = 'Todos',
   ariaLabel = 'Filtrar productos por categoría',
@@ -38,6 +61,7 @@ export function CategoryFilter({
   selectedSlug,
 }: ICategoryFilterProps) {
   const categoryFilterRef = useRef<HTMLDivElement>(null)
+  const selectedItemRef = useRef<HTMLButtonElement>(null)
   const [scrollState, setScrollState] = useState(INITIAL_SCROLL_STATE)
   const totalProductCount = categories.reduce(
     (sum, category) => sum + (productCountByCategory[category.id] ?? 0),
@@ -79,7 +103,7 @@ export function CategoryFilter({
       return
     }
 
-    categoryFilter.scrollLeft = 0
+    revealSelectedCategory(categoryFilter, selectedItemRef.current)
     const animationFrameId = window.requestAnimationFrame(updateScrollState)
     const resizeObserver = new ResizeObserver(updateScrollState)
 
@@ -89,7 +113,7 @@ export function CategoryFilter({
       window.cancelAnimationFrame(animationFrameId)
       resizeObserver.disconnect()
     }
-  }, [categoryCollectionKey, updateScrollState])
+  }, [categoryCollectionKey, selectedSlug, updateScrollState])
 
   const handleCategoryScroll = (direction: 'backward' | 'forward') => {
     const categoryFilter = categoryFilterRef.current
@@ -139,6 +163,7 @@ export function CategoryFilter({
             }`}
             disabled={isDisabled}
             onClick={() => onSelect('all')}
+            ref={selectedSlug === 'all' ? selectedItemRef : null}
             type="button"
           >
             <span className="category-filter__visual">
@@ -165,6 +190,7 @@ export function CategoryFilter({
                 disabled={isDisabled}
                 key={category.id}
                 onClick={() => onSelect(category.slug)}
+                ref={isSelected ? selectedItemRef : null}
                 type="button"
               >
                 <span className="category-filter__visual">
