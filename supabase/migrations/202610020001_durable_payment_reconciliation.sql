@@ -12,15 +12,25 @@ alter table public.inventory_movements
     (
       movement_type in ('order_created', 'order_cancelled', 'payment_re_reserved')
       and order_id is not null
+      and withdrawal_request_id is null
     )
     or (
       movement_type in ('initial_stock', 'manual_adjustment')
       and order_id is null
+      and withdrawal_request_id is null
+    )
+    or (
+      movement_type = 'consumer_withdrawal_return'
+      and order_id is not null
+      and withdrawal_request_id is not null
     )
   ),
   add constraint inventory_movements_direction_consistent check (
     (movement_type in ('order_created', 'payment_re_reserved') and quantity_delta < 0)
-    or (movement_type in ('initial_stock', 'order_cancelled') and quantity_delta > 0)
+    or (
+      movement_type in ('initial_stock', 'order_cancelled', 'consumer_withdrawal_return')
+      and quantity_delta > 0
+    )
     or movement_type = 'manual_adjustment'
   );
 
