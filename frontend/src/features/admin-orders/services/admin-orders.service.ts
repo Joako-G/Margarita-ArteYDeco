@@ -9,6 +9,8 @@ import type {
   IAdminOrderDetail,
   IAdminOrderFilters,
   IAdminOrderList,
+  IAdminPaymentReconciliation,
+  IAdminPaymentReconciliationFilters,
 } from '../types/admin-orders'
 
 async function getOrders(filters: IAdminOrderFilters): Promise<IAdminOrderList> {
@@ -23,6 +25,31 @@ async function getOrder(orderId: string): Promise<IAdminOrderDetail> {
     `/admin/orders/${encodeURIComponent(orderId)}`,
   )
   return response.data.data
+}
+
+async function getPaymentReconciliation(
+  filters: IAdminPaymentReconciliationFilters,
+): Promise<IAdminPaymentReconciliation> {
+  const response = await apiClient.get<IApiResponse<IAdminPaymentReconciliation>>(
+    '/admin/payments/reconciliation',
+    { params: filters },
+  )
+  return response.data.data
+}
+
+async function executePaymentAction(
+  attemptId: string,
+  action: 'review' | 'retry' | 'sync',
+  payload: { decision?: 'acknowledge' | 'retry'; note?: string } = {},
+): Promise<{ auditRecorded: boolean } | null> {
+  return executeWithCsrf(async (csrfToken) => {
+    const response = await apiClient.post<IApiResponse<{ auditRecorded: boolean } | null>>(
+      `/admin/payments/${encodeURIComponent(attemptId)}/${action}`,
+      payload,
+      { headers: { 'X-CSRF-Token': csrfToken } },
+    )
+    return response.data.data
+  }, true, fetchAdminCsrfToken)
 }
 
 async function executeOrderAction(
@@ -63,4 +90,6 @@ export const adminOrdersService = {
   executeOrderAction,
   getOrder,
   getOrders,
+  getPaymentReconciliation,
+  executePaymentAction,
 }

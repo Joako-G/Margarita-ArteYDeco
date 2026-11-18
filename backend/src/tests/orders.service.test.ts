@@ -52,7 +52,9 @@ function createRepository(): IOrderRepository {
       discount: 120,
       items: [{ productName: 'Caja', quantity: 2, subtotal: 1200, unitPrice: 600 }],
       orderNumber: 'MAD-20260802-000001',
-      paymentMethod: 'bank_transfer',
+       paymentMethod: 'bank_transfer',
+        paymentStatus: 'pending',
+        reservationExpiresAt: null,
        status: 'pending',
       subtotal: 1200,
       total: 1080,
@@ -100,6 +102,8 @@ function createConfirmationService(repository: IOrderRepository): IOrderConfirma
         })),
         orderNumber: order.orderNumber,
         paymentMethod: 'transfer',
+         paymentStatus: order.paymentStatus,
+         reservationExpiresAt: null,
         pickup: {
           address: settings.address,
           businessHours: settings.businessHours,
@@ -113,6 +117,7 @@ function createConfirmationService(repository: IOrderRepository): IOrderConfirma
           total: order.total,
         },
         whatsappProofUrl: 'https://wa.me/example',
+        canResumePayment: false,
       }
     }),
   }

@@ -91,6 +91,7 @@ export function AdminOrderFilters({ filters, onApply, onClear }: IAdminOrderFilt
         <option value="all">Todos</option>
         <option value="cash">Efectivo</option>
         <option value="bank_transfer">Transferencia</option>
+        <option value="mercado_pago">Mercado Pago</option>
       </Select>
       <Select label="Estado del pago" {...paymentStatusRegister}>
         <option value="all">Todos</option>

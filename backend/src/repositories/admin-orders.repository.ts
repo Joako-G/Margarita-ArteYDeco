@@ -66,7 +66,35 @@ function mapOrder(row: unknown): IAdminOrderRecord {
     throw new RepositoryError('El pedido administrativo devolvió un formato inválido')
   }
 
+  const latestPaymentAttempt = [...parsed.data.payment_attempts].sort((left, right) =>
+    right.created_at.localeCompare(left.created_at))[0] ?? null
+  const isMercadoPago = parsed.data.payment_method === 'mercado_pago'
+  const approvedAmount = isMercadoPago
+    ? parsed.data.payment_transactions
+      .filter((transaction) => transaction.status === 'approved')
+      .reduce((total, transaction) => total + transaction.amount, 0)
+    : 0
+  const hasPaymentReview = isMercadoPago && parsed.data.payment_transactions.some(
+    (transaction) => transaction.review_required || transaction.status === 'manual_review',
+  )
+  const hasPaymentOverpayment = approvedAmount > parsed.data.total
+  const aggregateApproved = isMercadoPago
+    && !hasPaymentReview
+    && !hasPaymentOverpayment
+    && Math.round(approvedAmount * 100) === Math.round(parsed.data.total * 100)
+  const allocationByProduct = new Map<string, number>()
+  const releasedProducts = new Set<string>()
+  for (const movement of parsed.data.inventory_movements) {
+    if (!['order_created', 'order_cancelled', 'payment_reservation_released', 'payment_re_reserved'].includes(movement.movement_type)) continue
+    allocationByProduct.set(movement.product_id,
+      (allocationByProduct.get(movement.product_id) ?? 0) + movement.quantity_delta)
+    if (movement.quantity_delta > 0) releasedProducts.add(movement.product_id)
+  }
+
   return {
+    inventoryAllocationActive: !isMercadoPago || ![...releasedProducts].some(
+      (productId) => (allocationByProduct.get(productId) ?? 0) >= 0,
+    ),
     contractConcludedAt: parsed.data.contract_concluded_at,
     createdAt: parsed.data.created_at,
     customerFirstName: parsed.data.customer_first_name,
@@ -81,7 +109,20 @@ function mapOrder(row: unknown): IAdminOrderRecord {
     notes: parsed.data.notes,
     orderNumber: parsed.data.order_number,
     paymentMethod: parsed.data.payment_method,
-    paymentStatus: parsed.data.payment_status,
+    paymentAttemptId: isMercadoPago ? latestPaymentAttempt?.id ?? null : null,
+    paymentAttemptStatus: isMercadoPago ? latestPaymentAttempt?.status ?? null : null,
+    paymentProviderId: isMercadoPago ? latestPaymentAttempt?.provider_payment_id ?? null : null,
+    paymentProviderStatus: isMercadoPago ? latestPaymentAttempt?.provider_status ?? null : null,
+    reservationExpiresAt: isMercadoPago ? latestPaymentAttempt?.reservation_expires_at ?? null : null,
+    paymentReconciliationStatus: isMercadoPago
+      ? aggregateApproved ? 'approved' : latestPaymentAttempt?.status ?? null
+      : null,
+    persistedPaymentStatus: parsed.data.payment_status,
+    paymentStatus: aggregateApproved ? 'paid' : parsed.data.payment_status,
+    paymentUpdatedAt: isMercadoPago
+      ? latestPaymentAttempt?.provider_updated_at ?? latestPaymentAttempt?.updated_at ?? null
+      : null,
+    paymentRequiresManualReview: isMercadoPago && latestPaymentAttempt?.status === 'manual_review',
     pickedUpAt: parsed.data.picked_up_at,
     shippingAddress: parsed.data.shipping_address,
     status: parsed.data.status,
@@ -89,6 +130,36 @@ function mapOrder(row: unknown): IAdminOrderRecord {
     total: parsed.data.total,
     updatedAt: parsed.data.updated_at,
   }
+}
+
+async function attachPaymentTransactions(
+  client: ServerSupabaseClient,
+  rows: readonly { payment_attempts: readonly { id: string }[] }[],
+): Promise<readonly unknown[]> {
+  const attemptIds = rows.flatMap((row) => row.payment_attempts.map((attempt) => attempt.id))
+  if (attemptIds.length === 0) return rows
+
+  const { data, error } = await client
+    .from('payment_transactions')
+    .select('amount, payment_attempt_id, review_required, status')
+    .in('payment_attempt_id', attemptIds)
+  if (error !== null) throw new RepositoryError('No fue posible consultar las transacciones de pago')
+
+  const transactionsByAttempt = new Map<string, unknown[]>()
+  for (const transaction of data ?? []) {
+    const current = transactionsByAttempt.get(transaction.payment_attempt_id) ?? []
+    current.push({
+      amount: transaction.amount,
+      review_required: transaction.review_required,
+      status: transaction.status,
+    })
+    transactionsByAttempt.set(transaction.payment_attempt_id, current)
+  }
+
+  return rows.map((row) => ({
+    ...row,
+    payment_transactions: row.payment_attempts.flatMap((attempt) => transactionsByAttempt.get(attempt.id) ?? []),
+  }))
 }
 
 const ADMIN_ORDER_SELECT = `
@@ -112,7 +183,18 @@ const ADMIN_ORDER_SELECT = `
   notes,
   created_at,
   updated_at,
-  order_items(count)
+  order_items(count),
+  inventory_movements(product_id, movement_type, quantity_delta),
+  payment_attempts(
+    id,
+    created_at,
+    provider_payment_id,
+    provider_status,
+     provider_updated_at,
+     reservation_expires_at,
+     status,
+    updated_at
+  )
 `
 
 function quotePostgrestValue(value: string): string {
@@ -174,7 +256,11 @@ export class AdminOrderRepository implements IAdminOrderRepository {
       throw new RepositoryError('El listado de pedidos devolvió un formato inválido')
     }
 
-    return { items: rows.data.map(mapOrder), totalItems: count }
+    const rowsWithTransactions = await attachPaymentTransactions(
+      this.client,
+      rows.data,
+    )
+    return { items: rowsWithTransactions.map(mapOrder), totalItems: count }
   }
 
   public async findById(orderId: string): Promise<IAdminOrderRecord | null> {
@@ -185,7 +271,12 @@ export class AdminOrderRepository implements IAdminOrderRepository {
       .maybeSingle()
 
     if (error !== null) throw new RepositoryError('No fue posible consultar el pedido')
-    return data === null ? null : mapOrder(data)
+    if (data === null) return null
+    const rowsWithTransactions = await attachPaymentTransactions(
+      this.client,
+      [data] as unknown as readonly { payment_attempts: readonly { id: string }[] }[],
+    )
+    return mapOrder(rowsWithTransactions[0])
   }
 
   public async findItems(orderId: string): Promise<readonly IAdminOrderItemRecord[]> {

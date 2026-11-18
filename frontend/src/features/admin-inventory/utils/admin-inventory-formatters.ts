@@ -1,9 +1,5 @@
 import type { AdminInventoryMovementType } from '../types/admin-inventory'
-
-const dateFormatter = new Intl.DateTimeFormat('es-AR', {
-  dateStyle: 'short',
-  timeStyle: 'short',
-})
+import { formatAdminDate } from '../../../shared/utils/format-admin-date.ts'
 
 const MOVEMENT_LABELS: Record<AdminInventoryMovementType, string> = {
   consumer_withdrawal_return: 'Reposición por arrepentimiento',
@@ -11,10 +7,12 @@ const MOVEMENT_LABELS: Record<AdminInventoryMovementType, string> = {
   manual_adjustment: 'Ajuste manual',
   order_cancelled: 'Reposición por cancelación',
   order_created: 'Venta',
+  payment_re_reserved: 'Reserva por aprobación tardía',
+  payment_reservation_released: 'Liberación de reserva para revisión',
 }
 
 export function formatInventoryDate(value: string): string {
-  return dateFormatter.format(new Date(value))
+  return formatAdminDate(value, 'short')
 }
 
 export function formatQuantityDelta(value: number): string {

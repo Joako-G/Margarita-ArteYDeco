@@ -68,6 +68,20 @@ describe('loadEnv', () => {
     expect(loadEnv({ ...BASE_ENV, VERCEL: '1' }).isVercel).toBe(true)
   })
 
+  it('allows the in-process payment worker scheduler only for local development', () => {
+    expect(loadEnv({ ...BASE_ENV, PAYMENT_WORKER_SCHEDULER_ENABLED: 'true' }).paymentWorkerSchedulerEnabled).toBe(true)
+    expect(() => loadEnv({
+      ...BASE_ENV,
+      NODE_ENV: 'production',
+      PAYMENT_WORKER_SCHEDULER_ENABLED: 'true',
+    })).toThrow()
+    expect(() => loadEnv({
+      ...BASE_ENV,
+      PAYMENT_WORKER_SCHEDULER_ENABLED: 'true',
+      VERCEL: '1',
+    })).toThrow()
+  })
+
   it('normalizes the public site URL used by SEO resources', () => {
     const env = loadEnv({
       ...BASE_ENV,

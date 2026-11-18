@@ -37,6 +37,7 @@ export class RecoveryBlockedError extends AppError {
 }
 
 export interface IPublicOrderService {
+  authorizeOrder?(orderNumber: string, sessionToken: string | null): Promise<{ orderId: string }>
   forget(sessionToken: string | null): Promise<void>
   getByNumber(
     orderNumber: string,
@@ -61,6 +62,20 @@ export class PublicOrderService implements IPublicOrderService {
     private readonly limitConfig: IRecoveryLimitConfig,
   ) {}
 
+  public async authorizeOrder(
+    orderNumber: string,
+    sessionToken: string | null,
+  ): Promise<{ orderId: string }> {
+    const session = await this.requireSession(sessionToken)
+    const orderId = await this.orderRepository.findOrderIdByNumber(orderNumber)
+
+    if (orderId === null || await this.confirmationService.get(orderId, session.id) === null) {
+      throw this.orderUnavailableError()
+    }
+
+    return { orderId }
+  }
+
   public async forget(sessionToken: string | null): Promise<void> {
     await this.guestSessionService.revokeByToken(sessionToken)
   }
@@ -72,15 +87,11 @@ export class PublicOrderService implements IPublicOrderService {
     const session = await this.requireSession(sessionToken)
     const orderId = await this.orderRepository.findOrderIdByNumber(orderNumber)
 
-    if (orderId === null) {
-      throw this.orderUnavailableError()
-    }
+    if (orderId === null) throw this.orderUnavailableError()
 
     const confirmation = await this.confirmationService.get(orderId, session.id)
 
-    if (confirmation === null) {
-      throw this.orderUnavailableError()
-    }
+    if (confirmation === null) throw this.orderUnavailableError()
 
     return confirmation
   }

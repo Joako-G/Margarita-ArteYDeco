@@ -22,7 +22,12 @@ import { createAdminProductRouter } from './routes/admin-products.routes.js'
 import { createAdminProfileRouter } from './routes/admin-profile.routes.js'
 import { createAdminSettingsRouter } from './routes/admin-settings.routes.js'
 import { createAdminConsumerWithdrawalRouter } from './routes/admin-consumer-withdrawals.routes.js'
+import { createAdminPaymentRouter } from './routes/admin-payments.routes.js'
 import { createOrderRouter } from './routes/orders.routes.js'
+import { createPaymentCheckoutRouter } from './routes/payment-checkout.routes.js'
+import { createPaymentWebhookRouter } from './routes/payment-webhook.routes.js'
+import { createPaymentReturnRouter } from './routes/payment-return.routes.js'
+import { createPaymentWorkerRouter } from './routes/payment-worker.routes.js'
 import { createPublicRouter } from './routes/public.routes.js'
 
 export function createApp(
@@ -42,6 +47,13 @@ export function createApp(
   app.use(createRequestLoggerMiddleware(logger))
   app.use(createHelmetMiddleware())
   app.use(createCorsMiddleware(env.corsAllowedOrigins))
+  app.use('/api/webhooks/mercado-pago', createPaymentWebhookRouter(dependencies.paymentWebhookController, logger))
+  if (dependencies.paymentReturnController !== undefined) {
+    app.use('/api/payments/return', createPaymentReturnRouter(dependencies.paymentReturnController))
+  }
+  if (dependencies.paymentWorkerController !== undefined) {
+    app.use('/api/internal/payments/worker', createPaymentWorkerRouter(dependencies.paymentWorkerController))
+  }
   app.use(express.json({ limit: '32kb', strict: true }))
   app.use('/api', createHealthRouter())
   app.use('/api/admin/auth', createAdminAuthRouter(dependencies, env))
@@ -50,10 +62,12 @@ export function createApp(
   app.use('/api/admin/customers', createAdminCustomerRouter(dependencies, env))
   app.use('/api/admin/dashboard', createAdminDashboardRouter(dependencies, env))
   app.use('/api/admin/orders', createAdminOrderRouter(dependencies, env))
+  app.use('/api/admin/payments', createAdminPaymentRouter(dependencies, env))
   app.use('/api/admin/products', createAdminProductRouter(dependencies, env))
   app.use('/api/admin/profile', createAdminProfileRouter(dependencies, env))
   app.use('/api/admin/settings', createAdminSettingsRouter(dependencies, env))
   app.use('/api/orders', createOrderRouter(dependencies, env))
+  app.use('/api/checkout/mercado-pago', createPaymentCheckoutRouter(dependencies, env))
   app.use('/api/public', createPublicRouter(dependencies, env))
   app.use(notFoundMiddleware)
   app.use(createErrorMiddleware(logger))

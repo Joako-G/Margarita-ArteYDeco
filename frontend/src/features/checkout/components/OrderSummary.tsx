@@ -64,8 +64,7 @@ export function OrderSummary({
               </p>
               {item.discountPercentage > 0 ? (
                 <small>
-                  <del>{formatPrice(item.price)}</del>{' '}
-                  · {item.discountPercentage}% de descuento
+                  <del>{formatPrice(item.price)}</del> · {item.discountPercentage}% de descuento
                 </small>
               ) : null}
             </div>
@@ -97,7 +96,9 @@ export function OrderSummary({
       <p className="checkout-summary__payment-note">
         {paymentMethod === 'transfer'
           ? 'Aplicamos el descuento por transferencia antes de confirmar.'
-          : 'El pago se realiza en efectivo al retirar.'}
+          : paymentMethod === 'mercado_pago'
+             ? 'Te vamos a dirigir a Mercado Pago para completar el pago de forma segura. Reservamos tus productos durante 24 horas y te mostramos el tiempo restante.'
+            : 'El pago se realiza en efectivo al retirar.'}
       </p>
       <div className="checkout-summary__commercial-disclosure" role="note">
         <strong>Antes de confirmar</strong>

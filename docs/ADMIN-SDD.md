@@ -314,12 +314,32 @@ solicitará además una confirmación explícita sobre el reintegro manual. El �
 indicará que el stock fue restaurado una sola vez; nunca se ofrecerá reapertura ni
 eliminación del pedido.
 
-Cuando se habilite Mercado Pago, el detalle mostrará la reserva inicial de 40
-minutos, el estado conciliado y la última actualización del proveedor. Un pago
-`pending` o `in_process` no habilitará cancelación automática ni restauración de
-stock por el solo vencimiento del contador; ofrecerá sincronización y revisión
-según la matriz calculada por el Backend. La confirmación manual de pago quedará
-deshabilitada para este método.
+Para Mercado Pago, el detalle mostrará el vencimiento original de la reserva,
+independientemente de si el stock sigue reservado. Cuando el último intento esté
+pendiente o requiera revisión y haya vencido esa reserva, ofrecerá `Consultar Pago`
+en el mismo detalle. La consulta se realizará mediante el Backend incluso si aún
+no se registró un identificador de pago del proveedor; no iniciará un nuevo cobro
+ni confirmará el pago por el éxito de la solicitud. El resultado mostrará el
+estado actualizado del pedido, del pago y de la reserva de stock. Las excepciones
+requerirán intervención del administrador y la conciliación conservará su vista
+secundaria de auditoría, sin enlace desde el detalle. La confirmación manual de
+pago permanecerá deshabilitada para este método.
+
+Un pedido de Mercado Pago no permitirá confirmar ni avanzar su preparación o
+entrega hasta que el pago conste como `paid` en el pedido persistido, incluso si
+la suma de transacciones aprobadas alcanza el total y conserva stock reservado.
+El Backend y la base de datos validarán la misma condición; efectivo
+y transferencia conservarán sus transiciones vigentes. Si una aprobación tardía
+recupera el stock, podrá confirmar pedido y pago juntos de forma atómica.
+
+Si falla la consulta al proveedor o el registro de auditoría, el Panel volverá
+a cargar el pedido antes de comunicar el resultado. Un estado de pago actualizado
+no se confundirá con el éxito de la consulta; si tampoco puede actualizarse el
+pedido, el resultado se indicará como incierto y se pedirá recargar el detalle.
+
+Todas las fechas y horas mostradas en Administración se presentarán en
+`America/Argentina/Buenos_Aires`, sin modificar los instantes ISO transmitidos
+por la API ni los valores persistidos en PostgreSQL.
 
 Nunca eliminar pedidos.
 

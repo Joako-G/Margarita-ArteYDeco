@@ -1,19 +1,24 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { SyntheticEvent } from 'react'
 import { Menu } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 
 import logoHeaderImage from '@/assets/images/logo-header-optimized.webp'
 import { CartButton } from '@/features/cart'
+import { buildCatalogMenu, isCatalogMenuGroup, usePublicCategories } from '@/features/catalog'
+import type { CatalogMenuNodeType } from '@/features/catalog'
 import { usePublicSettings } from '@/features/settings'
 import { RecentOrderLink } from '@/features/public-orders/components/RecentOrderLink'
 import { Drawer, IconButton } from '@/shared/components'
+import { MobileNavigationGroup } from './MobileNavigationGroup'
 
 const NAVIGATION_ITEMS = [
   { href: '/#categorias', label: 'Categorías' },
   { href: '/productos', label: 'Productos' },
   { href: '/#contacto', label: 'Contacto' },
 ]
+
+const PRODUCTS_GROUP_ID = 'mobile-menu-products'
 
 function scrollToSection(hash: string) {
   document.getElementById(hash.slice(1))?.scrollIntoView({ block: 'start' })
@@ -25,12 +30,26 @@ function handleLogoError(event: SyntheticEvent<HTMLImageElement>) {
   }
 }
 
+function getCatalogAreaParam(search: string) {
+  return new URLSearchParams(search).get('area')
+}
+
 export function SiteHeader() {
   const location = useLocation()
   const { data: settings } = usePublicSettings()
+  const { data: categories } = usePublicCategories()
   const logoSource = settings?.logoUrl ?? logoHeaderImage
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [expandedGroupIds, setExpandedGroupIds] = useState<string[]>([])
   const [isScrolled, setIsScrolled] = useState(false)
+  const mobileNavigationItems = useMemo<CatalogMenuNodeType[]>(
+    () => [
+      { href: '/#categorias', label: 'Categorías' },
+      { id: PRODUCTS_GROUP_ID, items: buildCatalogMenu(categories ?? []), label: 'Productos' },
+      { href: '/#contacto', label: 'Contacto' },
+    ],
+    [categories],
+  )
 
   useEffect(() => {
     let animationFrameId = 0
@@ -61,8 +80,13 @@ export function SiteHeader() {
     return () => window.cancelAnimationFrame(animationFrame)
   }, [location.hash, location.pathname])
 
-  function handleBrandNavigation() {
+  function closeMenu() {
     setIsMenuOpen(false)
+    setExpandedGroupIds([])
+  }
+
+  function handleBrandNavigation() {
+    closeMenu()
 
     if (location.pathname !== '/') return
 
@@ -72,13 +96,21 @@ export function SiteHeader() {
   }
 
   function handleSectionNavigation(href: string) {
-    setIsMenuOpen(false)
+    closeMenu()
 
     if (location.pathname !== '/' || !href.startsWith('/#')) return
 
     window.requestAnimationFrame(() => {
       scrollToSection(href.slice(1))
     })
+  }
+
+  function handleGroupToggle(groupId: string) {
+    setExpandedGroupIds((currentIds) =>
+      currentIds.includes(groupId)
+        ? currentIds.filter((expandedId) => expandedId !== groupId)
+        : [...currentIds, groupId],
+    )
   }
 
   function isNavigationItemActive(href: string) {
@@ -91,6 +123,19 @@ export function SiteHeader() {
     }
 
     return location.pathname === '/' && `${location.pathname}${location.hash}` === href
+  }
+
+  function isMobileLinkActive(href: string) {
+    if (href.startsWith('/#')) {
+      return isNavigationItemActive(href)
+    }
+
+    const [linkPathname = '', linkSearch = ''] = href.split('?')
+
+    if (location.pathname !== linkPathname) return false
+    if (linkPathname !== '/productos') return true
+
+    return getCatalogAreaParam(location.search) === getCatalogAreaParam(linkSearch)
   }
 
   return (
@@ -144,24 +189,32 @@ export function SiteHeader() {
         </div>
       </div>
 
-      <Drawer
-        className="landing-mobile-menu"
-        isOpen={isMenuOpen}
-        onClose={() => setIsMenuOpen(false)}
-        title="Menú"
-      >
+      <Drawer className="landing-mobile-menu" isOpen={isMenuOpen} onClose={closeMenu} title="Menú">
         <nav aria-label="Navegación móvil" className="landing-mobile-menu__nav">
-          {NAVIGATION_ITEMS.map((item) => (
-            <Link
-              aria-current={isNavigationItemActive(item.href) ? 'page' : undefined}
-              key={item.href}
-              onClick={() => handleSectionNavigation(item.href)}
-              to={item.href}
-            >
-              {item.label}
-            </Link>
-          ))}
-          <RecentOrderLink onNavigate={() => setIsMenuOpen(false)} />
+          {mobileNavigationItems.map((item) =>
+            isCatalogMenuGroup(item) ? (
+              <MobileNavigationGroup
+                expandedGroupIds={expandedGroupIds}
+                id={item.id}
+                isLinkActive={isMobileLinkActive}
+                items={item.items}
+                key={item.id}
+                label={item.label}
+                onNavigate={handleSectionNavigation}
+                onToggle={handleGroupToggle}
+              />
+            ) : (
+              <Link
+                aria-current={isMobileLinkActive(item.href) ? 'page' : undefined}
+                key={item.href}
+                onClick={() => handleSectionNavigation(item.href)}
+                to={item.href}
+              >
+                {item.label}
+              </Link>
+            ),
+          )}
+          <RecentOrderLink onNavigate={closeMenu} />
         </nav>
       </Drawer>
     </header>

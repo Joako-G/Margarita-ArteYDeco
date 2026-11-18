@@ -15,7 +15,9 @@ export const DEFAULT_ADMIN_ORDER_FILTERS: IAdminOrderFilters = {
   status: 'all',
 }
 
-const METHODS: readonly ('all' | AdminPaymentMethodType)[] = ['all', 'bank_transfer', 'cash']
+const METHODS: readonly ('all' | AdminPaymentMethodType)[] = [
+  'all', 'bank_transfer', 'cash', 'mercado_pago',
+]
 const PAYMENT_STATUSES: readonly ('all' | AdminPaymentStatusType)[] = [
   'all', 'paid', 'pending', 'rejected',
 ]

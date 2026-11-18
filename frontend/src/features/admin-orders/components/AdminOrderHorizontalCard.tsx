@@ -9,8 +9,12 @@ import { ORDER_STATUS_DETAILS } from '@/shared/utils/order-status'
 import type { IAdminOrderListItem } from '../types/admin-orders'
 import {
   formatAdminOrderDate,
+  isRefundPending,
   PAYMENT_METHOD_LABELS,
+  PAYMENT_RECONCILIATION_DETAILS,
   PAYMENT_STATUS_DETAILS,
+  REFUND_PENDING_LABEL,
+  formatPaymentUpdatedAt,
 } from '../utils/admin-order-formatters'
 
 interface IAdminOrderHorizontalCardProps {
@@ -20,6 +24,9 @@ interface IAdminOrderHorizontalCardProps {
 export function AdminOrderHorizontalCard({ order }: IAdminOrderHorizontalCardProps) {
   const status = ORDER_STATUS_DETAILS[order.status]
   const payment = PAYMENT_STATUS_DETAILS[order.paymentStatus]
+  const reconciliation = order.paymentReconciliationStatus
+    ? PAYMENT_RECONCILIATION_DETAILS[order.paymentReconciliationStatus]
+    : null
 
   return (
     <article className="admin-order-horizontal-card">
@@ -29,6 +36,10 @@ export function AdminOrderHorizontalCard({ order }: IAdminOrderHorizontalCardPro
           <span className="admin-order-horizontal-card__payment-method">
             {PAYMENT_METHOD_LABELS[order.paymentMethod]} · {payment.label}
           </span>
+          {reconciliation ? <span className="admin-order-horizontal-card__payment-method">{reconciliation.label}</span> : null}
+          {order.paymentRequiresManualReview ? <span className="admin-order-horizontal-card__payment-method">Revisión manual requerida</span> : null}
+          {isRefundPending(order) ? <span className="admin-order-horizontal-card__payment-method">{REFUND_PENDING_LABEL}</span> : null}
+          {order.paymentUpdatedAt ? <time className="admin-order-horizontal-card__payment-method" dateTime={order.paymentUpdatedAt}>{formatPaymentUpdatedAt(order.paymentUpdatedAt)}</time> : null}
           <h3 className="admin-order-horizontal-card__number">{order.orderNumber}</h3>
           <span className="admin-order-horizontal-card__products">
             {order.itemCount} {order.itemCount === 1 ? 'producto' : 'productos'}

@@ -16,6 +16,7 @@ import { PAYMENT_METHOD_LABELS, PAYMENT_STATUS_DETAILS } from '@/features/admin-
 import { Badge, Button, EmptyState, Modal, Pagination, Skeleton } from '@/shared/components'
 import { getApiErrorCode, getApiErrorStatus } from '@/shared/services/api/errors'
 import { formatPrice } from '@/shared/utils/format-price'
+import { formatAdminDate } from '@/shared/utils/format-admin-date'
 import { ORDER_STATUS_DETAILS } from '@/shared/utils/order-status'
 
 import '@/features/admin-customers/admin-customer-detail.css'
@@ -23,13 +24,6 @@ import '@/features/admin-customers/admin-customer-detail.css'
 function parseOrdersPage(value: string | null): number {
   if (!value || !/^\d+$/.test(value)) return 1
   return Math.min(Math.max(Number(value), 1), 10_000)
-}
-
-function formatDate(value: string): string {
-  return new Intl.DateTimeFormat('es-AR', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(value))
 }
 
 function AdminCustomerDetailSkeleton() {
@@ -159,7 +153,7 @@ function AdminCustomerContent({ customer, onOrdersPageChange }: IAdminCustomerCo
                         <td data-label="Pedido">
                           <span className="admin-customer-orders__stacked">
                             <strong>{order.orderNumber}</strong>
-                            <time dateTime={order.createdAt}>{formatDate(order.createdAt)}</time>
+                             <time dateTime={order.createdAt}>{formatAdminDate(order.createdAt)}</time>
                           </span>
                         </td>
                         <td data-label="Estado"><Badge variant={status.variant}>{status.label}</Badge></td>

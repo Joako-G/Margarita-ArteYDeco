@@ -24,6 +24,8 @@ const confirmation = {
   items: [{ lineTotal: 1200, name: 'Caja decorada', quantity: 2, unitPrice: 600 }],
   orderNumber: 'MAD-20260802-000001',
   paymentMethod: 'cash' as const,
+  paymentStatus: 'pending' as const,
+  reservationExpiresAt: null,
   pickup: {
     address: 'Calle 123',
     businessHours: 'Lunes a viernes',
@@ -32,6 +34,7 @@ const confirmation = {
   status: 'pending' as const,
   totals: { discount: 0, discountPercentage: 0, subtotal: 1200, total: 1200 },
   whatsappProofUrl: 'https://wa.me/5491100000000?text=pedido',
+  canResumePayment: false,
 }
 
 const createOrder = vi.fn().mockResolvedValue({

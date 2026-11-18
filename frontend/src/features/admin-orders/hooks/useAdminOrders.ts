@@ -3,7 +3,7 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { getApiErrorStatus } from '@/shared/services/api/errors'
 
 import { adminOrdersService } from '../services/admin-orders.service'
-import type { IAdminOrderFilters } from '../types/admin-orders'
+import type { IAdminOrderFilters, IAdminPaymentReconciliationFilters } from '../types/admin-orders'
 
 export const ADMIN_ORDERS_QUERY_KEY = ['admin', 'orders'] as const
 
@@ -29,6 +29,17 @@ export function useAdminOrder(orderId: string | undefined) {
       const status = getApiErrorStatus(error)
       return failureCount < 1 && status !== 400 && status !== 401 && status !== 403 && status !== 404
     },
+    staleTime: 10_000,
+  })
+}
+
+export const ADMIN_PAYMENT_RECONCILIATION_QUERY_KEY = ['admin', 'payment-reconciliation'] as const
+
+export function useAdminPaymentReconciliation(filters: IAdminPaymentReconciliationFilters) {
+  return useQuery({
+    queryFn: () => adminOrdersService.getPaymentReconciliation(filters),
+    queryKey: [...ADMIN_PAYMENT_RECONCILIATION_QUERY_KEY, filters],
+    retry: 1,
     staleTime: 10_000,
   })
 }

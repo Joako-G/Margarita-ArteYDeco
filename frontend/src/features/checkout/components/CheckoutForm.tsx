@@ -10,11 +10,18 @@ import { normalizePhone } from '../utils/checkout-links'
 interface ICheckoutFormProps {
   deliveryMethod: ICheckoutFormValues['deliveryMethod']
   errors: FieldErrors<ICheckoutFormValues>
+  isMercadoPagoEnabled: boolean
   register: UseFormRegister<ICheckoutFormValues>
   settings: IPublicSettings
 }
 
-export function CheckoutForm({ deliveryMethod, errors, register, settings }: ICheckoutFormProps) {
+export function CheckoutForm({
+  deliveryMethod,
+  errors,
+  isMercadoPagoEnabled,
+  register,
+  settings,
+}: ICheckoutFormProps) {
   return (
     <div className="checkout-form">
       <section aria-labelledby="contact-title" className="checkout-form__section">
@@ -110,44 +117,53 @@ export function CheckoutForm({ deliveryMethod, errors, register, settings }: ICh
         <fieldset className="checkout-form__payment-fieldset">
           <legend className="checkout-form__legend">Método de pago</legend>
           <div className="checkout-form__payment-options">
-            {deliveryMethod === 'pickup' ? <div className="checkout-form__payment-option">
-              <Radio label="Efectivo" value="cash" {...register('paymentMethod')} />
-              <Banknote aria-hidden="true" size={24} strokeWidth={2} />
-              <p>Pagás cuando retirás el pedido en el local.</p>
-            </div> : null}
+            {deliveryMethod === 'pickup' ? (
+              <div className="checkout-form__payment-option">
+                <Radio label="Efectivo" value="cash" {...register('paymentMethod')} />
+                <Banknote aria-hidden="true" size={24} strokeWidth={2} />
+                <p>Pagás cuando retirás el pedido en el local.</p>
+              </div>
+            ) : null}
             <div className="checkout-form__payment-option">
               <Radio label="Transferencia" value="transfer" {...register('paymentMethod')} />
               <WalletCards aria-hidden="true" size={24} strokeWidth={2} />
               <p>Obtenés un {settings.transferDiscount}% de descuento.</p>
             </div>
+            {isMercadoPagoEnabled ? (
+              <div className="checkout-form__payment-option">
+                <Radio label="Mercado Pago" value="mercado_pago" {...register('paymentMethod')} />
+                <WalletCards aria-hidden="true" size={24} strokeWidth={2} />
+                <p>Podés pagar con tarjeta de débito o con dinero disponible en Mercado Pago.</p>
+              </div>
+            ) : null}
           </div>
         </fieldset>
       </section>
 
       {deliveryMethod === 'pickup' ? <section aria-labelledby="pickup-title" className="checkout-form__pickup">
-        <div className="checkout-form__pickup-heading">
-          <MapPin aria-hidden="true" size={24} strokeWidth={2} />
-          <Typography as="h2" id="pickup-title" variant="h3">
-            Retiro en el local
-          </Typography>
-        </div>
-        <p>Te avisaremos cuando tu pedido esté listo para retirar.</p>
-        <dl>
-          <div>
-            <dt>
-              <MapPin aria-hidden="true" size={18} strokeWidth={2} />
-              Dirección
-            </dt>
-            <dd>{settings.address}</dd>
+          <div className="checkout-form__pickup-heading">
+            <MapPin aria-hidden="true" size={24} strokeWidth={2} />
+            <Typography as="h2" id="pickup-title" variant="h3">
+              Retiro en el local
+            </Typography>
           </div>
-          <div>
-            <dt>
-              <Clock3 aria-hidden="true" size={18} strokeWidth={2} />
-              Horarios
-            </dt>
-            <dd>{settings.businessHours}</dd>
-          </div>
-        </dl>
+          <p>Te avisaremos cuando tu pedido esté listo para retirar.</p>
+          <dl>
+            <div>
+              <dt>
+                <MapPin aria-hidden="true" size={18} strokeWidth={2} />
+                Dirección
+              </dt>
+              <dd>{settings.address}</dd>
+            </div>
+            <div>
+              <dt>
+                <Clock3 aria-hidden="true" size={18} strokeWidth={2} />
+                Horarios
+              </dt>
+              <dd>{settings.businessHours}</dd>
+            </div>
+          </dl>
       </section> : null}
     </div>
   )

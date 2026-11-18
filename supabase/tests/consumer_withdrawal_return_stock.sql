@@ -1,5 +1,39 @@
 begin;
 
+-- Own fixtures: the suite must not depend on pre-existing catalog or profile data.
+insert into public.categories (id, name, slug, image_path, catalog_area)
+values (
+  '12000000-0000-4000-8000-000000000001',
+  'Return Stock Test Category',
+  'return-stock-test-category',
+  'test/return-stock.webp',
+  'art'
+);
+
+insert into public.products (id, category_id, name, slug, price, stock_quantity, image_path)
+values (
+  '13000000-0000-4000-8000-000000000001',
+  '12000000-0000-4000-8000-000000000001',
+  'Return Stock Test Product',
+  'return-stock-test-product',
+  100,
+  5,
+  'test/return-stock-product.webp'
+);
+
+do $$
+declare
+  v_admin uuid := '14000000-0000-4000-8000-000000000001';
+begin
+  if not exists (select 1 from public.profiles where role = 'administrator' and is_active) then
+    insert into auth.users (id, email) values (v_admin, 'return-stock-admin@example.test');
+    insert into public.profiles (id, email, full_name)
+    values (v_admin, 'return-stock-admin@example.test', 'Return Stock Test Administrator');
+    update public.profiles set role = 'administrator', is_active = true where id = v_admin;
+  end if;
+end;
+$$;
+
 insert into public.customers (
   id, first_name, last_name, phone, phone_normalized
 ) values (
@@ -33,9 +67,7 @@ select
   'shipping',
   'Calle de prueba 1234, Córdoba'
 from public.products as product
-where product.deleted_at is null
-order by product.id
-limit 1;
+where product.id = '13000000-0000-4000-8000-000000000001';
 
 update public.orders
 set payment_status = 'paid'
@@ -65,9 +97,7 @@ select
   product.price,
   product.price * 2
 from public.products as product
-where product.deleted_at is null
-order by product.id
-limit 1;
+where product.id = '13000000-0000-4000-8000-000000000001';
 
 insert into public.consumer_withdrawal_requests (
   id, public_code_hash, public_code_suffix, public_code_key_version,

@@ -21,7 +21,13 @@ const ORDER: IAdminOrderRecord = {
   notes: 'Retira por la tarde',
   orderNumber: 'MAD-20260803-000001',
   paymentMethod: 'bank_transfer',
+  paymentProviderId: null,
+  paymentProviderStatus: null,
+  paymentReconciliationStatus: null,
+  persistedPaymentStatus: 'pending',
   paymentStatus: 'pending',
+  paymentUpdatedAt: null,
+  paymentRequiresManualReview: false,
   pickedUpAt: null,
   status: 'pending',
   shippingAddress: null,
@@ -71,6 +77,120 @@ function createSettingsRepository(): ISettingsRepository {
 const logger = pino({ enabled: false })
 
 describe('AdminOrderService', () => {
+  it.each(['pending', 'confirmed', 'preparing', 'ready'] as const)(
+    'does not offer or execute MP fulfillment without paid status in %s', async (status) => {
+      const order: IAdminOrderRecord = {
+        ...ORDER,
+        inventoryAllocationActive: true,
+        paymentMethod: 'mercado_pago',
+        paymentStatus: 'pending',
+        status,
+      }
+      const repository = createRepository({ findById: vi.fn().mockResolvedValue(order) })
+      const service = new AdminOrderService(repository, createSettingsRepository(), logger)
+      const detail = await service.getById(order.id)
+      expect(detail.availableActions).toEqual([])
+      const action = status === 'pending' ? 'confirmOrder'
+        : status === 'confirmed' ? 'startPreparing'
+          : status === 'preparing' ? 'markReady' : 'markPickedUp'
+      await expect(service.executeAction(order.id, {
+        action, expectedUpdatedAt: order.updatedAt,
+      }, ACTOR_ID)).rejects.toMatchObject({ code: 'ORDER_ACTION_NOT_ALLOWED' })
+      expect(repository.transition).not.toHaveBeenCalled()
+    },
+  )
+
+  it.each(['cash', 'bank_transfer'] as const)('preserves unpaid %s order confirmation', async (paymentMethod) => {
+    const order: IAdminOrderRecord = { ...ORDER, paymentMethod }
+    const service = new AdminOrderService(createRepository({ findById: vi.fn().mockResolvedValue(order) }), createSettingsRepository(), logger)
+    expect((await service.getById(order.id)).availableActions).toContain('confirmOrder')
+  })
+
+  it('rejects a projected approved aggregate until the persisted MP payment is paid', async () => {
+    const order: IAdminOrderRecord = {
+      ...ORDER,
+      inventoryAllocationActive: true,
+      paymentMethod: 'mercado_pago',
+      paymentReconciliationStatus: 'approved',
+      paymentStatus: 'paid',
+      persistedPaymentStatus: 'pending',
+    }
+    const repository = createRepository({ findById: vi.fn().mockResolvedValue(order) })
+    const service = new AdminOrderService(repository, createSettingsRepository(), logger)
+
+    expect((await service.getById(order.id)).availableActions).not.toContain('confirmOrder')
+    await expect(service.executeAction(order.id, {
+      action: 'confirmOrder', expectedUpdatedAt: order.updatedAt,
+    }, ACTOR_ID)).rejects.toMatchObject({ code: 'ORDER_ACTION_NOT_ALLOWED' })
+    expect(repository.transition).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    ['expired unresolved without provider ID', '2026-09-25T10:40:00.000Z', 'manual_review', 'pending', true],
+    ['active reservation', '2099-09-25T10:40:00.000Z', 'pending', 'pending', false],
+    ['resolved payment', '2026-09-25T10:40:00.000Z', 'approved', 'paid', false],
+  ] as const)('gates consultation for %s while preserving the original instant', async (_name, expiresAt, attemptStatus, paymentStatus, expected) => {
+    const order: IAdminOrderRecord = {
+      ...ORDER,
+      inventoryAllocationActive: false,
+      paymentAttemptId: 'b2c2e6a7-3f1d-4f6f-9a0e-9fbc7d1d9b4b',
+      paymentAttemptStatus: attemptStatus,
+      paymentMethod: 'mercado_pago',
+      paymentStatus,
+      reservationExpiresAt: expiresAt,
+    }
+    const service = new AdminOrderService(createRepository({ findById: vi.fn().mockResolvedValue(order) }), createSettingsRepository(), logger)
+    const detail = await service.getById(order.id)
+    expect(detail.canConsultPayment).toBe(expected)
+    expect(detail.reservationExpiresAt).toBe(expiresAt)
+    expect(detail.paymentAttemptId).toBe(order.paymentAttemptId)
+    expect(detail.inventoryAllocationActive).toBe(false)
+  })
+
+  it.each(['pending', 'confirmed', 'preparing', 'ready'] as const)(
+    'hides and rejects fulfillment for a released paid MP allocation in %s', async (status) => {
+      const order = { ...ORDER, status, paymentMethod: 'mercado_pago' as const,
+        paymentStatus: 'paid' as const, persistedPaymentStatus: 'paid' as const, inventoryAllocationActive: false }
+      const repository = createRepository({ findById: vi.fn().mockResolvedValue(order) })
+      const service = new AdminOrderService(repository, createSettingsRepository(), logger)
+      const result = await service.getById(order.id)
+      expect(result.availableActions).toEqual([])
+      expect(result.canCancel).toBe(true)
+      expect(result.whatsappPhone).toBeTruthy()
+      await expect(service.executeAction(order.id, {
+        action: 'confirmOrder', expectedUpdatedAt: order.updatedAt,
+      }, ACTOR_ID)).rejects.toMatchObject({ code: 'ORDER_ACTION_NOT_ALLOWED' })
+      expect(repository.transition).not.toHaveBeenCalled()
+    },
+  )
+
+  it.each(['pending', 'confirmed', 'preparing', 'ready'] as const)(
+    'hides and rejects fulfillment for an expired unresolved MP payment in %s', async (status) => {
+      const order = { ...ORDER, status, paymentMethod: 'mercado_pago' as const,
+        paymentStatus: 'pending' as const, persistedPaymentStatus: 'pending' as const,
+        paymentAttemptId: 'f6a1c2d3-1b2c-4d5e-8f90-a1b2c3d4e5f6', paymentAttemptStatus: 'manual_review' as const,
+        paymentRequiresManualReview: true, inventoryAllocationActive: false }
+      const repository = createRepository({ findById: vi.fn().mockResolvedValue(order) })
+      const service = new AdminOrderService(repository, createSettingsRepository(), logger)
+      expect((await service.getById(order.id)).availableActions).toEqual([])
+      for (const action of ['confirmOrder', 'confirmPayment', 'startPreparing', 'markReady', 'markPickedUp', 'markDelivered'] as const) {
+        await expect(service.executeAction(order.id, {
+          action, expectedUpdatedAt: order.updatedAt,
+        }, ACTOR_ID)).rejects.toMatchObject({ code: 'ORDER_ACTION_NOT_ALLOWED' })
+      }
+      expect(repository.transition).not.toHaveBeenCalled()
+    },
+  )
+
+  it.each(['cash', 'bank_transfer', 'mercado_pago'] as const)(
+    'preserves confirmation with held inventory for %s', async (paymentMethod) => {
+      const order = { ...ORDER, paymentMethod, paymentStatus: 'paid' as const,
+        persistedPaymentStatus: 'paid' as const, inventoryAllocationActive: true }
+      const repository = createRepository({ findById: vi.fn().mockResolvedValue(order) })
+      const service = new AdminOrderService(repository, createSettingsRepository(), logger)
+      expect((await service.getById(order.id)).availableActions).toContain('confirmOrder')
+    },
+  )
   it('returns a paginated list without exposing normalized phone snapshots', async () => {
     const repository = createRepository({
       findPage: vi.fn().mockResolvedValue({ items: [ORDER], totalItems: 12 }),
@@ -89,6 +209,52 @@ describe('AdminOrderService', () => {
     expect(result.pagination).toMatchObject({ totalItems: 12, totalPages: 2 })
     expect(result.items[0]).toMatchObject({ orderNumber: ORDER.orderNumber, itemCount: 2 })
     expect(JSON.stringify(result)).not.toContain('customerPhoneNormalized')
+  })
+
+  it('returns payment reconciliation details independently from order status', async () => {
+    const order = {
+      ...ORDER,
+      paymentMethod: 'mercado_pago' as const,
+      paymentProviderId: '123456789',
+      paymentProviderStatus: 'approved',
+      paymentReconciliationStatus: 'approved' as const,
+      paymentStatus: 'paid' as const,
+      paymentUpdatedAt: '2026-08-03T12:05:00.000Z',
+      paymentRequiresManualReview: false,
+    }
+    const repository = createRepository({ findPage: vi.fn().mockResolvedValue({ items: [order], totalItems: 1 }) })
+    const service = new AdminOrderService(repository, createSettingsRepository(), logger)
+
+    const result = await service.list({
+      page: 1,
+      pageSize: 10,
+      paymentMethod: 'all',
+      paymentStatus: 'all',
+      sort: 'newest',
+      status: 'all',
+    })
+
+    expect(result.items[0]).toMatchObject({
+      paymentProviderId: '123456789',
+      paymentReconciliationStatus: 'approved',
+      paymentStatus: 'paid',
+      paymentUpdatedAt: order.paymentUpdatedAt,
+    })
+    expect(result.items[0]?.status).toBe('pending')
+  })
+
+  it('does not expose manual payment confirmation for Mercado Pago', async () => {
+    const order = {
+      ...ORDER,
+      paymentMethod: 'mercado_pago' as const,
+      paymentReconciliationStatus: 'pending' as const,
+    }
+    const repository = createRepository({ findById: vi.fn().mockResolvedValue(order) })
+    const service = new AdminOrderService(repository, createSettingsRepository(), logger)
+
+    const result = await service.getById(order.id)
+
+    expect(result.availableActions).not.toContain('confirmPayment')
   })
 
   it('exposes the administrative dates used to review a withdrawal request', async () => {

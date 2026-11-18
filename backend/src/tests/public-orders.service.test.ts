@@ -33,6 +33,7 @@ const confirmation: IPublicOrderConfirmationDto = {
   createdAt: '2026-08-02T15:00:00.000Z',
   delivery: { method: 'pickup', shippingAddress: null },
   items: [{
+    imageUrl: null,
     listUnitPrice: 750,
     lineTotal: 600,
     name: 'Caja decorada',
@@ -42,6 +43,8 @@ const confirmation: IPublicOrderConfirmationDto = {
   }],
   orderNumber: ORDER_NUMBER,
   paymentMethod: 'cash',
+  paymentStatus: 'pending',
+  reservationExpiresAt: null,
   pickup: {
     address: 'Calle 123',
     businessHours: 'Lunes a viernes',
@@ -50,6 +53,7 @@ const confirmation: IPublicOrderConfirmationDto = {
   status: 'pending',
   totals: { discount: 0, discountPercentage: 0, subtotal: 600, total: 600 },
   whatsappProofUrl: 'https://wa.me/5491100000000?text=pedido',
+  canResumePayment: false,
 }
 
 function createOrderRepository(): IOrderRepository {

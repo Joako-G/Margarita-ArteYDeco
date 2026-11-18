@@ -17,6 +17,7 @@ import {
   AdminNavigation,
 } from '@/features/admin-auth/components/AdminNavigation'
 import { useAdminLogout, useAdminSession } from '@/features/admin-auth'
+import { AdminNewOrderNotifications } from '@/features/admin-orders/components/AdminNewOrderNotifications'
 import { Drawer, IconButton } from '@/shared/components'
 
 import type { AdminMobilePanelType } from '@/features/admin-auth/components/AdminMobileNavigation'
@@ -76,11 +77,14 @@ export function AdminLayout() {
   )
 
   const headerActions = (
-    <AdminAccountMenu
-      isLoggingOut={logout.isPending}
-      onLogout={() => void handleLogout()}
-      profile={session.data?.profile}
-    />
+    <>
+      <AdminNewOrderNotifications />
+      <AdminAccountMenu
+        isLoggingOut={logout.isPending}
+        onLogout={() => void handleLogout()}
+        profile={session.data?.profile}
+      />
+    </>
   )
 
   return (

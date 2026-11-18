@@ -1,5 +1,8 @@
-export type PaymentMethodType = 'bank_transfer' | 'cash'
-export type PublicPaymentMethodType = 'cash' | 'transfer'
+export type PaymentMethodType = 'bank_transfer' | 'cash' | 'mercado_pago'
+export type OrderCreationPaymentMethodType = 'bank_transfer' | 'cash'
+export type PublicPaymentMethodType = 'cash' | 'transfer' | 'mercado_pago'
+export type PaymentStatusType = 'paid' | 'pending' | 'rejected'
+export type PublicPaymentStatusType = PaymentStatusType | 'in_process' | 'approved' | 'expired' | 'manual_review'
 export type DeliveryMethodType = 'pickup' | 'shipping'
 
 export interface ICreateOrderInput {
@@ -17,7 +20,7 @@ export interface ICreateOrderInput {
   }[]
   idempotencyKey: string
   requestFingerprint: string
-  paymentMethod: PaymentMethodType
+  paymentMethod: OrderCreationPaymentMethodType
   shippingAddress: string | null
 }
 
@@ -52,6 +55,7 @@ export interface IOrderConfirmationRow {
   discount: number
   items: readonly {
     listUnitPrice: number
+    imagePath?: string | null
     productName: string
     productDiscountPercentage: number
     quantity: number
@@ -60,6 +64,7 @@ export interface IOrderConfirmationRow {
   }[]
   orderNumber: string
   paymentMethod: PaymentMethodType
+  paymentStatus: PaymentStatusType
   shippingAddress: string | null
   status: 'cancelled' | 'confirmed' | 'delivered' | 'pending' | 'picked_up' | 'preparing' | 'ready'
   subtotal: number
@@ -89,6 +94,7 @@ export interface IPublicOrderConfirmationDto {
     shippingAddress: string | null
   }
   items: readonly {
+    imageUrl: string | null
     listUnitPrice: number
     lineTotal: number
     name: string
@@ -98,6 +104,8 @@ export interface IPublicOrderConfirmationDto {
   }[]
   orderNumber: string
   paymentMethod: PublicPaymentMethodType
+  paymentStatus: PublicPaymentStatusType
+  reservationExpiresAt: string | null
   pickup: {
     address: string
     businessHours: string
@@ -110,5 +118,6 @@ export interface IPublicOrderConfirmationDto {
     subtotal: number
     total: number
   }
+  canResumePayment: boolean
   whatsappProofUrl: string
 }

@@ -5,6 +5,13 @@ import type { RequestHandler } from 'express'
 import type { Logger } from 'pino'
 import { pinoHttp } from 'pino-http'
 
+export function safeRequestUrl(url: string | undefined): string | undefined {
+  if (['/api/webhooks/mercado-pago', '/api/webhooks/mercado-pago/'].includes(url?.split('?')[0] ?? '')) {
+    return '/api/webhooks/mercado-pago'
+  }
+  return url
+}
+
 export function createRequestLoggerMiddleware(logger: Logger): RequestHandler {
   return pinoHttp<IncomingMessage, ServerResponse>({
     genReqId: (_request, response) => {
@@ -18,7 +25,7 @@ export function createRequestLoggerMiddleware(logger: Logger): RequestHandler {
         id: request.id,
         method: request.method,
         remoteAddress: request.socket.remoteAddress,
-        url: request.url,
+        url: safeRequestUrl(request.url),
       }),
       res: (response: ServerResponse) => ({
         statusCode: response.statusCode,

@@ -1,21 +1,19 @@
 import type {
   AdminOrderActionType,
   AdminPaymentMethodType,
+  AdminPaymentReconciliationStatusType,
   AdminPaymentStatusType,
   IAdminOrderDetail,
+  IAdminOrderListItem,
 } from '../types/admin-orders'
 
 import { buildWhatsAppUrl } from '../../../shared/utils/whatsapp.ts'
-
-const dateTimeFormatter = new Intl.DateTimeFormat('es-AR', {
-  dateStyle: 'medium',
-  timeStyle: 'short',
-  timeZone: 'America/Argentina/Buenos_Aires',
-})
+import { formatAdminDate } from '../../../shared/utils/format-admin-date.ts'
 
 export const PAYMENT_METHOD_LABELS: Record<AdminPaymentMethodType, string> = {
   bank_transfer: 'Transferencia',
   cash: 'Efectivo',
+  mercado_pago: 'Mercado Pago',
 }
 
 export const PAYMENT_STATUS_DETAILS: Record<
@@ -25,6 +23,40 @@ export const PAYMENT_STATUS_DETAILS: Record<
   paid: { label: 'Pago confirmado', variant: 'success' },
   pending: { label: 'Pago pendiente', variant: 'warning' },
   rejected: { label: 'Pago rechazado', variant: 'error' },
+}
+
+export const PAYMENT_RECONCILIATION_DETAILS: Record<
+  AdminPaymentReconciliationStatusType,
+  { label: string; variant: 'error' | 'neutral' | 'success' | 'warning' }
+> = {
+  approved: { label: 'Conciliación aprobada', variant: 'success' },
+  cancelled: { label: 'Intento cancelado', variant: 'neutral' },
+  dead_letter: { label: 'Revisión requerida', variant: 'error' },
+  expired: { label: 'Reserva vencida', variant: 'warning' },
+  manual_review: { label: 'Revisión manual', variant: 'warning' },
+  pending: { label: 'Conciliación pendiente', variant: 'neutral' },
+  rejected: { label: 'Conciliación rechazada', variant: 'error' },
+}
+
+export const REFUND_PENDING_LABEL = 'Reembolso pendiente'
+
+export const PAID_WITHOUT_STOCK_NOTICE = 'El cliente pagó después de vencer la reserva y ya no hay stock para reservarlo. Coordiná el reembolso, o reponé stock y confirmá el pedido.'
+
+export function isPaidWithoutStock(
+  order: Pick<IAdminOrderDetail, 'inventoryAllocationActive' | 'paymentMethod' | 'paymentStatus' | 'status'>,
+): boolean {
+  return order.status === 'pending'
+    && order.paymentStatus === 'paid'
+    && order.paymentMethod === 'mercado_pago'
+    && !order.inventoryAllocationActive
+}
+
+export function isRefundPending(
+  order: Pick<IAdminOrderListItem, 'paymentMethod' | 'paymentStatus' | 'status'>,
+): boolean {
+  return order.status === 'cancelled'
+    && order.paymentStatus === 'paid'
+    && order.paymentMethod === 'mercado_pago'
 }
 
 export const ORDER_ACTION_LABELS: Record<AdminOrderActionType, string> = {
@@ -37,7 +69,11 @@ export const ORDER_ACTION_LABELS: Record<AdminOrderActionType, string> = {
 }
 
 export function formatAdminOrderDate(value: string): string {
-  return dateTimeFormatter.format(new Date(value))
+  return formatAdminDate(value)
+}
+
+export function formatPaymentUpdatedAt(value: string | null): string {
+  return value === null ? 'Sin actualización de pago' : `Actualizado ${formatAdminOrderDate(value)}`
 }
 
 export function getOrderDisplayNumber(orderNumber: string): string {

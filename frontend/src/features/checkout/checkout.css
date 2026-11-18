@@ -18,6 +18,80 @@
   box-shadow: var(--shadow-default);
 }
 
+.checkout__payment-status {
+  display: grid;
+  max-width: 640px;
+  gap: var(--space-2);
+  margin-inline: auto;
+  padding: var(--space-5);
+  text-align: center;
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-default);
+}
+
+.checkout__payment-status-icon {
+  display: grid;
+  width: 72px;
+  height: 72px;
+  margin-inline: auto;
+  place-items: center;
+  color: var(--color-warning);
+  border-radius: var(--radius-round);
+  background: var(--color-warning-soft);
+}
+
+.checkout__payment-status-icon--approved {
+  color: var(--color-success);
+  background: var(--color-success-soft);
+}
+.checkout__payment-status-icon--rejected {
+  color: var(--color-error);
+  background: var(--color-error-soft);
+}
+
+.checkout__payment-status-icon--expired {
+  color: var(--color-error);
+  background: var(--color-error-soft);
+}
+.checkout__payment-status-icon--manual-review {
+  color: var(--color-warning);
+  background: var(--color-warning-soft);
+}
+.checkout__payment-status > .ui-badge {
+  width: fit-content;
+  margin-inline: auto;
+}
+.checkout__payment-status p {
+  margin: 0;
+  text-wrap: pretty;
+}
+.checkout__payment-order {
+  font-weight: 600;
+}
+.checkout__payment-countdown {
+  font-variant-numeric: tabular-nums;
+}
+.checkout__payment-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+  align-items: center;
+  margin-top: var(--space-2);
+}
+.checkout__payment-actions .ui-button {
+  display: inline-flex;
+  gap: var(--space-1);
+}
+.checkout__payment-recovery-link {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-primary-dark);
+  font-weight: 600;
+}
+
 .checkout__header {
   display: grid;
   gap: var(--space-3);
@@ -493,6 +567,17 @@
 
   .checkout-form__pickup {
     padding: var(--space-2);
+  }
+
+  .checkout__payment-status {
+    padding: var(--space-3) var(--space-2);
+  }
+  .checkout__payment-actions {
+    display: grid;
+  }
+  .checkout__payment-actions > * {
+    width: 100%;
+    justify-content: center;
   }
 }
 

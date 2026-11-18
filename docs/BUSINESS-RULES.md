@@ -178,7 +178,9 @@ Transiciones del MVP:
 - Todos los pedidos: `pending` → `confirmed` → `preparing` → `ready`.
 - Desde `ready`, un pedido puede pasar a `picked_up` o `delivered` según corresponda.
 - Un pedido podrá pasar a `cancelled` antes de ser retirado o entregado.
-- No se podrá reabrir un pedido cancelado, retirado o entregado.
+- No se podrá reabrir un pedido cancelado, retirado o entregado. La única
+  excepción es la aprobación tardía de un pedido cancelado por vencimiento
+  automático, descrita en las reglas de pago con Mercado Pago.
 
 ---
 
@@ -343,10 +345,11 @@ Frontend utilizará la variante local oficial como respaldo.
   Sus caídas, límites o rechazos técnicos no podrán alterar una solicitud
   determinada como aplicable;
   el caso continuará por revisión y resolución manual.
-- El diseño de Checkout Pro deberá respetar `MP-CHECKOUT-PRO-SDD.md`: el pago
-  histórico del pedido, la liquidación del arrepentimiento y la operación técnica
-  del proveedor conservarán fuentes de verdad separadas. Ningún Webhook podrá
-  decidir aplicabilidad, devolución física o stock.
+- El diseño de Checkout Pro deberá respetar el contrato vigente de Preferences API
+  para crear el checkout alojado y Payments API para conciliar pagos: el
+  pago histórico del pedido, la liquidación del arrepentimiento y la operación
+  técnica del proveedor conservarán fuentes de verdad separadas. Ningún Webhook
+  podrá decidir aplicabilidad, devolución física o stock.
 
 ## Administración y atención
 
@@ -458,8 +461,8 @@ El Panel Administrativo utilizará enlaces `wa.me` para contactar al cliente, av
 Mercado Pago y WhatsApp Business API no forman parte del MVP.
 
 La incorporación post-MVP de Mercado Pago permanece deshabilitada hasta completar
-los prerrequisitos técnicos, operativos y documentales pendientes definidos en
-`MP-CHECKOUT-PRO-SDD.md`.
+los prerrequisitos técnicos, operativos y documentales pendientes definidos para
+el contrato de Preferences API y la conciliación de Payments API.
 Efectivo y transferencia continúan siendo los únicos métodos vigentes mientras
 esa fase no se implemente y habilite expresamente.
 
@@ -472,16 +475,53 @@ Para la futura habilitación de Checkout Pro quedan aprobadas estas reglas:
   cualquier alternativa de financiación o cuotas sin tarjeta.
 - El checkout no exigirá tener una cuenta de Mercado Pago para utilizar una
   tarjeta de débito.
-- La reserva inicial de stock durará 40 minutos desde la creación atómica del
-  pedido y será calculada por el Backend.
-- Checkout Pro utilizará `binary_mode = false` para admitir pagos `pending` o
-  `in_process` y favorecer la aprobación de clientes que necesiten más tiempo o
-  validaciones adicionales.
+- La reserva local autoritativa de stock y pago durará 24 horas desde la creación
+  atómica del pedido y será calculada por el Backend usando el reloj de PostgreSQL.
+- Checkout Pro utilizará Preferences API para crear una preferencia alojada y
+  Payments API para consultar pagos. La reserva local será de 24 horas y el
+  Backend mantendrá el reloj autoritativo de PostgreSQL.
 - El vencimiento del contador nunca bastará para restaurar stock. El Backend
-  consultará y conciliará el último estado de Mercado Pago; un pago todavía
-  pendiente o en proceso permanecerá bajo revisión.
-- La vigencia de la preferencia impedirá iniciar pagos nuevos después de los 40
-  minutos. Un pago iniciado antes del vencimiento se resolverá por Webhook/API.
+  consultará y conciliará el estado de Mercado Pago. Un Webhook verificado o el
+  retorno aprobado provocarán una consulta inmediata; el retorno nunca autorizará
+  por sí solo el pago. Un pago todavía pendiente o en proceso permanecerá bajo
+  conciliación.
+- Un worker recogerá jobs aproximadamente cada 60 segundos; no realizará polling
+  indiscriminado. Los pagos `pending` o `in_process` se reconciliarán en los
+  minutos 1, 2, 4, 8 y 15, luego cada 45 minutos, y mediante una consulta final
+  explícita antes de `reservation_expires_at`, con margen configurable.
+- At reservation expiry, no provider payment or a definitive `rejected`,
+  `cancelled`, or `expired` state cancels the order and releases reserved stock
+  exactly once. An unresolved, `pending`, `in_process`, or provider-unavailable
+  state instead keeps the order `pending`, marks the current attempt
+  `manual_review`, sets order-level payment to `pending`, and releases stock
+  exactly once. It must not treat lack of a provider response as rejection.
+- A payment still `pending` or `in_process` after the reservation expired keeps its
+  attempt in `manual_review` until the provider resolves it, so the owner checks it
+  (for example with "Consultar Pago"); before expiry it stays `pending`. If the
+  provider then rejects it definitively, the order is cancelled automatically
+  without moving stock again, because the units were already released once, and the
+  cancellation is audited. An order that already has part of its amount approved is
+  not cancelled automatically, so captured money is never hidden. A rejection while
+  the reservation is still active keeps the order `pending` so the customer can retry. The attempt stays `rejected`, so a
+  later approval on that cancelled order is recorded as paid but never reopens it
+  (the owner refunds it manually).
+- A late approval after expiry atomically re-reserves stock. If every item is
+  available, the system records audited stock decrements and sets the order to
+  `confirmed` and payment to `paid`. If any item is unavailable, no stock is
+  decremented and the order remains `pending` and non-deliverable while payment
+  accurately reflects `paid`; the owner handles fulfillment and any refund
+  manually.
+- A cancelled order never reopens because a payment arrives afterwards. The only
+  exception is an order the system itself cancelled at reservation expiry (no
+  provider payment, or a definitive `rejected`, `cancelled`, or `expired`
+  state), which follows the late-approval rule above. An order cancelled by the
+  owner or the customer stays `cancelled` whatever payment is approved later:
+  no stock is re-reserved, the order status does not change, and payment
+  accurately reflects `paid`.
+- A `cancelled` order whose payment is `paid` is shown in the administration as
+  pending refund ("Reembolso pendiente") in the order detail and the order list.
+  The owner refunds the customer manually in Mercado Pago. The system never
+  refunds automatically, and the MVP has no refunded state or action.
 - El comercio absorberá el costo de Mercado Pago. No se aplicará ningún recargo
   al comprador por utilizar este medio.
 - El comercio eligió disponer de los fondos a 18 días. La referencia de tarifa
@@ -492,13 +532,22 @@ Para la futura habilitación de Checkout Pro quedan aprobadas estas reglas:
   envíos, el costo, la coordinación y la forma de pago se acordarán por separado
   entre el dueño del negocio y el cliente, y no formarán parte del importe enviado
   a Mercado Pago.
-- Si un pago de Mercado Pago es rechazado, el cliente podrá reintentarlo sobre
-  el mismo pedido durante los 40 minutos de reserva. El reintento creará un
-  nuevo intento de pago, pero no descontará stock nuevamente. Cumplido ese plazo,
-  el pedido se cancelará y el stock se liberará según las reglas de cancelación,
-  previa conciliación del estado del proveedor cuando corresponda.
-- La primera versión admitirá únicamente reintegros totales. No se procesarán
-  reintegros parciales.
+- While the original 24-hour reservation is active, the customer may retry without
+  an attempt-count cap. Retries reuse the hosted preference and local payment
+  attempt; each provider payment remains a separate transaction under that
+  attempt. Retries never extend the reservation or reserve stock again. Backend,
+  network, and worker retry backoff limits remain bounded independently of
+  customer retries.
+- A provider rejection during the active reservation does not cancel the order or
+  release stock. The order remains `pending`, payment reflects the effective
+  transaction aggregate, and retry remains available. A full approved aggregate
+  sets payment to `paid` but leaves the order `pending` for the owner to move to
+  `confirmed`. Older rejection events cannot override a full approved aggregate,
+  and later rejected transactions cannot downgrade a fully captured amount.
+- La API automática de reembolsos de Mercado Pago queda fuera de esta mejora. No
+  se implementarán reintegros automáticos. Si una aprobación tardía no puede
+  confirmarse por falta de stock, el dueño gestionará el reembolso manualmente y
+  el sistema registrará y expondrá la excepción.
 - El formulario de arrepentimiento solo iniciará una solicitud y nunca ejecutará
   un reintegro automáticamente. La solicitud, su decisión, la devolución física
   y el reintegro mantendrán estados independientes.
@@ -507,13 +556,46 @@ Para la futura habilitación de Checkout Pro quedan aprobadas estas reglas:
   El costo de devolución se registrará por separado y se resolverá manualmente.
   El total económico del caso podrá sumar ambos componentes, pero la API de
   Mercado Pago recibirá únicamente el importe cobrado por los productos.
-- El servicio de reintegro será común y podrá invocarse tanto desde un
-  arrepentimiento aprobado como desde una cancelación administrativa válida, sin
-  duplicar la lógica ni las operaciones financieras.
+- La gestión manual de un reembolso de Mercado Pago conservará su registro y
+  exposición operativa sin afirmar que existe una integración automática con la
+  API de reembolsos.
 - Efectivo y transferencia continuarán utilizando un reintegro manual auditado;
-  estas reglas de reintegro automático aplican únicamente a pagos de Mercado
-  Pago.
+  los reembolsos de Mercado Pago también serán manuales mientras la API automática
+  permanezca fuera de alcance.
 - Los contracargos no tendrán un módulo público inicial. Se notificarán y
   registrarán para alertar al administrador; la disputa se gestionará en Mercado
   Pago. Un contracargo no iniciará un reintegro ni restaurará stock
   automáticamente.
+
+## Checkout Pro: ownership, disclosure and rollback gates
+
+- Mercado Pago Checkout Pro permanecerá deshabilitado hasta aprobar la evidencia
+  técnica, operativa y legal de cada ambiente. El Backend será el único dueño de
+  las credenciales, claves de idempotencia, secretos de Webhook y claves de
+  Supabase; nunca se expondrán en el Frontend, chat, repositorio ni logs.
+- Antes de habilitarlo, el aviso de checkout y la Política de Privacidad deberán
+  informar que Mercado Pago procesa el pago, qué datos mínimos se comparten, que
+  el importe enviado cubre únicamente productos y que el envío se coordina por
+  separado. La divulgación deberá ser aprobada por el responsable legal y
+  operativo, sin afirmar condiciones de cuenta o tarifas no verificadas.
+- La primera habilitación expondrá únicamente `account_money` y `debit_card`.
+  Quedan excluidos crédito, cuotas o installments, tarjetas prepagas, medios
+  offline como Rapipago y Pago Fácil, efectivo, cualquier medio futuro no
+  aprobado y cargos de envío. El Backend rechazará también un método excluido si
+  el proveedor lo devuelve.
+- La cancelación de un intento usará las credenciales de Backend del ambiente y
+  una clave estable de idempotencia. La disponibilidad y los requisitos de esas
+  credenciales deberán validarse con la cuenta de prueba seller/buyer antes de
+  habilitar producción; un timeout, estado no cancelable o respuesta ambigua
+  quedará en revisión manual.
+- El ownership operativo de jobs, alertas, dead letters y revisiones pendientes
+  corresponderá a Payments On-Call. El responsable deberá estar identificado y
+  aprobado antes del go-live; los incidentes deberán alertar en un máximo de
+  cinco minutos.
+- Un rollback deshabilitará el flag, detendrá de forma segura Webhooks y claims,
+  conservará pedidos, pagos y auditoría append-only, y mantendrá efectivo y
+  transferencia disponibles. Nunca se eliminará historial ni se modificará stock
+  fuera de las RPC protegidas.
+- El flujo principal de excepciones se resolverá mediante una tarjeta contextual
+  en el detalle del pedido. No se agregará una nueva sección principal de
+  administración; Conciliación será una superficie secundaria de auditoría.

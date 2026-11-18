@@ -118,9 +118,10 @@ export class OrderRepository implements IOrderRepository {
         .select(`
           order_number,
           created_at,
-          status,
-          payment_method,
-          delivery_method,
+           status,
+           payment_method,
+           payment_status,
+           delivery_method,
           shipping_address,
           customer_first_name,
           customer_last_name,
@@ -137,8 +138,9 @@ export class OrderRepository implements IOrderRepository {
           quantity,
           list_unit_price,
           product_discount_percentage,
-          unit_price,
-          subtotal
+           unit_price,
+           subtotal,
+           products ( image_path )
         `)
         .eq('order_id', orderId)
         .order('created_at', { ascending: true }),
@@ -166,6 +168,7 @@ export class OrderRepository implements IOrderRepository {
       deliveryMethod: parsedOrder.data.delivery_method,
       discount: parsedOrder.data.discount,
       items: parsedItems.data.map((item) => ({
+        imagePath: item.products?.image_path ?? null,
         listUnitPrice: item.list_unit_price,
         productName: item.product_name,
         productDiscountPercentage: item.product_discount_percentage,
@@ -175,6 +178,7 @@ export class OrderRepository implements IOrderRepository {
       })),
       orderNumber: parsedOrder.data.order_number,
       paymentMethod: parsedOrder.data.payment_method,
+      paymentStatus: parsedOrder.data.payment_status,
       shippingAddress: parsedOrder.data.shipping_address,
       status: parsedOrder.data.status,
       subtotal: parsedOrder.data.subtotal,

@@ -1,5 +1,26 @@
 begin;
 
+-- Own fixture: the suite must not depend on pre-existing catalog data.
+insert into public.categories (id, name, slug, image_path, catalog_area)
+values (
+  '42000000-0000-4000-8000-000000000001',
+  'Discount Test Category',
+  'discount-test-category',
+  'test/discount.webp',
+  'art'
+);
+
+insert into public.products (id, category_id, name, slug, price, stock_quantity, image_path)
+values (
+  '43000000-0000-4000-8000-000000000001',
+  '42000000-0000-4000-8000-000000000001',
+  'Discount Test Product',
+  'discount-test-product',
+  100,
+  5,
+  'test/discount-product.webp'
+);
+
 select plan(8);
 
 select lives_ok(
@@ -26,13 +47,7 @@ select throws_ok(
   $$
     update public.products
     set discount_percentage = 100
-    where id = (
-      select id
-      from public.products
-      where deleted_at is null
-      order by id
-      limit 1
-    )
+    where id = '43000000-0000-4000-8000-000000000001'
   $$,
   '23514',
   'new row for relation "products" violates check constraint "products_discount_percentage_range"',
@@ -77,15 +92,7 @@ select lives_ok(
       '5493889999999'::text,
       'cash'::public.payment_method,
       jsonb_build_array(jsonb_build_object(
-        'product_id', (
-          select id
-          from public.products
-          where is_active = true
-            and deleted_at is null
-            and stock_quantity > 0
-          order by id
-          limit 1
-        ),
+        'product_id', '43000000-0000-4000-8000-000000000001'::uuid,
         'quantity', 1
       ))::jsonb,
       'pickup'::public.delivery_method,

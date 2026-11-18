@@ -247,6 +247,208 @@
   clip-path: inset(50%);
 }
 
+.admin-orders__reconciliation-filters {
+  display: grid;
+  align-items: center;
+  grid-template-columns: minmax(0, 12rem);
+  gap: var(--space-1);
+}
+
+.admin-orders__reconciliation-filters label {
+  color: var(--color-primary-dark);
+  font-size: var(--font-size-small);
+  font-weight: 600;
+}
+
+.admin-orders__reconciliation-filters select,
+.admin-orders__reconciliation-modal-actions + textarea,
+.admin-orders__reconciliation-filters textarea {
+  min-height: 44px;
+  padding: var(--space-1) var(--space-2);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-input);
+  font: inherit;
+}
+
+.admin-orders__reconciliation-list {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.admin-orders__reconciliation-attempt {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+}
+
+.admin-orders__reconciliation-heading,
+.admin-orders__reconciliation-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.admin-orders__reconciliation-heading h3,
+.admin-orders__reconciliation-order {
+  margin: 0;
+}
+
+.admin-orders__reconciliation-heading h3 {
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+}
+
+.admin-orders__reconciliation-order {
+  color: var(--color-primary-dark);
+  font-size: var(--font-size-caption);
+}
+
+.admin-orders__reconciliation-data {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.admin-orders__reconciliation-data div {
+  display: grid;
+  gap: calc(var(--space-1) / 2);
+}
+
+.admin-orders__reconciliation-data dt {
+  color: var(--color-primary-dark);
+  font-size: var(--font-size-caption);
+  font-weight: 600;
+}
+
+.admin-orders__reconciliation-data dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: var(--font-size-small);
+}
+
+.admin-orders__tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-orders__reconciliation-transactions {
+  display: grid;
+  gap: var(--space-1);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border);
+}
+
+.admin-orders__reconciliation-transactions h4,
+.admin-orders__reconciliation-transactions p {
+  margin: 0;
+}
+
+.admin-orders__reconciliation-transactions h4 {
+  color: var(--color-primary-dark);
+  font-size: var(--font-size-small);
+}
+
+.admin-orders__reconciliation-transactions ul {
+  display: grid;
+  gap: var(--space-1);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.admin-orders__reconciliation-transactions li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  background: var(--color-background);
+  border-radius: var(--radius-input);
+  font-size: var(--font-size-small);
+}
+
+.admin-orders__reconciliation-transactions li > div {
+  display: grid;
+  gap: calc(var(--space-1) / 2);
+  min-width: 0;
+}
+
+.admin-orders__reconciliation-transactions li > div:last-child {
+  justify-items: end;
+  text-align: right;
+}
+
+.admin-orders__reconciliation-transactions span {
+  color: var(--color-primary-dark);
+  overflow-wrap: anywhere;
+  font-size: var(--font-size-caption);
+}
+
+.admin-orders__reconciliation-error {
+  padding: var(--space-2);
+  color: var(--color-error);
+  background: var(--color-error-soft);
+  border-radius: var(--radius-input);
+  font-size: var(--font-size-small);
+}
+
+.admin-orders__reconciliation-timeline {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-2);
+}
+
+.admin-orders__reconciliation-timeline summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 44px;
+  color: var(--color-primary-dark);
+  cursor: pointer;
+  font-size: var(--font-size-small);
+  font-weight: 600;
+}
+
+.admin-orders__reconciliation-timeline ol {
+  display: grid;
+  gap: var(--space-1);
+  padding: 0 0 0 var(--space-3);
+  margin: 0;
+}
+
+.admin-orders__reconciliation-timeline li {
+  display: grid;
+  gap: calc(var(--space-1) / 2);
+  padding: var(--space-1) 0;
+  font-size: var(--font-size-small);
+}
+
+.admin-orders__reconciliation-timeline li span {
+  color: var(--color-primary-dark);
+  font-size: var(--font-size-caption);
+}
+
+.admin-orders__reconciliation-timeline-empty {
+  list-style: none;
+  color: var(--color-primary-dark);
+}
+
+.admin-orders__reconciliation-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-1);
+}
+
+.admin-orders__reconciliation-attempt button:disabled {
+  opacity: 0.55;
+}
+
 .admin-order-card {
   background: var(--color-surface);
   border-radius: var(--radius-card);

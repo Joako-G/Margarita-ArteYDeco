@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { loadMercadoPagoConfig, type MercadoPagoConfig } from '../payments/config.js'
+
 const envSchema = z
   .object({
     CORS_ALLOWED_ORIGINS: z.string().default('http://localhost:5173'),
@@ -12,6 +14,15 @@ const envSchema = z
       .max(2_592_000_000)
       .default(604_800_000),
     NODE_ENV: z.enum(['development', 'test', 'production']),
+    PAYMENT_SCHEDULER_APPROVED: z.coerce.boolean().default(false),
+    PAYMENT_SCHEDULER_HTTP_SUPPORTED: z.coerce.boolean().default(false),
+    PAYMENT_SCHEDULER_PLAN: z.enum(['managed', 'supabase_free']).default('supabase_free'),
+    PAYMENT_SCHEDULER_PROVIDER: z.enum(['disabled', 'supabase_cron', 'managed']).default('disabled'),
+    PAYMENT_SCHEDULER_QUOTA_PER_HOUR: z.coerce.number().int().min(0).max(10_000).default(0),
+    PAYMENT_WORKER_CADENCE_SECONDS: z.coerce.number().int().min(60).max(300).default(60),
+    PAYMENT_WORKER_ENABLED: z.coerce.boolean().default(false),
+    PAYMENT_WORKER_SCHEDULER_ENABLED: z.coerce.boolean().default(false),
+    PAYMENT_WORKER_SECRET: z.string().min(32).optional(),
     PORT: z.coerce.number().int().min(1).max(65_535).default(3000),
     PUBLIC_CACHE_MAX_AGE_SECONDS: z.coerce.number().int().min(0).max(300).default(60),
     PUBLIC_SITE_URL: z.url().default('https://margaritas-arteydeco.vercel.app'),
@@ -52,6 +63,19 @@ const envSchema = z
         message: 'El margen de renovación debe ser menor que la vigencia de la URL firmada',
         path: ['STORAGE_SIGNED_URL_REFRESH_SKEW_SECONDS'],
       })
+    }
+
+    if (value.PAYMENT_WORKER_ENABLED && value.PAYMENT_WORKER_SECRET === undefined) {
+      context.addIssue({ code: 'custom', message: 'Payment worker secret is required when the worker is enabled', path: ['PAYMENT_WORKER_SECRET'] })
+    }
+    if (value.PAYMENT_WORKER_ENABLED && value.PAYMENT_SCHEDULER_PROVIDER === 'disabled') {
+      context.addIssue({ code: 'custom', message: 'An approved payment scheduler is required when the worker is enabled', path: ['PAYMENT_SCHEDULER_PROVIDER'] })
+    }
+    if (value.PAYMENT_WORKER_SCHEDULER_ENABLED && value.NODE_ENV !== 'development') {
+      context.addIssue({ code: 'custom', message: 'The in-process payment worker scheduler is only allowed in development', path: ['PAYMENT_WORKER_SCHEDULER_ENABLED'] })
+    }
+    if (value.PAYMENT_WORKER_SCHEDULER_ENABLED && value.VERCEL === '1') {
+      context.addIssue({ code: 'custom', message: 'The in-process payment worker scheduler is not supported on Vercel', path: ['PAYMENT_WORKER_SCHEDULER_ENABLED'] })
     }
 
     if (
@@ -95,6 +119,16 @@ export interface IEnv {
   turnstileAllowedHostnames: readonly string[]
   turnstileSecretKey: string
   isVercel: boolean
+  mercadoPago: MercadoPagoConfig
+  paymentSchedulerApproved: boolean
+  paymentSchedulerHttpSupported: boolean
+  paymentSchedulerPlan: 'managed' | 'supabase_free'
+  paymentSchedulerProvider: 'disabled' | 'supabase_cron' | 'managed'
+  paymentSchedulerQuotaPerHour: number
+  paymentWorkerCadenceSeconds: number
+  paymentWorkerEnabled: boolean
+  paymentWorkerSchedulerEnabled: boolean
+  paymentWorkerSecret: string | null
 }
 
 function parseAllowedOrigins(value: string): readonly string[] {
@@ -173,5 +207,15 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): IEnv {
     turnstileAllowedHostnames: parseAllowedHostnames(value.TURNSTILE_ALLOWED_HOSTNAMES),
     turnstileSecretKey: value.TURNSTILE_SECRET_KEY,
     isVercel: value.VERCEL === '1',
+    mercadoPago: loadMercadoPagoConfig(source),
+    paymentSchedulerApproved: value.PAYMENT_SCHEDULER_APPROVED,
+    paymentSchedulerHttpSupported: value.PAYMENT_SCHEDULER_HTTP_SUPPORTED,
+    paymentSchedulerPlan: value.PAYMENT_SCHEDULER_PLAN,
+    paymentSchedulerProvider: value.PAYMENT_SCHEDULER_PROVIDER,
+    paymentSchedulerQuotaPerHour: value.PAYMENT_SCHEDULER_QUOTA_PER_HOUR,
+    paymentWorkerCadenceSeconds: value.PAYMENT_WORKER_CADENCE_SECONDS,
+    paymentWorkerEnabled: value.PAYMENT_WORKER_ENABLED,
+    paymentWorkerSchedulerEnabled: value.PAYMENT_WORKER_SCHEDULER_ENABLED,
+    paymentWorkerSecret: value.PAYMENT_WORKER_SECRET ?? null,
   }
 }

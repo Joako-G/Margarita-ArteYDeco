@@ -38,7 +38,7 @@ export interface IAdminCustomerOrder {
   createdAt: string
   id: string
   orderNumber: string
-  paymentMethod: 'bank_transfer' | 'cash'
+  paymentMethod: 'bank_transfer' | 'cash' | 'mercado_pago'
   paymentStatus: 'paid' | 'pending' | 'rejected'
   status: OrderStatusType
   total: number

@@ -57,6 +57,19 @@ insert into public.consumer_withdrawal_requests (
   now()
 );
 
+do $$
+declare
+  v_admin uuid := '14000000-0000-4000-8000-000000000002';
+begin
+  if not exists (select 1 from public.profiles where role = 'administrator' and is_active) then
+    insert into auth.users (id, email) values (v_admin, 'refund-admin@example.test');
+    insert into public.profiles (id, email, full_name)
+    values (v_admin, 'refund-admin@example.test', 'Refund Test Administrator');
+    update public.profiles set role = 'administrator', is_active = true where id = v_admin;
+  end if;
+end;
+$$;
+
 set local role service_role;
 
 do $$

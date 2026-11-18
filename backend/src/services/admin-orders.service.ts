@@ -43,9 +43,12 @@ export interface IAdminOrderService {
 }
 
 function getAvailableActions(order: IAdminOrderRecord): readonly AdminOrderActionType[] {
+  if (order.paymentMethod === 'mercado_pago'
+    && (order.inventoryAllocationActive === false || order.persistedPaymentStatus !== 'paid')) return []
   const actions: AdminOrderActionType[] = []
   if (order.status === 'pending') actions.push('confirmOrder')
-  if (!['cancelled', 'picked_up', 'delivered'].includes(order.status)
+  if (order.paymentMethod !== 'mercado_pago'
+    && !['cancelled', 'picked_up', 'delivered'].includes(order.status)
     && order.paymentStatus !== 'paid') actions.push('confirmPayment')
   if (order.status === 'confirmed') actions.push('startPreparing')
   if (order.status === 'preparing') actions.push('markReady')
@@ -85,7 +88,12 @@ function mapListItem(order: IAdminOrderRecord): IAdminOrderListItemDto {
     itemCount: order.itemCount,
     orderNumber: order.orderNumber,
     paymentMethod: order.paymentMethod,
+    paymentProviderId: order.paymentProviderId,
+    paymentProviderStatus: order.paymentProviderStatus,
+    paymentReconciliationStatus: order.paymentReconciliationStatus,
     paymentStatus: order.paymentStatus,
+    paymentUpdatedAt: order.paymentUpdatedAt,
+    paymentRequiresManualReview: order.paymentRequiresManualReview,
     status: order.status,
     total: order.total,
     updatedAt: order.updatedAt,
@@ -128,6 +136,13 @@ export class AdminOrderService implements IAdminOrderService {
     return {
       ...mapListItem(order),
       availableActions: getAvailableActions(order),
+      canConsultPayment: order.paymentMethod === 'mercado_pago'
+        && order.status !== 'cancelled'
+        && order.persistedPaymentStatus !== 'paid'
+        && order.paymentAttemptId != null
+        && ['pending', 'manual_review'].includes(order.paymentAttemptStatus ?? '')
+        && order.reservationExpiresAt != null
+        && Date.parse(order.reservationExpiresAt) <= Date.now(),
       business: {
         address: settings.address,
         businessHours: settings.businessHours,
@@ -138,9 +153,12 @@ export class AdminOrderService implements IAdminOrderService {
       contractConcludedAt: order.contractConcludedAt,
       discount: order.discount,
       deliveredAt: order.deliveredAt,
+      inventoryAllocationActive: order.inventoryAllocationActive ?? true,
       items,
       notes: order.notes ?? '',
       pickedUpAt: order.pickedUpAt,
+      paymentAttemptId: order.paymentAttemptId ?? null,
+      reservationExpiresAt: order.reservationExpiresAt ?? null,
       requiresManualRefundOnCancel: order.paymentStatus === 'paid',
       shippingAddress: order.shippingAddress,
       subtotal: order.subtotal,

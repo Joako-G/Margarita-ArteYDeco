@@ -8,23 +8,30 @@ const logger = createLogger(env)
 const dependencies = createApplicationDependencies(env, logger)
 const app = createApp(env, logger, dependencies)
 
-const server = app.listen(env.port, () => {
-  logger.info({ port: env.port }, 'API iniciada')
-})
+export default app
 
-function shutdown(signal: NodeJS.Signals): void {
-  logger.info({ signal }, 'Cierre controlado iniciado')
+if (!env.isVercel) {
+  dependencies.paymentWorkerScheduler?.start()
 
-  server.close((error) => {
-    if (error !== undefined) {
-      logger.error({ error }, 'No fue posible cerrar el servidor correctamente')
-      process.exitCode = 1
-      return
-    }
-
-    logger.info('API detenida')
+  const server = app.listen(env.port, () => {
+    logger.info({ port: env.port }, 'API iniciada')
   })
-}
 
-process.once('SIGINT', shutdown)
-process.once('SIGTERM', shutdown)
+  function shutdown(signal: NodeJS.Signals): void {
+    logger.info({ signal }, 'Cierre controlado iniciado')
+    dependencies.paymentWorkerScheduler?.stop()
+
+    server.close((error) => {
+      if (error !== undefined) {
+        logger.error({ error }, 'No fue posible cerrar el servidor correctamente')
+        process.exitCode = 1
+        return
+      }
+
+      logger.info('API detenida')
+    })
+  }
+
+  process.once('SIGINT', shutdown)
+  process.once('SIGTERM', shutdown)
+}

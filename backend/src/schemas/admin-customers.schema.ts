@@ -45,7 +45,7 @@ const adminCustomerOrderRowFields = {
   created_at: z.iso.datetime({ offset: true }),
   id: z.uuid(),
   order_number: z.string().trim().min(1),
-  payment_method: z.enum(['bank_transfer', 'cash']),
+  payment_method: z.enum(['bank_transfer', 'cash', 'mercado_pago']),
   payment_status: z.enum(['paid', 'pending', 'rejected']),
   status: z.enum(['cancelled', 'confirmed', 'delivered', 'pending', 'picked_up', 'preparing', 'ready']),
   total: z.coerce.number().nonnegative(),

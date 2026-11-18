@@ -8,8 +8,9 @@
     "build": "tsc -b && vite build",
     "postbuild": "node scripts/generate-route-shells.mjs",
     "lint": "eslint .",
+    "test:hooks": "vitest run",
     "test:consumer-withdrawals": "node --experimental-strip-types --test src/features/admin-consumer-withdrawals/utils/admin-consumer-withdrawals.test.mjs src/features/consumer-withdrawals/utils/consumer-withdrawal.test.mjs",
-    "test": "node --experimental-strip-types --test src/features/admin-consumer-withdrawals/utils/admin-consumer-withdrawals.test.mjs src/features/consumer-withdrawals/utils/consumer-withdrawal.test.mjs src/features/admin-customers/utils/admin-customer-errors.test.mjs src/features/admin-orders/utils/admin-order-errors.test.mjs src/features/admin-settings/utils/admin-settings-errors.test.mjs src/features/admin-profile/schemas/admin-profile.test.mjs src/features/admin-auth/utils/admin-auth-errors.test.mjs src/features/admin-auth/utils/admin-route-state.test.mjs src/features/admin-categories/utils/admin-category-filters.test.mjs src/features/admin-categories/utils/admin-category-lifecycle.test.mjs src/features/admin-customers/schemas/admin-customer-form.test.mjs src/features/admin-customers/utils/admin-customer-filters.test.mjs src/features/admin-dashboard/utils/admin-dashboard-formatters.test.mjs src/features/admin-inventory/utils/admin-inventory.test.mjs src/features/admin-orders/utils/admin-order-filters.test.mjs src/features/admin-orders/utils/admin-order-formatters.test.mjs src/features/admin-products/schemas/admin-product-form.test.mjs src/features/admin-products/utils/admin-product-filters.test.mjs src/features/admin-products/utils/admin-product-lifecycle.test.mjs src/features/admin-products/utils/product-slug.test.mjs src/features/admin-settings/schemas/admin-settings-form.test.mjs src/features/cart/utils/cart-availability.test.mjs src/features/cart/utils/cart-calculations.test.mjs src/features/catalog/services/catalog-adapters.test.mjs src/features/catalog/utils/catalog-area.test.mjs src/features/checkout/utils/checkout.test.mjs src/features/public-orders/utils/last-order.test.mjs src/features/public-orders/utils/public-orders.test.mjs src/features/settings/services/settings-adapter.test.mjs src/features/social/utils/social-links.test.mjs src/router/route-metadata.test.mjs src/shared/utils/prepare-image-upload.test.mjs src/shared/utils/shared-utils.test.mjs",
+    "test": "node --experimental-strip-types --test src/features/admin-consumer-withdrawals/utils/admin-consumer-withdrawals.test.mjs src/features/consumer-withdrawals/utils/consumer-withdrawal.test.mjs src/features/admin-customers/utils/admin-customer-errors.test.mjs src/features/admin-orders/utils/admin-order-errors.test.mjs src/features/admin-settings/utils/admin-settings-errors.test.mjs src/features/admin-profile/schemas/admin-profile.test.mjs src/features/admin-auth/utils/admin-auth-errors.test.mjs src/features/admin-auth/utils/admin-route-state.test.mjs src/features/admin-categories/utils/admin-category-filters.test.mjs src/features/admin-categories/utils/admin-category-lifecycle.test.mjs src/features/admin-customers/schemas/admin-customer-form.test.mjs src/features/admin-customers/utils/admin-customer-filters.test.mjs src/features/admin-dashboard/utils/admin-dashboard-formatters.test.mjs src/features/admin-inventory/utils/admin-inventory.test.mjs src/features/admin-orders/utils/admin-order-filters.test.mjs src/features/admin-orders/utils/admin-order-formatters.test.mjs src/features/admin-orders/utils/new-order-notices.test.mjs src/features/admin-products/schemas/admin-product-form.test.mjs src/features/admin-products/utils/admin-product-filters.test.mjs src/features/admin-products/utils/admin-product-lifecycle.test.mjs src/features/admin-products/utils/product-slug.test.mjs src/features/admin-settings/schemas/admin-settings-form.test.mjs src/features/cart/utils/cart-availability.test.mjs src/features/cart/utils/cart-calculations.test.mjs src/features/catalog/services/catalog-adapters.test.mjs src/features/catalog/utils/catalog-area.test.mjs src/features/checkout/utils/checkout.test.mjs src/features/checkout/hooks/usePaymentStatus.test.mjs src/features/public-orders/utils/last-order.test.mjs src/features/public-orders/utils/public-orders.test.mjs src/features/settings/services/settings-adapter.test.mjs src/features/social/utils/social-links.test.mjs src/router/route-metadata.test.mjs src/shared/utils/prepare-image-upload.test.mjs src/shared/utils/shared-utils.test.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "preview": "vite preview"
@@ -29,6 +30,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
@@ -37,9 +40,11 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.3",
     "globals": "^17.9.0",
+    "jsdom": "^30.1.3",
     "prettier": "^3.9.6",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.66.0",
-    "vite": "^8.2.0"
+    "vite": "^8.2.0",
+    "vitest": "4.1.10"
   }
 }

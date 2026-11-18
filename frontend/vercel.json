@@ -114,6 +114,10 @@
       "destination": "/route-shells/private.html"
     },
     {
+      "source": "/pedido/:orderNumber/pago",
+      "destination": "/route-shells/private.html"
+    },
+    {
       "source": "/pedido/:orderNumber",
       "destination": "/route-shells/private.html"
     },

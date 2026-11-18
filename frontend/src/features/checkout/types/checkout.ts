@@ -2,10 +2,11 @@ import type { ICartItem } from '@/features/cart'
 import type {
   DeliveryMethodType,
   IOrderConfirmation,
-  PaymentMethodType,
+  PaymentMethodType as BasePaymentMethodType,
 } from '@/features/public-orders/types/public-orders'
 
-export type { DeliveryMethodType, IOrderConfirmation, PaymentMethodType }
+export type { DeliveryMethodType, IOrderConfirmation }
+export type PaymentMethodType = BasePaymentMethodType | 'mercado_pago'
 
 export interface ICheckoutFormValues {
   acceptTerms: boolean
@@ -31,12 +32,32 @@ export interface ICreateOrderItem {
 }
 
 export interface ICreateOrderRequest {
-  customer: Omit<ICheckoutFormValues, 'acceptTerms' | 'deliveryMethod' | 'paymentMethod' | 'shippingAddress'>
+  customer: {
+    firstName: string
+    lastName: string
+    notes: string
+    phone: string
+  }
   deliveryMethod: DeliveryMethodType
   items: ICreateOrderItem[]
   paymentMethod: PaymentMethodType
   shippingAddress: string
 }
+
+export interface ICreateMercadoPagoCheckoutRequest extends Omit<
+  ICreateOrderRequest,
+  'paymentMethod'
+> {
+  paymentMethod: 'mercado_pago'
+}
+
+export interface IMercadoPagoCheckoutResponse {
+  checkoutUrl: string
+  orderNumber: string
+  reservationExpiresAt: string
+}
+
+export type IResumeMercadoPagoCheckoutResponse = IMercadoPagoCheckoutResponse
 
 export type CheckoutCartItemType = Pick<
   ICartItem,
