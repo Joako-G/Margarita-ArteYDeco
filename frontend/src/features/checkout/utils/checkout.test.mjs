@@ -40,7 +40,7 @@ test('valida y normaliza los datos obligatorios del checkout', () => {
     firstName: 'Ana',
     lastName: 'Pérez',
     notes: '',
-    paymentMethod: 'cash',
+    paymentMethod: 'transfer',
     phone: '5491123456789',
     shippingAddress: 'Belgrano 607, Jujuy',
   }).success, true)
