@@ -2,6 +2,7 @@ import { usePublicSettings } from '@/features/settings'
 import { Container, Section, Typography } from '@/shared/components'
 
 import { LegalList } from './LegalList'
+import { LegalReviewNotice } from './LegalReviewNotice'
 import { LegalSection } from './LegalSection'
 import './legal.css'
 
@@ -22,6 +23,8 @@ export function PrivacyPolicy() {
               Política de Privacidad
             </Typography>
 
+            <LegalReviewNotice />
+
             <LegalSection title="Introducción">
               <Typography variant="body">
                 En {businessName} respetamos la privacidad de quienes nos visitan y compran. Esta
@@ -41,6 +44,9 @@ export function PrivacyPolicy() {
                   'Número de teléfono.',
                   'Observaciones, únicamente si decidís incluirlas.',
                   'Dirección de entrega, únicamente cuando solicitás un envío.',
+                  'Medio de pago elegido y datos operativos del pedido, sin almacenar tarjetas ni credenciales bancarias.',
+                  'En solicitudes de arrepentimiento: número de pedido opcional, celular, comentario, código de solicitud y eventos necesarios para gestionar el trámite.',
+                  'Datos técnicos mínimos de sesión, seguridad, CSRF, límites de solicitudes, prevención de abuso y verificación condicional.',
                 ]}
               />
               <Typography variant="body">
@@ -60,6 +66,8 @@ export function PrivacyPolicy() {
                   'Coordinar el retiro de la compra en el local.',
                   'Coordinar el costo y la entrega cuando se solicita un envío.',
                   'Responder consultas relacionadas con un pedido.',
+                  'Registrar, verificar, gestionar y auditar solicitudes de arrepentimiento.',
+                  'Permitir la gestión interna del negocio mediante el Panel Administrativo.',
                   'Proteger el sitio, prevenir abusos y mantener la seguridad de las operaciones.',
                 ]}
               />
@@ -71,14 +79,16 @@ export function PrivacyPolicy() {
 
             <LegalSection title="Cookies y almacenamiento en el dispositivo">
               <Typography variant="body">
-                Utilizamos únicamente cookies técnicas y almacenamiento local necesarios para que
-                el sitio sea seguro y para facilitar la consulta de pedidos. No los usamos para
-                publicidad, analítica de comportamiento ni seguimiento entre sitios.
+                Utilizamos únicamente cookies técnicas y almacenamiento local necesario para la
+                sesión anónima de pedidos, la seguridad y la recuperación. Por ahora no mostramos
+                un banner de consentimiento y no afirmamos que la normativa imponga o exceptúe un
+                banner. No usamos estas tecnologías para publicidad, analítica de comportamiento ni
+                seguimiento entre sitios.
               </Typography>
               <LegalList
                 items={[
-                  'Seguridad del formulario: una cookie técnica evita envíos fraudulentos y vence aproximadamente después de una hora.',
-                  'Sesión anónima de pedidos: una cookie segura permite consultar desde este dispositivo los pedidos asociados y tiene una vigencia máxima de 30 días.',
+                  'Seguridad del formulario: una cookie técnica ayuda a evitar envíos fraudulentos; su período concreto queda pendiente de revisión.',
+                  'Sesión anónima de pedidos: una cookie segura permite consultar desde este dispositivo los pedidos asociados; su período concreto queda pendiente de revisión.',
                   'Último pedido: el navegador conserva localmente solo su número para ofrecer un acceso rápido; no guarda el detalle, el celular, los importes ni datos bancarios.',
                   'Administración: el área privada utiliza cookies de sesión exclusivas para el personal autorizado.',
                 ]}
@@ -102,7 +112,7 @@ export function PrivacyPolicy() {
                   'Vercel, para el alojamiento y la entrega de la aplicación.',
                   'Supabase, para la base de datos, el almacenamiento y la autenticación del área administrativa.',
                   'Cloudflare Turnstile, únicamente cuando se requiere una verificación de seguridad.',
-                  'Google Fonts, para cargar las tipografías utilizadas por el sitio.',
+                  'Tipografías locales en formato WOFF2, sin solicitud necesaria a Google Fonts.',
                 ]}
               />
               <Typography variant="body">
@@ -119,6 +129,18 @@ export function PrivacyPolicy() {
                 información almacenada. Sin embargo, ningún sistema es completamente invulnerable,
                 por lo que trabajamos continuamente para mantener la seguridad y la integridad de
                 los datos.
+              </Typography>
+              <Typography variant="body">
+                Aplicamos protección CSRF y límites de solicitudes para prevenir abuso. Cloudflare
+                Turnstile se carga únicamente si una operación sensible aprobada requiere una
+                verificación. En ese caso, Cloudflare puede procesar datos técnicos y señales del
+                navegador según sus propias políticas. Consultá su{' '}
+                <a href="https://www.cloudflare.com/privacypolicy/" rel="noreferrer" target="_blank">
+                  Política de Privacidad
+                </a>{' '}y la{' '}
+                <a href="https://www.cloudflare.com/website-terms/" rel="noreferrer" target="_blank">
+                  información de Turnstile
+                </a>.
               </Typography>
             </LegalSection>
 
@@ -137,9 +159,18 @@ export function PrivacyPolicy() {
               />
               <Typography variant="body">
                 Los datos se conservarán únicamente durante el tiempo que resulte necesario para
-                cumplir estas finalidades. Cuando ya no sean necesarios, podrán eliminarse o
-                anonimizarse de forma segura.
+                cumplir estas finalidades o una obligación aplicable. Los períodos concretos y los
+                disparadores de eliminación o anonimización todavía requieren confirmación del
+                contador y revisión legal final. No prometemos una eliminación automática.
               </Typography>
+              <LegalList
+                items={[
+                  'Pedidos y comprobantes operativos: mientras sean necesarios para administrar, dar soporte o cumplir obligaciones aplicables.',
+                  'Evidencia de reclamos y solicitudes de derechos: mientras sea necesaria para responder o acreditar la gestión; el plazo y disparador están pendientes de revisión.',
+                  'Registros de seguridad y límites de solicitudes: mientras sean necesarios para prevenir y analizar abuso; el plazo está pendiente de revisión.',
+                  'Datos temporales de checkout y de verificación: mientras sean necesarios para completar o proteger la operación; el disparador está pendiente de revisión.',
+                ]}
+              />
             </LegalSection>
 
             <LegalSection title="Derechos del usuario">
@@ -147,6 +178,28 @@ export function PrivacyPolicy() {
                 Podés solicitar en cualquier momento el acceso, actualización, rectificación o
                 eliminación de tus datos personales. La eliminación estará siempre supeditada a las
                 obligaciones legales que pudieran corresponder al negocio.
+              </Typography>
+              <Typography variant="body">
+                Para ejercer estos derechos, escribí a{' '}
+                <a href="mailto:margaritas.arteydeco.jujuy@gmail.com">
+                  margaritas.arteydeco.jujuy@gmail.com
+                </a>.
+              </Typography>
+            </LegalSection>
+
+            <LegalSection title="Registro de solicitudes de privacidad" variant="disclosure">
+              <Typography variant="body">
+                Las solicitudes de acceso, actualización, rectificación o supresión se reciben y
+                siguen en un hilo de correo restringido a la persona titular y al personal autorizado
+                con acceso al buzón. Se registra únicamente la fecha de recepción, categoría de la
+                solicitud, contacto necesario, estado de verificación y resolución, fecha de cierre
+                y la revisión de conservación o eliminación. No se crea una tabla, API ni nueva
+                persistencia en el backend, ni se copia al sistema el contenido innecesario de la
+                solicitud, el teléfono o los datos completos de un pedido.
+              </Typography>
+              <Typography variant="body">
+                El período y el disparador de eliminación de esta evidencia quedan pendientes de
+                confirmación del contador y revisión legal final.
               </Typography>
             </LegalSection>
 
@@ -156,6 +209,12 @@ export function PrivacyPolicy() {
                 personales, podés comunicarte con nosotros a través de los medios oficiales de
                 contacto del comercio:
               </Typography>
+              <p>
+                Privacidad y derechos:{' '}
+                <a href="mailto:margaritas.arteydeco.jujuy@gmail.com">
+                  margaritas.arteydeco.jujuy@gmail.com
+                </a>
+              </p>
               <ul className="legal-list legal-list--contact">
                 {whatsapp ? (
                   <li>

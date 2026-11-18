@@ -16,6 +16,7 @@ import type {
 } from '@/features/consumer-withdrawals'
 import { normalizePhone } from '@/features/checkout/utils/checkout-links'
 import { TurnstileChallenge } from '@/features/public-orders/components/TurnstileChallenge'
+import { TurnstileDisclosure } from '@/features/public-orders/components/TurnstileDisclosure'
 import { usePublicSettings } from '@/features/settings'
 import { Button, Card, Checkbox, Container, Input, Section, TextArea, Typography } from '@/shared/components'
 import { buildWhatsAppUrl } from '@/shared/utils/whatsapp'
@@ -117,11 +118,16 @@ export function ConsumerWithdrawalPage() {
             <>
               <header className="consumer-withdrawal__heading">
                 <div className="consumer-withdrawal__icon" aria-hidden="true"><RotateCcw size={28} /></div>
-                <div>
-                  <Typography as="h1" variant="h1">Solicitá el arrepentimiento de una compra</Typography>
-                  <p>Completá estos datos para registrar tu solicitud. No necesitás crear una cuenta ni explicar el motivo.</p>
-                </div>
-              </header>
+                  <div>
+                    <Typography as="h1" variant="h1">Solicitá el arrepentimiento de una compra</Typography>
+                    <p>
+                      Completá estos datos para registrar tu solicitud. En una venta a distancia
+                      alcanzada, podés ejercer el arrepentimiento dentro de los diez días corridos
+                      desde la entrega, sin explicar el motivo. La devolución se coordina después de
+                      recibir la solicitud; este trámite no limita los derechos que correspondan.
+                    </p>
+                  </div>
+                </header>
               <Card className="consumer-withdrawal__card">
                 {errorMessage ? <div className="consumer-withdrawal__error" role="alert"><CircleAlert aria-hidden="true" size={22} /><p>{errorMessage}</p></div> : null}
                 <form noValidate onSubmit={form.handleSubmit(handleSubmit)}>
@@ -155,7 +161,24 @@ export function ConsumerWithdrawalPage() {
                     maxLength={1000}
                     {...form.register('comment')}
                   />
-                  {isCaptchaRequired ? <TurnstileChallenge action="consumer_withdrawal" onTokenChange={handleCaptchaToken} /> : null}
+                  <div className="consumer-withdrawal__contact-disclosure" role="note">
+                    <p>
+                      Si necesitás ayuda con el trámite, escribinos a{' '}
+                      <a href="mailto:margaritas.arteydeco.jujuy@gmail.com">
+                        margaritas.arteydeco.jujuy@gmail.com
+                      </a>.
+                    </p>
+                    <p>
+                      Las excepciones específicas y los costos de devolución se revisan según el
+                      producto y la normativa vigente.
+                    </p>
+                  </div>
+                  {isCaptchaRequired ? (
+                    <>
+                      <TurnstileDisclosure />
+                      <TurnstileChallenge action="consumer_withdrawal" onTokenChange={handleCaptchaToken} />
+                    </>
+                  ) : null}
                   <Button isLoading={createRequest.isPending} loadingText="Enviando solicitud…" size="large" type="submit">Enviar solicitud</Button>
                 </form>
                 <div className="consumer-withdrawal__support">

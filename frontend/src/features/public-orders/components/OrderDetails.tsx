@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom'
 
 import productPlaceholderImage from '@/assets/images/product-placeholder.webp'
 import { routes } from '@/config/routes'
+import { CHECKOUT_LEGAL_LINKS } from '@/features/checkout/utils/checkout-links'
 import { Badge, Button, DeferredImage, Divider, Typography } from '@/shared/components'
 import { formatPrice } from '@/shared/utils/format-price'
 
@@ -284,6 +285,11 @@ export function OrderDetails({ isForgetting, onBack, onForget, order }: IOrderDe
               <Button disabled={isForgetting} isLoading={isForgetting} loadingText="Olvidando pedidos…" onClick={onForget} variant="ghost">
                 Olvidar pedidos de este dispositivo
               </Button>
+            </nav>
+            <nav aria-label="Información legal del pedido" className="public-order__legal-links">
+              <Link to={CHECKOUT_LEGAL_LINKS.terms.href}>{CHECKOUT_LEGAL_LINKS.terms.label}</Link>
+              <Link to={CHECKOUT_LEGAL_LINKS.privacy.href}>{CHECKOUT_LEGAL_LINKS.privacy.label}</Link>
+              <Link to={CHECKOUT_LEGAL_LINKS.withdrawal.href}>{CHECKOUT_LEGAL_LINKS.withdrawal.label}</Link>
             </nav>
           </aside>
         </div>

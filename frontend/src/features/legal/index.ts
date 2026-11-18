@@ -1,4 +1,5 @@
 export { LegalList } from './components/LegalList'
+export { LegalReviewNotice } from './components/LegalReviewNotice'
 export { LegalSection } from './components/LegalSection'
 export { PrivacyPolicy } from './components/PrivacyPolicy'
 export { TermsAndConditions } from './components/TermsAndConditions'

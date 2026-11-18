@@ -1,4 +1,7 @@
 import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 
 import { routes } from '../../../config/routes.ts'
@@ -24,6 +27,12 @@ import {
   isGuestSessionRequired,
   isOrderSessionUnavailable,
 } from './public-order-errors.ts'
+
+const publicOrdersDirectory = dirname(fileURLToPath(import.meta.url))
+
+async function readPublicOrdersFile(relativePath) {
+  return readFile(resolve(publicOrdersDirectory, '..', relativePath), 'utf8')
+}
 
 function createApiError(error, details = {}) {
   return {
@@ -220,4 +229,28 @@ test('avisa de la falta de stock solo en pedidos pendientes de Mercado Pago paga
     PUBLIC_PAID_WITHOUT_STOCK_NOTICE,
     'Recibimos tu pago, pero tu reserva había vencido y ya no tenemos stock disponible. Nos vamos a comunicar con vos para coordinar la devolución del dinero o una alternativa.',
   )
+})
+
+test('renderiza la divulgación de Turnstile antes del desafío en recuperación', async () => {
+  const recovery = await readPublicOrdersFile('RecoverOrderPage.tsx')
+  const disclosureIndex = recovery.indexOf('<TurnstileDisclosure />')
+  const challengeIndex = recovery.indexOf('<TurnstileChallenge')
+
+  assert.notEqual(disclosureIndex, -1)
+  assert.notEqual(challengeIndex, -1)
+  assert.ok(disclosureIndex < challengeIndex)
+})
+
+test('conserva los contratos de seguridad sin modificar CSRF, rate limit o acciones aprobadas', async () => {
+  const [security, rateLimit, turnstile] = await Promise.all([
+    readFile(resolve(publicOrdersDirectory, '../../../../../backend/src/middlewares/security.middleware.ts'), 'utf8'),
+    readFile(resolve(publicOrdersDirectory, '../../../../../backend/src/config/rate-limit-store.ts'), 'utf8'),
+    readFile(resolve(publicOrdersDirectory, '../../../../../backend/src/services/turnstile.service.ts'), 'utf8'),
+  ])
+
+  assert.match(security, /headerToken !== cookieToken/)
+  assert.match(security, /passOnStoreError: false/)
+  assert.match(rateLimit, /rate limiting será local y no distribuido/)
+  assert.match(turnstile, /consumer_withdrawal.*order_recovery/)
+  assert.match(turnstile, /TURNSTILE_SITEVERIFY_URL/)
 })

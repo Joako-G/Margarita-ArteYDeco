@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom'
 import { Checkbox } from '@/shared/components'
 
 import type { ICheckoutFormValues } from '../types/checkout'
+import { CHECKOUT_LEGAL_LINKS } from '../utils/checkout-links'
 
 interface ICheckoutTermsAcceptanceProps {
   errors: FieldErrors<ICheckoutFormValues>
@@ -32,11 +33,11 @@ export function CheckoutTermsAcceptance({ errors, register }: ICheckoutTermsAcce
           <>
             He leído y acepto{' '}
             <Link onClick={stopLabelPropagation} to="/terminos-y-condiciones">
-              los Términos y Condiciones
+              {CHECKOUT_LEGAL_LINKS.terms.label}
             </Link>{' '}
             y la{' '}
             <Link onClick={stopLabelPropagation} to="/politica-de-privacidad">
-              Política de Privacidad
+              {CHECKOUT_LEGAL_LINKS.privacy.label}
             </Link>
             .
           </>

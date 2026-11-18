@@ -14,6 +14,7 @@ import {
 } from '@/features/consumer-withdrawals'
 import type { ConsumerWithdrawalStatusFormType } from '@/features/consumer-withdrawals'
 import { TurnstileChallenge } from '@/features/public-orders/components/TurnstileChallenge'
+import { TurnstileDisclosure } from '@/features/public-orders/components/TurnstileDisclosure'
 import { Button, Card, Container, Input, Section, Typography } from '@/shared/components'
 
 import '../styles.css'
@@ -76,7 +77,12 @@ export function ConsumerWithdrawalStatusPage() {
                 placeholder="AR-7K9M-Q4TX-V8NP-2C6R"
                 {...form.register('requestCode', { onChange: (event) => { event.target.value = normalizeRequestCode(event.target.value) } })}
               />
-              {isCaptchaRequired ? <TurnstileChallenge action="consumer_withdrawal" onTokenChange={handleCaptchaToken} /> : null}
+              {isCaptchaRequired ? (
+                <>
+                  <TurnstileDisclosure />
+                  <TurnstileChallenge action="consumer_withdrawal" onTokenChange={handleCaptchaToken} />
+                </>
+              ) : null}
               <Button isLoading={statusMutation.isPending} loadingText="Consultando…" size="large" type="submit">Consultar estado</Button>
             </form>
             {result ? (
